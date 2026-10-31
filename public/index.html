@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1e6b4f">
+<title>Cardápio · Prática Sabores</title>
+<meta name="description" content="Marmitas caseiras feitas no dia. Peça pelo cardápio online e receba no horário que escolher.">
+<meta property="og:title" content="Prática Sabores — Cardápio Digital">
+<meta property="og:description" content="Marmitas caseiras feitas no dia. Peça em 1 minuto pelo WhatsApp.">
+<meta property="og:type" content="website">
+<link rel="icon" href="/img/favicon.png">
+<link rel="apple-touch-icon" href="/img/logo-256.png">
+<link rel="stylesheet" href="/assets/base.css">
+<link rel="stylesheet" href="/assets/menu.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="wrap bar">
+    <div class="brand">
+      <div class="brand-logo" id="brandLogo">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M4 11h16a8 8 0 0 1-16 0Z" fill="#f0a63c"/>
+          <path d="M3 9.5h18" stroke="#fff" stroke-width="2" stroke-linecap="round"/>
+          <path d="M9 6.5c0-1.2 1-1.6 1-2.5" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/>
+          <path d="M14 6.5c0-1.2 1-1.6 1-2.5" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div style="min-width:0">
+        <div class="brand-name" id="brandName">Prática Sabores</div>
+        <div class="brand-sub" id="brandSub">Marmitas caseiras</div>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-ghost btn-sm cart-btn" id="headerCartBtn" aria-label="Abrir carrinho">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/><path d="M2 3h2.5l2.3 12.2a2 2 0 0 0 2 1.6h8.4a2 2 0 0 0 2-1.6L21 7H6"/></svg>
+        <span class="cart-label">Carrinho</span>
+        <span class="cart-count" id="headerCount" hidden>0</span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main class="wrap" id="main">
+  <section class="hero">
+    <div class="hero-card" id="heroCard">
+      <img class="hero-watermark" id="heroWatermark" alt="" hidden>
+      <div class="hero-content">
+        <img class="hero-logo" id="heroLogo" alt="" hidden>
+        <div class="hero-badge"><span class="dot"></span> <span id="heroBadge">Aberto hoje</span></div>
+        <h1 id="heroTitle">Prática Sabores</h1>
+        <p id="heroTagline">Marmitas caseiras, feitas no dia</p>
+        <div class="hero-chips" id="heroChips"></div>
+        <div class="hero-note" id="heroNote" hidden></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="closed-banner" id="closedBanner" hidden></div>
+
+  <nav class="cats" id="cats" hidden aria-label="Categorias">
+    <div class="cats-scroll" id="catsScroll"></div>
+  </nav>
+
+  <div class="section-head">
+    <h2 id="menuTitle">Cardápio de hoje</h2>
+    <span id="countLabel"></span>
+  </div>
+
+  <div class="grid" id="grid" aria-live="polite">
+    <div class="skeleton" style="height:300px"></div>
+    <div class="skeleton" style="height:300px"></div>
+    <div class="skeleton" style="height:300px"></div>
+  </div>
+
+  <footer class="site-footer">
+    <div><strong id="footerName">Prática Sabores</strong> · <span id="footerAddr"></span></div>
+    <div style="margin-top:4px">Pedidos pelo WhatsApp · Pagamento na entrega ou Pix</div>
+    <a class="admin-link" href="/admin">Área do administrador</a>
+  </footer>
+</main>
+
+<!-- barra flutuante do carrinho -->
+<div class="cart-bar">
+  <div class="cart-bar-inner" id="cartBar">
+    <div>
+      <div class="info" id="cartBarCount">1 item</div>
+      <div class="total" id="cartBarTotal">R$ 0,00</div>
+    </div>
+    <button class="btn btn-gold" id="cartBarBtn">Ver carrinho</button>
+  </div>
+</div>
+
+<!-- drawer (carrinho / checkout / sucesso) -->
+<div class="drawer-backdrop" id="drawerBackdrop"></div>
+<aside class="drawer" id="drawer" role="dialog" aria-modal="true" aria-label="Carrinho">
+  <div class="drawer-head">
+    <h2 id="drawerTitle">Seu carrinho</h2>
+    <button class="close-x" id="drawerClose" aria-label="Fechar" style="margin-left:auto">✕</button>
+  </div>
+  <div class="drawer-body" id="drawerBody"></div>
+  <div class="drawer-foot" id="drawerFoot"></div>
+</aside>
+
+<div class="toast-stack" id="toasts"></div>
+
+<script src="/assets/menu.js"></script>
+</body>
+</html>
+<!-- deploy teste Fri Oct 30 00:12:28 UTC 2026 -->

@@ -1,0 +1,26 @@
+const { chromium } = require('playwright');
+(async () => {
+  const b = await chromium.launch();
+  const p = await b.newPage({ viewport: { width: 1280, height: 800 } });
+  const errs = [];
+  p.on('pageerror', (e) => errs.push(e.message));
+  await p.goto('http://localhost:3996/master', { waitUntil: 'domcontentloaded' });
+  await p.waitForSelector('#masterPass');
+  console.log('título antes:', (await p.textContent('#brandTitle')).trim());
+  await p.fill('#masterPass', 'master123');
+  await p.click('#loginForm button[type=submit]');
+  await p.waitForSelector('.store');
+  await p.click('.tab[data-tab="security"]');
+  await p.fill('#adminName', 'Rodrigo');
+  await p.click('#nameForm button[type=submit]');
+  await p.waitForTimeout(900);
+  console.log('título depois:', (await p.textContent('#brandTitle')).trim());
+  await p.reload();
+  await p.waitForSelector('.store');
+  console.log('título após recarregar:', (await p.textContent('#brandTitle')).trim());
+  await p.click('.tab[data-tab="security"]');
+  await p.waitForTimeout(300);
+  await p.screenshot({ path: __dirname + '/shots/P3-master-nome.png' });
+  console.log('erros JS:', errs.length ? errs : 'nenhum');
+  await b.close();
+})();

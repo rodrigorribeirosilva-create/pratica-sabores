@@ -1,0 +1,32 @@
+{
+  "name": "Painel Jeová",
+  "short_name": "Jeová",
+  "description": "Painel do administrador: lojas, contratos e mensalidades.",
+  "start_url": "/master",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#fbf6ee",
+  "theme_color": "#16211c",
+  "orientation": "portrait",
+  "lang": "pt-BR",
+  "icons": [
+    {
+      "src": "/img/master-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/img/master-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/img/master-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

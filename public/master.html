@@ -1,0 +1,1232 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Meu painel · administração das lojas</title>
+<link rel="icon" href="/img/favicon.png">
+<meta name="theme-color" content="#16211c">
+<link rel="manifest" href="/manifest-master.json">
+<link rel="apple-touch-icon" href="/img/master-icon-192.png">
+<meta name="apple-mobile-web-app-title" content="Master">
+<style>
+  :root{
+    --cream:#fbf6ee; --ink:#16211c; --ink-soft:#3b4a42; --muted:#74847b;
+    --green:#1e6b4f; --green-dark:#14503b; --green-soft:#e6f1ea;
+    --gold:#f0a63c; --red:#c8452b; --card:#fff; --line:#e8dfd1;
+    --shadow:0 2px 8px rgba(22,33,28,.07),0 12px 32px rgba(22,33,28,.07);
+    --r:16px;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:var(--cream);color:var(--ink);line-height:1.5}
+  button,input,textarea,select{font:inherit;color:inherit}
+  a{color:var(--green);text-decoration:none}
+  a:hover{text-decoration:underline}
+  .wrap{max-width:1020px;margin:0 auto;padding:0 18px}
+  header.top{background:var(--ink);color:#fff;padding:14px 0}
+  header.top .wrap{display:flex;align-items:center;gap:12px;justify-content:space-between}
+  .logo{display:flex;align-items:center;gap:10px;font-weight:800}
+  .logo .dot{width:42px;height:42px;border-radius:12px;overflow:hidden;background:linear-gradient(145deg,var(--gold),#c8811f);display:grid;place-items:center;color:#3a2607;font-size:15px;flex:0 0 auto}
+  .logo .dot img{width:100%;height:100%;object-fit:cover;display:block}
+  .logo .dot.has-img{background:#fff;border:1px solid rgba(255,255,255,.35)}
+  .logo small{display:block;font-weight:500;font-size:11.5px;opacity:.7;letter-spacing:.04em;text-transform:uppercase}
+  .btn{border:1px solid var(--line);background:#fff;border-radius:10px;padding:9px 14px;font-weight:650;font-size:13.5px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;text-decoration:none!important;transition:.15s}
+  .btn:hover{transform:translateY(-1px);box-shadow:var(--shadow)}
+  .btn-primary{background:var(--green);border-color:var(--green);color:#fff}
+  .btn-ghost{background:transparent;border-color:rgba(255,255,255,.25);color:#fff}
+  .btn-sm{padding:6px 11px;font-size:12.5px}
+  .btn-danger{color:var(--red);border-color:#f0cfc7}
+  main{padding:26px 0 70px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);padding:20px}
+  h1{font-size:22px;margin:0 0 4px}
+  h2{font-size:16.5px;margin:0 0 14px}
+  .sub{color:var(--muted);font-size:13.5px;margin:0 0 18px}
+  .grid{display:grid;gap:14px}
+  .field{display:grid;gap:6px}
+  .field label{font-size:12.5px;font-weight:650;color:var(--ink-soft)}
+  .field input,.field textarea{border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:#fff;width:100%}
+  .field input:focus,.field textarea:focus{outline:none;border-color:var(--green);box-shadow:0 0 0 3px var(--green-soft)}
+  .row{display:grid;gap:12px;grid-template-columns:1fr 1fr}
+  .hint{font-size:12px;color:var(--muted)}
+  .stores{display:grid;gap:14px;margin-top:16px}
+  .store{display:grid;grid-template-columns:56px 1fr auto;gap:14px;align-items:center;padding:16px;border:1px solid var(--line);border-radius:14px;background:#fff}
+  .store.off{opacity:.62}
+  .ct-card{padding:16px;border:1px solid var(--line);border-radius:14px;background:#fff;margin-bottom:14px}
+  .ct-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .ct-name{font-weight:800;font-size:15.5px}
+  .ct-link{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11.5px;color:var(--muted);word-break:break-all;margin-top:2px}
+  .ct-card .actions{justify-content:flex-start;max-width:none;margin-top:12px}
+  .ct-card .ok-box{word-break:break-word}
+  .ct-card .hash{display:inline-block;word-break:break-all;font-size:11.5px}
+  .ct-logo{width:38px;height:38px;border-radius:10px;object-fit:cover;background:var(--green-soft);flex:0 0 auto}
+  .ct-doc{border:1px solid var(--line);border-radius:14px;padding:14px;background:#fff}
+  .ct-doc-head{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+  .ct-doc-head img{width:42px;height:42px;border-radius:10px;object-fit:cover;background:var(--green-soft)}
+  .ct-doc-nome{font-weight:800;font-size:15px}
+  .ct-doc-sub{font-size:11.5px;color:var(--muted)}
+  .ct-doc-head .pill{margin-left:auto}
+  .ct-linha{display:flex;justify-content:space-between;gap:12px;padding:7px 0;border-bottom:1px dashed var(--line);font-size:13.5px}
+  .ct-linha:last-child{border-bottom:0}
+  .ct-linha span{color:var(--muted)}
+  .ct-linha b{text-align:right;word-break:break-word}
+  .ct-assinado{margin-top:10px;background:#e8f5ec;border:1px solid #b9e0c6;border-radius:12px;padding:10px 12px}
+  .ct-assinado strong{display:block;color:#14532d;font-size:13.5px;margin-bottom:4px}
+  .ct-assinado .ct-linha{border-bottom-color:#cbe7d4}
+  .ct-cancelado{margin:10px 0;background:#fbe6e2;border:1px solid #f0cfc7;color:#8f2f17;border-radius:12px;padding:10px 12px;font-size:13px;line-height:1.6}
+  .ct-cancelado strong{display:block}
+  .ct-cancelado span{color:#a4644f;font-size:12px;word-break:break-all}
+  .ct-pedido{margin:10px 0;background:#fdf1dd;border:1px solid #ecd9b0;color:#8a6414;border-radius:12px;padding:10px 12px;font-size:13px;line-height:1.6}
+  .ct-pedido strong{display:block}
+  .btn.danger{background:#fbe6e2;border-color:#f0cfc7;color:#8f2f17}
+  .ct-pendente{margin-top:10px;background:#fdf1dd;border:1px solid #ecd9b0;color:#8a6414;border-radius:12px;padding:10px 12px;font-size:13px}
+  .ct-logo.iniciais{display:grid;place-items:center;font-weight:800;color:var(--green);font-size:13px}
+  .thumb{width:56px;height:56px;border-radius:12px;background:var(--green-soft);display:grid;place-items:center;overflow:hidden;font-weight:800;color:var(--green)}
+  .thumb img{width:100%;height:100%;object-fit:cover}
+  .sname{font-weight:800;font-size:15.5px}
+  .slug{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;color:var(--muted);word-break:break-all}
+  .pills{display:flex;flex-wrap:wrap;gap:6px;margin-top:7px}
+  .pill{font-size:11.5px;font-weight:650;padding:3px 9px;border-radius:99px;background:var(--cream);color:var(--ink-soft);border:1px solid var(--line)}
+  .pill.ok{background:var(--green-soft);border-color:#bfe0cd;color:var(--green-dark)}
+  .pill.warn{background:#fdf1dd;border-color:#ecd9b0;color:#8a6414}
+  .pill.bad{background:#fbe6e2;border-color:#f0cfc7;color:#8f2f17}
+  .actions{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end;max-width:430px}
+  .actions .main{background:var(--green);border-color:var(--green);color:#fff}
+  .actions .danger{color:var(--red);border-color:#f0cfc7}
+  .actions .muted{color:var(--ink-soft)}
+  .sep{width:100%;height:1px;background:var(--line);margin:2px 0}
+  .pw-row{display:flex;align-items:center;gap:8px;margin-top:9px;flex-wrap:wrap}
+  .pw-label{font-size:11.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+  .pw-value{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13.5px;background:#fdf1dd;border:1px solid #ecd9b0;color:#6b4c0f;padding:3px 9px;border-radius:8px}
+  .pw-value.hidden{color:#9a8f7f;letter-spacing:2px}
+  .pw-eye{border:1px solid var(--line);background:#fff;border-radius:8px;padding:2px 8px;font-size:12px;cursor:pointer;font-weight:650}
+  .pw-hist{font-size:11.5px;color:var(--muted);margin-top:5px}
+  .empty{text-align:center;padding:34px;color:var(--muted)}
+  .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:11px 18px;border-radius:12px;font-size:13.5px;box-shadow:var(--shadow);z-index:99}
+  .toast.error{background:var(--red)}
+  .login{max-width:380px;margin:8vh auto;padding:26px}
+  .warn-box{background:#fdf1dd;border:1px solid #ecd9b0;color:#8a6414;padding:11px 14px;border-radius:12px;font-size:13px;margin-bottom:14px}
+  .tabs{display:flex;gap:8px;margin:0 0 16px;flex-wrap:wrap}
+  .tab{border:1px solid var(--line);background:#fff;border-radius:99px;padding:7px 14px;font-size:13px;font-weight:650;cursor:pointer}
+  .tab.active{background:var(--ink);border-color:var(--ink);color:#fff}
+  .panel[hidden]{display:none}
+  .split{display:grid;gap:16px;grid-template-columns:1.4fr 1fr;align-items:start}
+  @media(max-width:820px){.split{grid-template-columns:1fr}.store{grid-template-columns:44px 1fr}.actions{grid-column:1/-1;justify-content:flex-start;max-width:none}.thumb{width:44px;height:44px}.row{grid-template-columns:1fr}}
+
+  /* -------- janela do contrato -------- */
+  .modal-backdrop {
+    position: fixed; inset: 0; background: rgba(10, 20, 16, .55);
+    display: flex; align-items: flex-end; justify-content: center;
+    z-index: 200; padding: 0;
+  }
+  .modal-backdrop[hidden] { display: none; }
+  .modal {
+    background: #fff; width: 100%; max-width: 560px;
+    border-radius: 20px 20px 0 0; max-height: 92vh; overflow: auto;
+    box-shadow: 0 -10px 40px rgba(0,0,0,.25);
+  }
+  .modal-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 18px; border-bottom: 1px solid #eceee9;
+    position: sticky; top: 0; background: #fff; z-index: 2;
+  }
+  .modal-head h3 { margin: 0; font-size: 16px; }
+  .modal-body { padding: 16px 18px 26px; }
+  .modal-body .field { margin-bottom: 14px; }
+  .modal-body label { display: block; font-size: 12.5px; font-weight: 700; color: #4a5148; margin-bottom: 6px; }
+  .modal-body .input, .modal-body .textarea {
+    width: 100%; padding: 13px 14px; border: 1.5px solid #d9dfd5; border-radius: 12px;
+    font-size: 15px; font-family: inherit; background: #fbfcf9;
+  }
+  .modal-body .input:disabled, .modal-body .textarea:disabled { background: #f2f4ef; color: #6b7168; }
+  .btn-block { display: block; width: 100%; text-align: center; margin-top: 10px; }
+  .ok-box { background: #e8f5ec; border: 1px solid #b9e0c6; color: #14532d; border-radius: 12px; padding: 14px; margin-bottom: 14px; font-size: 13.5px; }
+  .ok-box strong { display: block; margin-bottom: 4px; }
+  .hash { display: block; font-family: ui-monospace, Menlo, monospace; font-size: 11.5px; background: #f2f4ef; border-radius: 8px; padding: 7px; margin-top: 6px; word-break: break-all; color: #3b423a; }
+  @media (min-width: 700px) { .modal-backdrop { align-items: center; } .modal { border-radius: 20px; } }
+
+  .mes-card { border: 1px solid var(--line, #e7e3d8); border-radius: 14px; padding: 14px; margin-bottom: 12px; background: #fff; }
+  .mes-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 4px; }
+  .mes-hist { margin: 8px 0; }
+  .mes-linha { display: flex; gap: 10px; font-size: 13px; padding: 4px 0; border-bottom: 1px dashed #eee; }
+  .mes-linha span:first-child { font-weight: 700; min-width: 74px; }
+  .mes-acoes { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+  .pill.ok { background: #e8f5ec; color: #14532d; border-color: #b9e0c6; }
+  .pill.bad { background: #fdecea; color: #8a1c12; border-color: #f3c4bd; }
+  .pill.warn { background: #fdf3e0; color: #7a5a12; border-color: #f0dcb4; }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <div class="logo">
+      <span class="dot has-img" id="brandAvatar"><img src="/img/lion-avatar.jpg" alt=""></span>
+      <span id="brandTitle">Painel do administrador<small>todas as lojas</small></span>
+    </div>
+    <div id="topActions" style="display:none;display:flex;gap:8px;align-items:center">
+      <button class="btn btn-ghost btn-sm" id="installBtn" hidden>Instalar</button>
+      <button class="btn btn-ghost btn-sm" id="logoutBtn">Sair</button>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="wrap">
+
+    <!-- ------------------------------ LOGIN ------------------------------ -->
+    <section id="loginView" class="card login" hidden>
+      <h1>Entrar</h1>
+      <p class="sub">Área do administrador do sistema.</p>
+      <form id="loginForm" class="grid">
+        <div class="field">
+          <label for="masterPass">Senha do master</label>
+          <input id="masterPass" type="password" autocomplete="current-password" required>
+        </div>
+        <button class="btn btn-primary" type="submit">Entrar</button>
+      </form>
+      <p class="hint" style="margin-top:14px">Se você ainda não trocou a senha, ela é a que foi configurada no deploy.</p>
+    </section>
+
+    <!-- ------------------------------- APP ------------------------------- -->
+    <section id="appView" hidden>
+      <div id="pwWarn" class="warn-box" hidden>⚠️ Você ainda está com a senha padrão do master. Troque na aba <strong>Segurança</strong>.</div>
+
+      <div class="tabs">
+        <button class="tab active" data-tab="stores">Lojas</button>
+        <button class="tab" data-tab="new">Nova loja</button>
+        <button class="tab" data-tab="contratos">Contratos</button>
+        <button class="tab" data-tab="mensalidades">Mensalidades</button>
+        <button class="tab" data-tab="security">Segurança</button>
+      </div>
+
+      <!-- lojas -->
+      <div class="panel" id="panel-stores">
+        <div class="card">
+          <h2>Suas lojas</h2>
+          <p class="sub">Cada loja tem cardápio, catálogo ou agenda de serviços — com painel, senha e pedidos próprios. Copie o link e envie no WhatsApp do cliente.</p>
+          <div id="storesList" class="stores"></div>
+        </div>
+      </div>
+
+      <!-- nova loja -->
+      <div class="panel" id="panel-new" hidden>
+        <div class="split">
+          <div class="card">
+            <h2>Cadastrar nova empresa</h2>
+            <p class="sub">A senha definida aqui é a que o cliente vai usar para entrar no painel dele.</p>
+            <form id="newStoreForm" class="grid">
+              <div class="field">
+                <label for="nName">Nome da empresa *</label>
+                <input id="nName" required placeholder="Pizzaria do Bairro">
+              </div>
+              <div class="row">
+                <div class="field">
+                  <label for="nSlug">Endereço (link)</label>
+                  <input id="nSlug" placeholder="pizzaria-do-bairro">
+                  <span class="hint">Deixe vazio para gerar pelo nome.</span>
+                </div>
+                <div class="field">
+                  <label for="nWa">WhatsApp que recebe os pedidos</label>
+                  <input id="nWa" placeholder="5548999999999">
+                </div>
+              </div>
+              <div class="field">
+                <label for="nSegment">O que essa loja vende?</label>
+                <select id="nSegment" style="border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:#fff;width:100%">
+                  <option value="food">Comida — marmitas, lanches, doces</option>
+                  <option value="catalogo">Catálogo — perfumes, presentes, cosméticos</option>
+                  <option value="servicos">Serviços — climatização, assistência técnica, agenda</option>
+                </select>
+                <span class="hint">Muda os produtos de exemplo e o jeito de pedir (catálogo ganha botão de WhatsApp em cada item).</span>
+              </div>
+              <div class="field">
+                <label for="nPass">Senha do painel do cliente *</label>
+                <input id="nPass" required minlength="6" placeholder="mínimo 6 caracteres">
+              </div>
+              <div class="field">
+                <label for="nAbout">Descrição curta</label>
+                <textarea id="nAbout" rows="2" placeholder="Massas artesanais no centro de Florianópolis."></textarea>
+              </div>
+              <label style="display:flex;gap:9px;align-items:center;font-size:13.5px">
+                <input id="nSeed" type="checkbox" style="width:auto">
+                Começar com produtos de exemplo (pode apagar depois)
+              </label>
+              <button class="btn btn-primary" type="submit">Criar loja</button>
+            </form>
+          </div>
+          <div class="card">
+            <h2>Como funciona</h2>
+            <ol style="padding-left:18px;font-size:13.5px;color:var(--ink-soft);display:grid;gap:9px;margin:0">
+              <li>Você cria a loja aqui e escolhe a senha dela.</li>
+              <li>O cliente acessa o <strong>painel dele</strong> e cadastra produtos, preços e fotos.</li>
+              <li>Serve para <strong>qualquer tipo de negócio</strong>: marmitaria, pizzaria, perfumaria, loja de presentes, doces…</li>
+              <li>Você copia o <strong>link do cardápio</strong> (ou da agenda de serviços) e envia no WhatsApp dele.</li>
+              <li>Os pedidos caem no painel dele e no WhatsApp dele.</li>
+            </ol>
+            <p class="hint" style="margin-top:14px">Ele nunca vê esta tela nem as outras lojas.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- segurança -->
+      <div class="panel" id="panel-contratos" hidden>
+        <div class="panel-head">
+          <h3>Contratos</h3>
+          <p>Um contrato por cliente: R$ 100,00 pela produção do link (pagamento único) e R$ 40,00 por mês de manutenção. Encaminhe pelo WhatsApp, copie o link ou baixe o PDF assinado. Quando o cliente cancela pelo link dele, o contrato sai desta lista e fica guardado em <strong>Cancelados</strong>.</p>
+        </div>
+        <div class="panel-body">
+          <div id="contratosResumo" class="chips" style="margin-bottom:10px"></div>
+          <div class="actions" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
+            <button class="btn btn-sm main" data-cfiltro="ativos">Com contrato ativo</button>
+            <button class="btn btn-sm" data-cfiltro="assinado">Assinados</button>
+            <button class="btn btn-sm" data-cfiltro="pendente">Não assinados</button>
+            <button class="btn btn-sm" data-cfiltro="cancelado">Cancelados</button>
+          </div>
+          <div class="actions" style="margin-bottom:16px;display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn btn-sm main" id="btnEnviarPendentes">Encaminhar para quem ainda não assinou</button>
+            <button class="btn btn-sm" id="btnAtualizarContratos">Atualizar</button>
+          </div>
+          <div id="contratosBox"><p class="muted-sm">Carregando…</p></div>
+        </div>
+      </div>
+
+      <div class="panel" id="panel-mensalidades" hidden>
+        <div class="panel-head">
+          <h3>Mensalidades</h3>
+          <p>Cada loja tem uma mensalidade combinada. Veja quem pagou o mês, quem está devendo e cobre pelo WhatsApp em um toque.</p>
+        </div>
+        <div class="panel-body" id="mensalidadesBox"><p class="muted-sm">Carregando…</p></div>
+      </div>
+
+      <div class="panel" id="panel-security" hidden>
+        <div class="split">
+          <div class="card">
+            <h2>WhatsApp que recebe as assinaturas</h2>
+            <p class="sub">Quando o cliente assinar o contrato, aparece um botão com este número para ele enviar a assinatura para você.</p>
+            <form id="contatoForm" class="grid" style="margin-bottom:22px">
+              <div class="field">
+                <label for="ctWhats">Seu WhatsApp (com DDD)</label>
+                <input id="ctWhats" inputmode="tel" placeholder="48 98854-5558" maxlength="20">
+                <span class="hint">É este número que vai no link "Enviar a assinatura".</span>
+              </div>
+              <div class="field">
+                <label for="ctNome">Seu nome no contrato (CONTRATADO)</label>
+                <input id="ctNome" placeholder="Rodrigo Ribeiro" maxlength="60">
+              </div>
+              <div class="field">
+                <label for="ctDoc">Seu CPF/CNPJ (opcional)</label>
+                <input id="ctDoc" placeholder="000.000.000-00" maxlength="30">
+              </div>
+              <div class="field">
+                <label for="ctCidade">Cidade / UF</label>
+                <input id="ctCidade" placeholder="Florianópolis/SC" maxlength="60">
+              </div>
+              <button class="btn btn-primary" type="submit">Salvar meus dados</button>
+            </form>
+
+            <h2>Seu nome e sua foto</h2>
+            <p class="sub">Aparecem no topo deste painel e na aba do celular.</p>
+            <form id="nameForm" class="grid" style="margin-bottom:22px">
+              <div class="field">
+                <label for="adminName">Nome do administrador</label>
+                <input id="adminName" placeholder="Rodrigo" maxlength="40">
+              </div>
+              <div class="field">
+                <label>Foto / logotipo do painel</label>
+                <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+                  <span id="masterFotoPreview" style="width:56px;height:56px;border-radius:14px;overflow:hidden;background:var(--green-soft);display:grid;place-items:center;font-weight:800;color:var(--green);flex:0 0 auto">★</span>
+                  <input type="file" id="masterFoto" accept="image/*" style="display:none">
+                  <button class="btn btn-sm" type="button" id="masterFotoBtn">Escolher imagem</button>
+                  <button class="btn btn-sm btn-danger" type="button" id="masterFotoRemover" hidden>Remover</button>
+                </div>
+                <span class="hint">Ideal: imagem quadrada (a mesma do celular serve).</span>
+              </div>
+              <button class="btn btn-primary" type="submit">Salvar</button>
+            </form>
+            <h2>Trocar a senha do master</h2>
+            <form id="pwForm" class="grid">
+              <div class="field">
+                <label for="pwCurrent">Senha atual</label>
+                <input id="pwCurrent" type="password" required>
+              </div>
+              <div class="field">
+                <label for="pwNew">Nova senha</label>
+                <input id="pwNew" type="password" minlength="6" required>
+              </div>
+              <button class="btn btn-primary" type="submit">Salvar nova senha</button>
+            </form>
+          </div>
+          <div class="card">
+            <h2>Onde os dados estão salvos</h2>
+            <div id="sysBox" class="hint" style="line-height:1.8">Carregando…</div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
+              <button class="btn btn-sm" id="sysReload">Verificar de novo</button>
+              <button class="btn btn-sm main" id="sysBackupAgora">Salvar na nuvem agora</button>
+            </div>
+          </div>
+          <div class="card">
+            <h2>Backup</h2>
+            <p class="sub">Baixe uma cópia de todo o sistema (todas as lojas, produtos e pedidos).</p>
+            <a class="btn btn-primary" href="/api/master/backup">Baixar backup completo</a>
+            <p class="hint" style="margin-top:12px">Cada loja também consegue baixar o próprio backup em JSON, dentro do painel dela.</p>
+          </div>
+        </div>
+      </div>
+
+    </section>
+  </div>
+</main>
+
+<!-- ---------------- PDF do contrato ---------------- -->
+<div class="modal-backdrop" id="contratoPdfModal" hidden>
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="contratoPdfTitulo">Contrato</h3>
+      <button class="icon-btn" id="contratoPdfFechar" aria-label="Fechar">✕</button>
+    </div>
+    <div class="modal-body">
+      <div id="contratoPdfInfo"></div>
+      <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap">
+        <a class="btn main" id="contratoPdfLink" target="_blank" rel="noopener">Abrir o PDF</a>
+        <a class="btn" id="contratoPdfAbrirPagina" target="_blank" rel="noopener">Ver página do contrato</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ---------------- contrato de mensalidade ---------------- -->
+<div class="modal-backdrop" id="contratoModal" hidden>
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="contratoTitulo">Contrato de mensalidade</h3>
+      <button class="icon-btn" id="contratoFechar" aria-label="Fechar">✕</button>
+    </div>
+    <div class="modal-body" id="contratoBody"></div>
+  </div>
+</div>
+
+<script>
+(() => {
+  'use strict';
+  const el = (id) => document.getElementById(id);
+  const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+  function toast(msg, type = '') {
+    const d = document.createElement('div');
+    d.className = `toast ${type}`;
+    d.textContent = msg;
+    document.body.appendChild(d);
+    setTimeout(() => { d.style.opacity = '0'; d.style.transition = '.3s'; setTimeout(() => d.remove(), 320); }, 2600);
+  }
+
+  async function api(url, opts = {}) {
+    const res = await fetch(url, { headers: { 'Content-Type': 'application/json' }, ...opts });
+    if (res.status === 401) { showLogin(); throw new Error('Faça login novamente.'); }
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || 'Erro inesperado.');
+    return data;
+  }
+
+  function showLogin() {
+    el('loginView').hidden = false;
+    el('appView').hidden = true;
+    el('topActions').style.display = 'none';
+  }
+
+  function showApp() {
+    el('loginView').hidden = true;
+    el('appView').hidden = false;
+    el('topActions').style.display = '';
+  }
+
+  async function copy(text, okMsg) {
+    try {
+      await navigator.clipboard.writeText(text);
+      toast(okMsg || 'Copiado!');
+    } catch {
+      prompt('Copie o link:', text);
+    }
+  }
+
+  /* ------------------------- nuvem / dados salvos ------------------------- */
+  async function carregarSistema() {
+    const box = el('sysBox');
+    try {
+      const b = await api('/api/master/backup/status');
+      if (b.nuvem_ativa) {
+        const quando = b.ultimo_backup
+          ? `${new Date(b.ultimo_backup).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })}` +
+            (b.minutos_atras != null ? ` (há ${b.minutos_atras} min)` : '')
+          : 'nenhum ainda — clique em “Salvar na nuvem agora”';
+        box.innerHTML = `
+          <div style="background:#e8f5ec;border:1px solid #b9e0c6;color:#14532d;padding:10px 12px;border-radius:10px;font-weight:650;margin-bottom:10px">
+            ✓ Seus dados estão salvos na nuvem e não se perdem quando o sistema reinicia ou é atualizado.
+          </div>
+          <div><strong>Último backup:</strong> ${escHtml(quando)}</div>
+          <div><strong>Tamanho:</strong> ${b.tamanho_kb || 0} KB</div>
+          <div><strong>Lojas:</strong> ${b.resumo.lojas} · <strong>Contratos:</strong> ${b.resumo.contratos} · <strong>Clientes:</strong> ${b.resumo.clientes} · <strong>Agendamentos:</strong> ${b.resumo.agendamentos}</div>
+          <div><strong>Situação:</strong> ${b.falhas ? `<span style="color:#b3261e">${b.falhas} falha(s) — tentando de novo</span>` : 'tudo enviado'}</div>`;
+      } else {
+        box.innerHTML = `
+          <div style="background:#fdf1dd;border:1px solid #ecd9b0;color:#8a6414;padding:10px 12px;border-radius:10px;font-weight:650">
+            ⚠ Backup na nuvem desligado. Configure SUPABASE_URL e SUPABASE_KEY no Render para nunca perder dados.
+          </div>`;
+      }
+    } catch (e) {
+      box.innerHTML = `<span style="color:#b3261e">Não foi possível verificar: ${escHtml(e.message)}</span>`;
+    }
+  }
+  el('sysReload').addEventListener('click', carregarSistema);
+  el('sysBackupAgora').addEventListener('click', async () => {
+    const b = el('sysBackupAgora');
+    b.disabled = true;
+    b.textContent = 'Salvando…';
+    try {
+      await api('/api/master/backup/agora', { method: 'POST' });
+      toast('Backup salvo na nuvem ✓');
+      carregarSistema();
+    } catch (e) {
+      toast(e.message);
+    }
+    b.disabled = false;
+    b.textContent = 'Salvar na nuvem agora';
+  });
+
+  /* ------------------------------- lojas ------------------------------- */
+  window.__lojas = [];
+  async function loadStores() {
+    const { stores } = await api('/api/master/stores');
+    window.__lojas = stores;
+    const box = el('storesList');
+    if (!stores.length) {
+      box.innerHTML = '<div class="empty">Nenhuma loja ainda. Crie a primeira na aba <strong>Nova loja</strong>.</div>';
+      return;
+    }
+    box.innerHTML = stores.map((s) => {
+      const ehServ = s.segment === 'servicos';
+      const palavra = ehServ ? 'agendamento' : s.segment === 'catalogo' ? 'catálogo' : 'cardápio';
+      const itensRotulo = ehServ ? 'serviços' : 'produtos';
+      const pedidosRotulo = ehServ ? 'agendamentos' : 'pedidos';
+      const menuUrl = location.origin + s.menu_path;
+      const adminUrl = location.origin + s.admin_path;
+      const initials = esc((s.name || '?').slice(0, 2).toUpperCase());
+      return `
+      <div class="store ${s.active ? '' : 'off'}" data-store="${s.id}">
+        <div class="thumb">${s.logo_url ? `<img src="${esc(s.logo_url)}" alt="">` : initials}</div>
+        <div style="min-width:0">
+          <div class="sname">${esc(s.name)} ${s.active ? '' : '<span class="pill bad">desativada</span>'}</div>
+          <div class="slug">${esc(menuUrl)}</div>
+          <div class="pills">
+            <span class="pill">${s.segment === 'catalogo' ? 'catálogo' : s.segment === 'servicos' ? 'serviços' : 'comida'}</span>
+            <span class="pill">${s.products} ${itensRotulo}</span>
+            <span class="pill">${s.orders} ${pedidosRotulo}</span>
+            ${ehServ
+              ? `<span class="pill ${s.agenda_aberta ? 'warn' : 'ok'}">${s.agenda_aberta ? s.agenda_aberta + ' na agenda' : 'agenda em dia'}</span>`
+              : `<span class="pill ${s.accepting_orders ? 'ok' : 'warn'}">${s.accepting_orders ? 'pedidos abertos' : 'pedidos fechados'}</span>`}
+            ${s.must_change ? '<span class="pill warn">senha ainda é a inicial</span>' : ''}
+            ${s.whatsapp ? `<span class="pill">${esc(s.whatsapp)}</span>` : '<span class="pill bad">sem WhatsApp</span>'}
+          </div>
+          <div class="pw-row" data-pwbox>
+            <span class="pw-label">Senha do cliente</span>
+            <span class="pw-value hidden" data-pw>${esc(s.password || 'não registrada')}</span>
+            <button class="pw-eye" data-act="toggle-pw">mostrar</button>
+            ${s.password_changed_at ? `<span class="pw-hist">trocada em ${esc(new Date(s.password_changed_at).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' }))}${s.password_changed_by === 'master' ? ' (por você)' : ' (pelo cliente)'}</span>` : ''}
+          </div>
+        </div>
+        <div class="actions">
+          <button class="btn btn-sm main" data-act="copy-menu">${ehServ ? 'Copiar link de agendamento' : `Copiar link do ${palavra}`}</button>
+          <a class="btn btn-sm" href="${esc(s.menu_path)}" target="_blank" rel="noopener">${ehServ ? 'Ver página de agendamento' : `Ver ${palavra}`}</a>
+          <a class="btn btn-sm" href="${esc(s.admin_path)}" target="_blank" rel="noopener">${ehServ ? 'Abrir painel de serviços' : 'Abrir painel'}</a>
+          <button class="btn btn-sm" data-act="share">${ehServ ? 'Mandar link de agendamento' : `Mandar ${palavra} ao cliente`}</button>
+          <button class="btn btn-sm muted" data-act="share-owner">Mandar acesso do painel (link + senha)</button>
+          <button class="btn btn-sm muted" data-act="contrato">Contrato de mensalidade</button>
+          <div class="sep"></div>
+          <button class="btn btn-sm muted" data-act="copy-admin">Copiar link do painel</button>
+          <button class="btn btn-sm muted" data-act="reset">Redefinir senha</button>
+          <button class="btn btn-sm muted" data-act="toggle">${s.active ? 'Desativar' : 'Ativar'}</button>
+          <button class="btn btn-sm danger" data-act="delete">Excluir</button>
+        </div>
+      </div>`;
+    }).join('');
+
+    box.querySelectorAll('[data-act]').forEach((btn) => {
+      btn.addEventListener('click', async () => {
+        const card = btn.closest('[data-store]');
+        const id = card.dataset.store;
+        const store = (window.__lojas || []).find((s) => String(s.id) === id);
+        const act = btn.dataset.act;
+
+        if (act === 'toggle-pw') {
+          const box = btn.closest('[data-pwbox]');
+          const val = box.querySelector('[data-pw]');
+          const oculto = val.classList.toggle('hidden');
+          btn.textContent = oculto ? 'mostrar' : 'ocultar';
+          return;
+        }
+        if (act === 'copy-menu') {
+          return copy(
+            location.origin + store.menu_path,
+            store.segment === 'servicos' ? 'Link de agendamento copiado!' : `Link do ${store.segment === 'catalogo' ? 'catálogo' : 'cardápio'} copiado!`
+          );
+        }
+        if (act === 'copy-admin') return copy(location.origin + store.admin_path, 'Link do painel copiado!');
+        if (act === 'contrato') {
+          abrirContrato(id);
+          return;
+        }
+        if (act === 'share' || act === 'share-owner') {
+          const dados = await api(`/api/master/stores/${id}/share`);
+          const dono = act === 'share-owner';
+          const url = dono ? dados.whatsapp_owner_url : dados.whatsapp_url;
+          const texto = dono ? dados.text_owner : dados.text_customer;
+          if (url) window.open(url, '_blank');
+          else copy(texto, 'Texto copiado — cole no WhatsApp.');
+          return;
+        }
+        if (act === 'reset') {
+          const pw = prompt(`Nova senha do painel de "${store.name}" (mínimo 6 caracteres):`);
+          if (!pw) return;
+          await api(`/api/master/stores/${id}`, { method: 'PATCH', body: JSON.stringify({ new_password: pw }) });
+          toast('Senha redefinida. Avise o cliente.');
+          return loadStores();
+        }
+        if (act === 'toggle') {
+          await api(`/api/master/stores/${id}`, { method: 'PATCH', body: JSON.stringify({ active: !store.active }) });
+          return loadStores();
+        }
+        if (act === 'delete') {
+          const typed = prompt(`Isso apaga produtos e pedidos de "${store.name}" e não tem volta.\n\nDigite o endereço da loja para confirmar: ${store.slug}`);
+          if (typed === null) return;
+          await api(`/api/master/stores/${id}`, { method: 'DELETE', body: JSON.stringify({ confirm: typed.trim() }) });
+          toast('Loja excluída.');
+          return loadStores();
+        }
+      });
+    });
+  }
+
+  /* -------------------------------- abas -------------------------------- */
+  document.querySelectorAll('.tab').forEach((tab) => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.tab').forEach((t) => t.classList.toggle('active', t === tab));
+      document.querySelectorAll('.panel').forEach((p) => (p.hidden = p.id !== `panel-${tab.dataset.tab}`));
+      if (tab.dataset.tab === 'mensalidades') carregarMensalidades();
+      if (tab.dataset.tab === 'contratos') carregarContratos();
+      if (tab.dataset.tab === 'security') carregarSistema();
+    });
+  });
+
+  /* -------------------------------- login ------------------------------- */
+  el('loginForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    try {
+      const r = await api('/api/master/login', { method: 'POST', body: JSON.stringify({ password: el('masterPass').value }) });
+      el('masterPass').value = '';
+      showApp();
+      applyName(r.name, r.photo_url || '');
+      el('pwWarn').hidden = !r.must_change;
+      await loadStores();
+      carregarSistema();
+      carregarContratado();
+    } catch (err) {
+      toast(err.message, 'error');
+    }
+  });
+
+  el('logoutBtn').addEventListener('click', async () => {
+    await fetch('/api/master/logout', { method: 'POST' });
+    showLogin();
+  });
+
+  /* ------------------------------ nova loja ----------------------------- */
+  el('newStoreForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    try {
+      const payload = {
+        name: el('nName').value,
+        slug: el('nSlug').value || undefined,
+        whatsapp: el('nWa').value,
+        password: el('nPass').value,
+        about: el('nAbout').value,
+        segment: el('nSegment').value,
+        withSeedProducts: el('nSeed').checked,
+      };
+      const { store } = await api('/api/master/stores', { method: 'POST', body: JSON.stringify(payload) });
+      el('newStoreForm').reset();
+      toast('Loja criada! Link: ' + store.menu_path);
+      document.querySelector('.tab[data-tab="stores"]').click();
+      await loadStores();
+    } catch (err) {
+      toast(err.message, 'error');
+    }
+  });
+
+  /* ------------------------------- meu nome ----------------------------- */
+  let masterPhoto = '';
+
+  function applyName(name, photo) {
+    const t = el('brandTitle');
+    if (t) t.innerHTML = `Painel de ${esc(name || 'Administrador')}<small>todas as lojas</small>`;
+    const inp = el('adminName');
+    if (inp) inp.value = name || '';
+    if (photo !== undefined) masterPhoto = photo || '';
+    const av = el('brandAvatar');
+    if (av) {
+      // Sem foto própria, aparece o leão (avatar padrão do painel).
+      av.innerHTML = `<img src="${esc(masterPhoto || '/img/lion-avatar.jpg')}" alt="">`;
+      av.classList.add('has-img');
+    }
+    const prev = el('masterFotoPreview');
+    if (prev) {
+      prev.innerHTML = `<img src="${esc(masterPhoto || '/img/lion-avatar.jpg')}" alt="" style="width:100%;height:100%;object-fit:cover">`;
+    }
+    const rem = el('masterFotoRemover');
+    if (rem) rem.hidden = !masterPhoto;
+    document.title = name ? `${name} · painel das lojas` : 'Meu painel · administração das lojas';
+    const fav = document.querySelector('link[rel="icon"]');
+    if (fav) fav.href = masterPhoto || '/img/lion-avatar.jpg';
+  }
+
+  /* foto do painel master */
+  if (el('masterFotoBtn')) {
+    el('masterFotoBtn').addEventListener('click', () => el('masterFoto').click());
+    el('masterFoto').addEventListener('change', async () => {
+      const file = el('masterFoto').files && el('masterFoto').files[0];
+      if (!file) return;
+      try {
+        toast('Enviando a imagem…');
+        const fd = new FormData();
+        fd.append('image', file);
+        const r = await fetch('/api/master/upload', { method: 'POST', body: fd, credentials: 'same-origin' });
+        const data = await r.json();
+        if (!r.ok) throw new Error(data.error || 'Não foi possível enviar.');
+        const saved = await api('/api/master/profile', {
+          method: 'POST',
+          body: JSON.stringify({ name: el('adminName').value || undefined, photo_url: data.url }),
+        });
+        applyName(saved.name, saved.photo_url);
+        toast('Foto salva!');
+      } catch (err) {
+        toast(err.message, 'error');
+      }
+    });
+    el('masterFotoRemover').addEventListener('click', async () => {
+      try {
+        const saved = await api('/api/master/profile', {
+          method: 'POST',
+          body: JSON.stringify({ name: el('adminName').value || undefined, photo_url: '' }),
+        });
+        applyName(saved.name, '');
+        toast('Foto removida.');
+      } catch (err) {
+        toast(err.message, 'error');
+      }
+    });
+  }
+
+  el('nameForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    try {
+      const { name, photo_url } = await api('/api/master/profile', { method: 'POST', body: JSON.stringify({ name: el('adminName').value }) });
+      applyName(name, photo_url);
+      toast('Nome salvo.');
+    } catch (err) {
+      toast(err.message, 'error');
+    }
+  });
+
+  /* -------- meus dados do contrato (número que recebe a assinatura) -------- */
+  /** 5548988545558 → (48) 98854-5558 */
+  function formatarZap(v) {
+    let n = String(v || '').replace(/\D/g, '');
+    if (n.startsWith('55') && n.length > 11) n = n.slice(2);
+    if (n.length === 11) return `(${n.slice(0, 2)}) ${n.slice(2, 7)}-${n.slice(7)}`;
+    if (n.length === 10) return `(${n.slice(0, 2)}) ${n.slice(2, 6)}-${n.slice(6)}`;
+    return n;
+  }
+
+  async function carregarContratado() {
+    try {
+      const { contratado } = await api('/api/master/contratado');
+      if (!contratado) return;
+      if (el('ctWhats')) el('ctWhats').value = formatarZap(contratado.whatsapp || '');
+      if (el('ctNome')) el('ctNome').value = contratado.nome || '';
+      if (el('ctDoc')) el('ctDoc').value = contratado.doc || '';
+      if (el('ctCidade')) el('ctCidade').value = contratado.cidade || '';
+    } catch {}
+  }
+
+  if (el('contatoForm')) {
+    el('contatoForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      try {
+        await api('/api/master/contratado', {
+          method: 'POST',
+          body: JSON.stringify({
+            whatsapp: el('ctWhats').value,
+            nome: el('ctNome').value,
+            doc: el('ctDoc').value,
+            cidade: el('ctCidade').value,
+          }),
+        });
+        toast('Número salvo! Já vale para as próximas assinaturas.');
+        carregarContratado();
+      } catch (err) {
+        toast(err.message, 'error');
+      }
+    });
+  }
+
+  /* ------------------------------ segurança ----------------------------- */
+  el('pwForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    try {
+      await api('/api/master/password', {
+        method: 'POST',
+        body: JSON.stringify({ current_password: el('pwCurrent').value, new_password: el('pwNew').value }),
+      });
+      el('pwForm').reset();
+      el('pwWarn').hidden = true;
+      toast('Senha alterada.');
+    } catch (err) {
+      toast(err.message, 'error');
+    }
+  });
+
+  /* ------------------------- instalar na tela inicial -------------------- */
+  let installEvt = null;
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    installEvt = e;
+    if (el('installBtn')) el('installBtn').hidden = false;
+  });
+  if (el('installBtn')) {
+    el('installBtn').addEventListener('click', async () => {
+      if (!installEvt) {
+        toast('No Chrome: menu ⋮ → “Instalar aplicativo”. No iPhone: Compartilhar → “Adicionar à Tela de Início”.');
+        return;
+      }
+      installEvt.prompt();
+      await installEvt.userChoice.catch(() => {});
+      installEvt = null;
+      el('installBtn').hidden = true;
+    });
+  }
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js').catch(() => {});
+  }
+
+  /* ---------------------------- inicialização --------------------------- */
+  (async () => {
+    const s = await fetch('/api/master/session').then((r) => r.json()).catch(() => ({}));
+    if (s.logged) {
+      showApp();
+      applyName(s.name, s.photo_url || '');
+      el('pwWarn').hidden = !s.must_change;
+      await loadStores().catch(() => {});
+      carregarSistema();
+      carregarContratado();
+    } else {
+      showLogin();
+    }
+  })();
+
+  /* ---------------------------- mensalidades ---------------------------- */
+  async function carregarMensalidades() {
+    const box = el('mensalidadesBox');
+    try {
+      const d = await api('/api/master/mensalidades');
+      const [ano, mes] = d.referencia.split('-');
+      const mesNome = new Date(Number(ano), Number(mes) - 1, 1).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+      const fmt = (c) => (c / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
+      box.innerHTML = `<p class="muted-sm" style="margin-bottom:12px">Referência: <strong>${mesNome}</strong></p>` +
+        d.lojas.map((l) => {
+          const situacao = l.contrato_cancelado
+            ? '<span class="pill bad">contrato cancelado</span>'
+            : l.pago_este_mes
+            ? '<span class="pill ok">pago este mês</span>'
+            : l.em_atraso
+            ? '<span class="pill bad">em atraso</span>'
+            : '<span class="pill warn">a vencer dia ' + l.dia_vencimento + '</span>';
+          const ultimos = (l.pagamentos || []).slice(0, 4).map((m) =>
+            `<div class="mes-linha"><span>${m.referencia.split('-').reverse().join('/')}</span><span>${fmt(m.valor_cents)}</span><span class="muted-sm">${m.forma || ''}</span></div>`
+          ).join('') || '<p class="muted-sm">Nenhum pagamento lançado.</p>';
+          return `<div class="mes-card">
+            <div class="mes-top">
+              <strong>${escHtml(l.name)}</strong>
+              ${situacao}
+            </div>
+            <p class="muted-sm">Mensalidade de ${fmt(l.valor_cents)} · total já pago: ${fmt(l.total_pago_cents)}</p>
+            <div class="mes-hist">${ultimos}</div>
+            <div class="mes-acoes">
+              <button class="btn btn-sm main" data-mes="pagar" data-id="${l.id}">${l.pago_este_mes ? 'Corrigir pagamento do mês' : 'Marcar mês como pago'}</button>
+              <button class="btn btn-sm" data-mes="cobrar" data-id="${l.id}">Cobrar no WhatsApp</button>
+            </div>
+          </div>`;
+        }).join('');
+
+      box.querySelectorAll('[data-mes]').forEach((b) => b.addEventListener('click', async () => {
+        const id = b.dataset.id;
+        try {
+          if (b.dataset.mes === 'pagar') {
+            await api(`/api/master/stores/${id}/mensalidades`, { method: 'POST', body: JSON.stringify({ referencia: d.referencia, forma: 'Pix' }) });
+            toast('Pagamento lançado!', 'ok');
+            carregarMensalidades();
+          }
+          if (b.dataset.mes === 'cobrar') {
+            const r = await api(`/api/master/stores/${id}/mensalidades/cobranca`);
+            window.open(r.whatsapp_url, '_blank');
+          }
+        } catch (e) {
+          toast(e.message, 'err');
+        }
+      }));
+    } catch (e) {
+      box.innerHTML = `<p class="muted-sm">Não foi possível carregar: ${escHtml(e.message)}</p>`;
+    }
+  }
+
+  /* --------------------------- aba de contratos --------------------------- */
+  let contratosCache = [];
+  let filtroContratos = 'ativos';
+
+  async function carregarContratos() {
+    const box = el('contratosBox');
+    box.innerHTML = '<p class="muted-sm">Carregando…</p>';
+    try {
+      const { contratos, resumo } = await api('/api/master/contratos');
+      contratosCache = contratos;
+      el('contratosResumo').innerHTML = `
+        <span class="pill ok">${resumo.assinados} assinado(s)</span>
+        <span class="pill warn">${resumo.pendentes} aguardando</span>
+        ${resumo.cancelados ? `<span class="pill bad">${resumo.cancelados} cancelado(s)</span>` : ''}
+        ${resumo.cancelamento_pedido ? `<span class="pill bad">${resumo.cancelamento_pedido} pedido(s) de cancelamento</span>` : ''}
+        ${resumo.sem_contrato ? `<span class="pill bad">${resumo.sem_contrato} sem contrato</span>` : ''}`;
+
+      const ehCancelado = (c) => c.status === 'cancelado' || c.status === 'sem_contrato';
+      const visiveis = contratos.filter((c) => {
+        if (filtroContratos === 'cancelado') return c.status === 'cancelado';
+        if (c.status === 'cancelado') return false; // cancelado sai da lista principal
+        if (filtroContratos === 'assinado') return c.status === 'assinado';
+        if (filtroContratos === 'pendente') return c.status === 'pendente';
+        return true; // "ativos" e "todos" = todo contrato não cancelado
+      });
+      box.innerHTML = visiveis.length ? visiveis.map((c) => {
+        const pill = c.status === 'assinado'
+          ? '<span class="pill ok">assinado</span>'
+          : c.status === 'cancelado'
+          ? '<span class="pill bad">cancelado</span>'
+          : c.status === 'pendente'
+          ? '<span class="pill warn">aguardando assinatura</span>'
+          : '<span class="pill bad">sem contrato</span>';
+        const avisoCancelado = c.status === 'cancelado'
+          ? `<div class="ct-cancelado">
+               <strong>Contrato cancelado</strong>
+               ${new Date(c.cancelado_em).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })}
+               ${c.motivo_cancelamento ? `<br>Motivo: ${escHtml(c.motivo_cancelamento)}` : ''}
+               ${c.signatario ? `<br><span>Assinatura preservada: ${escHtml(c.signatario)} · ${escHtml(c.hash)}</span>` : ''}
+             </div>`
+          : c.cancelamento_solicitado_em
+          ? `<div class="ct-pedido">
+               <strong>O cliente pediu cancelamento</strong>
+               ${new Date(c.cancelamento_solicitado_em).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })}
+               ${c.cancelamento_motivo_cliente ? `<br>Motivo: ${escHtml(c.cancelamento_motivo_cliente)}` : ''}
+             </div>`
+          : '';
+        const assinatura = c.status === 'assinado'
+          ? `<div class="ok-box" style="margin:10px 0">
+               <strong>Assinado por ${escHtml(c.signatario)} · ${escHtml(c.documento)}</strong>
+               <p>${new Date(c.assinado_em).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })} · IP ${escHtml(c.ip || '—')}<br>
+               <span class="hash">${escHtml(c.hash)}</span></p>
+             </div>`
+          : '';
+        return `
+        <div class="ct-card" data-contrato="${c.store_id}">
+          <div style="min-width:0">
+            <div class="ct-head">
+              ${c.logo_url ? `<img class="ct-logo" src="${escHtml(c.logo_url)}" alt="">` : `<span class="ct-logo iniciais">${escHtml((c.nome || '?').slice(0, 2).toUpperCase())}</span>`}
+              <span class="ct-name">${escHtml(c.nome)}</span> ${pill}
+            </div>
+            <div class="ct-link">${c.link ? escHtml(c.link) : 'sem contrato criado'}</div>
+            <div class="pills">
+              <span class="pill">produção ${escHtml(c.implantacao_texto)}</span>
+              <span class="pill">manutenção ${escHtml(c.valor_texto)}/mês</span>
+              <span class="pill">vence dia ${c.dia_vencimento}</span>
+              ${c.whatsapp ? `<span class="pill">${escHtml(c.whatsapp)}</span>` : '<span class="pill bad">sem WhatsApp</span>'}
+            </div>
+            ${c.renovacao_de ? `<p class="muted-sm" style="margin:6px 0 0">🔄 Contrato renovado (substitui o nº ${c.renovacao_de}) — aguardando nova assinatura.</p>` : ''}
+            ${avisoCancelado}
+            ${assinatura}
+            <div class="actions">
+              ${c.link ? `<button class="btn btn-sm main" data-cact="enviar" data-id="${c.store_id}">Encaminhar no WhatsApp</button>` : ''}
+              ${c.link ? `<button class="btn btn-sm" data-cact="numero" data-id="${c.store_id}">Enviar para outro número</button>` : ''}
+              ${c.link ? `<button class="btn btn-sm" data-cact="copiar" data-id="${c.store_id}">Copiar link</button>` : ''}
+              ${c.link ? `<button class="btn btn-sm ${c.status === 'assinado' ? 'main' : ''}" data-cact="pdf" data-id="${c.store_id}">${c.status === 'assinado' ? 'Ver PDF assinado' : 'Ver PDF'}</button>` : ''}
+              ${c.link ? `<a class="btn btn-sm" href="/contrato/${c.token}" target="_blank" rel="noopener">Abrir contrato</a>` : ''}
+              ${c.link ? `<button class="btn btn-sm muted" data-cact="criar" data-id="${c.store_id}">Refazer contrato</button>` : `<button class="btn btn-sm muted" data-cact="criar" data-id="${c.store_id}">Criar contrato</button>`}
+              ${c.link && c.status !== 'cancelado' ? `<button class="btn btn-sm danger" data-cact="cancelar" data-id="${c.store_id}">Cancelar contrato</button>` : ''}
+              ${c.status === 'cancelado' ? `<button class="btn btn-sm main" data-cact="renovar" data-id="${c.store_id}">🔄 Renovar contrato</button>` : ''}
+              ${c.status === 'cancelado' && !c.assinado_em ? `<button class="btn btn-sm" data-cact="reativar" data-id="${c.store_id}">Reativar o mesmo link</button>` : ''}
+              ${c.status === 'assinado' ? `<button class="btn btn-sm muted" data-cact="renovar" data-id="${c.store_id}">🔄 Renovar contrato</button>` : ''}
+              ${c.status === 'cancelado' ? `<button class="btn btn-sm danger" data-cact="apagar" data-id="${c.store_id}">Apagar de vez</button>` : ''}
+            </div>
+          </div>
+        </div>`;
+      }).join('') : `<p class="muted-sm">${
+        filtroContratos === 'cancelado'
+          ? 'Nenhum contrato cancelado.'
+          : 'Nenhum contrato ativo aqui. Os contratos cancelados ficam no filtro <strong>Cancelados</strong>.'
+      }</p>`;
+
+      box.querySelectorAll('[data-cact]').forEach((b) => {
+        b.addEventListener('click', async () => {
+          const id = b.dataset.cact === 'criar' ? b.dataset.id : b.dataset.id;
+          const item = contratosCache.find((x) => String(x.store_id) === String(id));
+          const acao = b.dataset.cact;
+
+          if (acao === 'criar') {
+            await api(`/api/master/stores/${id}/contrato`, { method: 'POST', body: JSON.stringify({}) });
+            toast('Contrato criado.');
+            carregarContratos();
+            return;
+          }
+          if (acao === 'enviar') {
+            const url = item.whatsapp_url || item.whatsapp_escolher;
+            if (!url) return toast('Essa loja não tem WhatsApp cadastrado.');
+            window.open(url, '_blank');
+            return;
+          }
+          if (acao === 'numero') {
+            const num = prompt('Número do cliente (com DDD):', item.whatsapp || '');
+            if (!num) return;
+            const limpo = String(num).replace(/\D/g, '');
+            const comPais = limpo.startsWith('55') ? limpo : '55' + limpo;
+            window.open(`https://wa.me/${comPais}?text=${encodeURIComponent(item.texto)}`, '_blank');
+            return;
+          }
+          if (acao === 'copiar') {
+            copy(item.link, 'Link do contrato copiado!');
+            return;
+          }
+          if (acao === 'pdf') {
+            abrirPdfContrato(item);
+            return;
+          }
+          if (acao === 'cancelar') {
+            const motivo = prompt(
+              `Cancelar o contrato de ${item.nome}?\n\nEscreva o motivo (opcional):\n\nO histórico da assinatura continua salvo.`,
+              ''
+            );
+            if (motivo === null) return;
+            await api(`/api/master/stores/${id}/contrato/cancelar`, { method: 'POST', body: JSON.stringify({ motivo }) });
+            toast('Contrato cancelado.');
+            carregarContratos();
+            return;
+          }
+          if (acao === 'apagar') {
+            if (!confirm(`Apagar de vez o contrato cancelado de ${item.nome}?\n\nIsso remove o registro (inclusive a assinatura) e não tem como desfazer.`)) return;
+            await api(`/api/master/stores/${id}/contrato`, { method: 'DELETE' });
+            toast('Contrato apagado.');
+            carregarContratos();
+            return;
+          }
+          if (acao === 'renovar') {
+            if (!confirm('Renovar o contrato?\n\nVai ser criado um contrato NOVO para o cliente assinar de novo. O contrato atual fica guardado no histórico.')) return;
+            const r = await api(`/api/master/stores/${id}/contrato/renovar`, { method: 'POST', body: JSON.stringify({}) });
+            toast('Contrato renovado ✓ Novo link gerado.');
+            await carregarContratos();
+            const novo = contratosCache.find((x) => String(x.store_id) === String(id));
+            const url = novo && (novo.whatsapp_url || novo.whatsapp_escolher);
+            if (r.link && confirm('Contrato renovado!\n\nNovo link:\n' + location.origin + r.link + '\n\nEnviar agora para o cliente assinar no WhatsApp?')) {
+              if (url) window.open(url, '_blank');
+              else if (novo) window.open(`https://wa.me/?text=${encodeURIComponent('Segue o novo contrato: ' + location.origin + r.link)}`, '_blank');
+            }
+            return;
+          }
+          if (acao === 'reativar') {
+            if (!confirm(`Reativar o contrato de ${item.nome}?`)) return;
+            await api(`/api/master/stores/${id}/contrato/reativar`, { method: 'POST' });
+            toast('Contrato reativado.');
+            carregarContratos();
+            return;
+          }
+        });
+      });
+    } catch (e) {
+      box.innerHTML = `<p class="muted-sm">Não foi possível carregar: ${escHtml(e.message)}</p>`;
+    }
+  }
+
+  document.querySelectorAll('[data-cfiltro]').forEach((b) => {
+    b.addEventListener('click', () => {
+      filtroContratos = b.dataset.cfiltro;
+      document.querySelectorAll('[data-cfiltro]').forEach((x) => x.classList.toggle('main', x === b));
+      carregarContratos();
+    });
+  });
+
+  function abrirPdfContrato(c) {
+    el('contratoPdfTitulo').textContent = `${c.nome} · ${c.status === 'assinado' ? 'contrato assinado' : 'contrato para assinar'}`;
+    const linha = (rot, val) => `<div class="ct-linha"><span>${rot}</span><b>${val}</b></div>`;
+    el('contratoPdfInfo').innerHTML = `
+      <div class="ct-doc">
+        <div class="ct-doc-head">
+          ${c.logo_url ? `<img src="${escHtml(c.logo_url)}" alt="">` : ''}
+          <div>
+            <div class="ct-doc-nome">${escHtml(c.nome)}</div>
+            <div class="ct-doc-sub">Contrato de prestação de serviços de manutenção</div>
+          </div>
+          <span class="pill ${c.status === 'assinado' ? 'ok' : 'warn'}">${c.status === 'assinado' ? 'assinado' : 'aguardando'}</span>
+        </div>
+        ${linha('Produção do link', escHtml(c.implantacao_texto))}
+        ${linha('Manutenção mensal', escHtml(c.valor_texto) + '/mês')}
+        ${linha('Vencimento', 'todo dia ' + c.dia_vencimento)}
+        ${c.status === 'assinado'
+          ? `<div class="ct-assinado">
+               <strong>Assinado digitalmente por ${escHtml(c.signatario)}</strong>
+               ${linha('CPF/CNPJ', escHtml(c.documento))}
+               ${linha('Data e hora', new Date(c.assinado_em).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' }))}
+               ${linha('IP', escHtml(c.ip || '—'))}
+               <div class="ct-linha"><span>Código de autenticação</span><b class="hash">${escHtml(c.hash)}</b></div>
+             </div>`
+          : `<div class="ct-pendente">O cliente ainda não assinou. Envie o link pelo WhatsApp para ele assinar pelo celular.</div>`}
+      </div>`;
+    const linkPdf = el('contratoPdfLink');
+    const linkPagina = el('contratoPdfAbrirPagina');
+    if (linkPdf) linkPdf.href = `/contrato/${c.token}/pdf`;
+    if (linkPagina) linkPagina.href = `/contrato/${c.token}`;
+    el('contratoPdfModal').hidden = false;
+  }
+  el('contratoPdfFechar').addEventListener('click', () => {
+    el('contratoPdfModal').hidden = true;
+  });
+
+  el('btnAtualizarContratos').addEventListener('click', carregarContratos);
+  el('btnEnviarPendentes').addEventListener('click', () => {
+    const pendentes = contratosCache.filter((c) => c.status !== 'assinado' && c.link);
+    if (!pendentes.length) return toast('Todos os contratos já estão assinados.');
+    if (pendentes.length === 1) {
+      window.open(pendentes[0].whatsapp_url || pendentes[0].whatsapp_escolher, '_blank');
+      return;
+    }
+    // vários: manda um por vez, na ordem, abrindo cada conversa já com o texto
+    pendentes.forEach((c) => window.open(c.whatsapp_url || c.whatsapp_escolher, '_blank'));
+    toast(`${pendentes.length} contratos abertos para envio.`);
+  });
+
+  /* ------------------------- contrato de mensalidade ------------------------- */
+  const cm = document.getElementById('contratoModal');
+  document.getElementById('contratoFechar').addEventListener('click', () => { cm.hidden = true; });
+
+  async function abrirContrato(id) {
+    const store = (window.__lojas || []).find((s) => String(s.id) === String(id));
+    document.getElementById('contratoTitulo').textContent = `Contrato · ${store ? store.name : ''}`;
+    const body = document.getElementById('contratoBody');
+    body.innerHTML = '<p class="muted-sm">Carregando…</p>';
+    cm.hidden = false;
+    const dados = await api(`/api/master/stores/${id}/contrato`);
+    const c = dados.contrato;
+    const valor = c ? (c.valor_cents / 100).toFixed(2).replace('.', ',') : '40,00';
+    const implantacao = c && c.implantacao_cents != null ? (c.implantacao_cents / 100).toFixed(2).replace('.', ',') : '100,00';
+    const dia = c ? c.dia_vencimento : 10;
+    const assinado = c && c.status === 'assinado';
+    const linkCompleto = c ? location.origin + '/contrato/' + c.token : '';
+
+    body.innerHTML = `
+      ${c ? `<div class="resumo-contrato">
+        <div><span>Produção do link</span><b>R$ ${implantacao}</b></div>
+        <div><span>Manutenção</span><b>R$ ${valor}/mês · dia ${dia}</b></div>
+      </div>` : ''}
+      ${assinado
+        ? `<div class="ok-box">
+             <strong>Contrato assinado ✅</strong>
+             <p>${escHtml(c.signatario)} · ${escHtml(c.documento)}<br>
+             ${new Date(c.assinado_em).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })}<br>
+             IP: ${escHtml(c.ip || 'não registrado')}<br>
+             <span class="hash">${escHtml(c.hash)}</span></p>
+           </div>`
+
+        : c
+        ? `<p class="muted-sm">Contrato criado, aguardando a assinatura do cliente.</p>`
+        : `<p class="muted-sm">Nenhum contrato ainda. Defina o valor e envie para o cliente assinar.</p>`}
+
+      <div class="field">
+        <label for="cImplantacao">Produção do link (R$) — pagamento único</label>
+        <input class="input" id="cImplantacao" inputmode="decimal" value="${implantacao}" ${assinado ? 'disabled' : ''}>
+        <span class="hint">Site, painel e cadastro inicial. Aparece no contrato como valor separado.</span>
+      </div>
+      <div class="field">
+        <label for="cValor">Manutenção mensal (R$)</label>
+        <input class="input" id="cValor" inputmode="decimal" value="${valor}" ${assinado ? 'disabled' : ''}>
+      </div>
+      <div class="field">
+        <label for="cDia">Dia do vencimento da manutenção</label>
+        <input class="input" id="cDia" inputmode="numeric" value="${dia}" ${assinado ? 'disabled' : ''}>
+      </div>
+      <div class="field">
+        <label for="cExtras">Cláusulas adicionais (opcional)</label>
+        <textarea class="textarea" id="cExtras" rows="3" ${assinado ? 'disabled' : ''} placeholder="Ex.: inclui atualização mensal de fotos e produtos.">${c ? escHtml(c.extras || '') : ''}</textarea>
+      </div>
+
+      ${assinado
+        ? `<a class="btn main btn-block" href="/contrato/${c.token}/pdf" target="_blank" rel="noopener">Baixar contrato assinado (PDF)</a>
+           <button class="btn btn-block" data-c="receber">Receber a assinatura no meu WhatsApp</button>
+           <button class="btn btn-block" data-c="novo">Criar um novo contrato</button>`
+        : `<button class="btn main btn-block" data-c="salvar">${c ? 'Salvar e gerar link' : 'Criar contrato de R$ 40/mês'}</button>
+           ${c ? `<button class="btn btn-block" data-c="enviar">Enviar ao cliente no WhatsApp</button>
+                  <a class="btn btn-block" href="/contrato/${c.token}" target="_blank" rel="noopener">Abrir o contrato</a>
+                  <p class="muted-sm" style="margin-top:10px"><strong>Link para o cliente assinar:</strong><br><span style="word-break:break-all">${escHtml(linkCompleto)}</span></p>` : ''}`}
+    `;
+
+    body.querySelectorAll('[data-c]').forEach((b) => b.addEventListener('click', async () => {
+      const acao = b.dataset.c;
+      try {
+        if (acao === 'salvar' || acao === 'novo') {
+          const r = await api(`/api/master/stores/${id}/contrato`, {
+            method: 'POST',
+            body: JSON.stringify({
+              valor_cents: Math.round(Number(String(document.getElementById('cValor').value).replace(',', '.')) * 100),
+              implantacao_cents: Math.round(Number(String(document.getElementById('cImplantacao').value).replace(',', '.')) * 100),
+              dia_vencimento: Number(document.getElementById('cDia').value) || 10,
+              extras: document.getElementById('cExtras').value,
+              forcar: acao === 'novo',
+            }),
+          });
+          toast('Contrato pronto! Agora envie o link ao cliente.', 'ok');
+          abrirContrato(id);
+        }
+        if (acao === 'enviar') {
+          const r = await api(`/api/master/stores/${id}/contrato/whatsapp`);
+          window.open(r.whatsapp_url, '_blank');
+        }
+        if (acao === 'receber') {
+          const cAtual = await api(`/api/master/stores/${id}/contrato`);
+          const ct = cAtual.contrato;
+          if (!ct || ct.status !== 'assinado') return toast('Contrato ainda não assinado.', 'err');
+          const pdf = location.origin + '/contrato/' + ct.token + '/pdf';
+          const texto =
+            `Contrato assinado digitalmente ✅\n\n` +
+            `Loja: ${store ? store.name : ''}\n` +
+            `Assinado por: ${ct.signatario} (${ct.documento})\n` +
+            `Data: ${new Date(ct.assinado_em).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })}\n` +
+            `Código de autenticação: ${ct.hash}\n\n` +
+            `PDF assinado:\n${pdf}`;
+          window.open('https://wa.me/?text=' + encodeURIComponent(texto), '_blank');
+        }
+      } catch (e) {
+        toast(e.message, 'err');
+      }
+    }));
+  }
+
+  function escHtml(t) {
+    return String(t == null ? '' : t).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  }
+})();
+</script>
+
+
+</body>
+</html>

@@ -1,0 +1,609 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Agendar serviço</title>
+<meta name="description" content="Instalação, limpeza e manutenção de ar condicionado. Agende pelo WhatsApp.">
+<link rel="icon" href="/img/hb-logo.jpg">
+<link rel="apple-touch-icon" href="/img/hb-logo.jpg">
+<style>
+  :root{
+    --azul:#14386b; --azul-esc:#0d2649; --azul-cl:#2b5fa8;
+    --ouro:#f5a623; --ouro-esc:#d88c0a;
+    --bg:#f4f7fb; --card:#ffffff; --linha:#dde5ef;
+    --txt:#12213a; --mut:#5d708c; --ok:#17795a; --bad:#b3261e;
+    --r:18px; --sombra:0 8px 26px rgba(13,38,73,.09);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+    background:var(--bg); color:var(--txt); font-size:16px; line-height:1.5;
+    padding-bottom:86px;
+  }
+  img{max-width:100%}
+  .wrap{max-width:560px;margin:0 auto;padding:0 16px}
+
+  /* ---------- topo ---------- */
+  .topo{
+    background:linear-gradient(160deg,var(--azul-esc) 0%,var(--azul) 55%,var(--azul-cl) 100%);
+    color:#fff; padding:22px 0 26px; border-radius:0 0 26px 26px;
+    box-shadow:0 10px 30px rgba(13,38,73,.22);
+  }
+  .marca{display:flex;align-items:center;gap:14px}
+  .marca img{width:78px;height:78px;object-fit:contain;background:#fff;border-radius:16px;padding:5px;box-shadow:0 6px 18px rgba(0,0,0,.18)}
+  .marca .nome{font-size:18px;font-weight:800;letter-spacing:.3px;line-height:1.15;text-transform:uppercase}
+  .marca .sub{font-size:12.5px;color:#cddcf2;margin-top:3px;letter-spacing:.4px;text-transform:uppercase;font-weight:600}
+  .marca .slogan{font-size:12.5px;color:var(--ouro);margin-top:6px;font-style:italic}
+  .hero{margin-top:20px;position:relative;overflow:hidden;border-radius:18px;padding:18px 18px 20px}
+  /* imagem do logotipo ocupando o quadro inteiro, atrás do texto */
+  .hero-marca{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;opacity:1;pointer-events:none;user-select:none;z-index:0}
+  .hero::after{content:"";position:absolute;inset:0;z-index:0;
+    background:linear-gradient(180deg,rgba(10,26,54,.62) 0%,rgba(10,26,54,.78) 45%,rgba(10,26,54,.92) 100%)}
+  .hero > h1,.hero > p,.hero .selos{position:relative;z-index:1}
+  .hero h1{font-size:22px;line-height:1.25;margin:0 0 8px;font-weight:800}
+  .hero p{margin:0;color:#d6e3f5;font-size:14.5px}
+  .selos{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+  .selo{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.22);color:#fff;font-size:12px;font-weight:600;padding:6px 11px;border-radius:999px;display:flex;align-items:center;gap:6px}
+  .selo.ouro{background:rgba(245,166,35,.2);border-color:rgba(245,166,35,.45);color:#ffe0ab}
+
+  /* ---------- blocos ---------- */
+  .card{background:var(--card);border:1px solid var(--linha);border-radius:var(--r);padding:18px;margin-top:16px;box-shadow:var(--sombra)}
+  .card h2{font-size:15.5px;margin:0 0 4px;letter-spacing:.2px;color:var(--azul-esc);text-transform:uppercase;font-weight:800}
+  .card .desc{font-size:13.5px;color:var(--mut);margin:0 0 14px}
+
+  /* ---------- disponibilidade ---------- */
+  .disp{margin:2px 0 16px}
+  .disp-tit{font-size:12.5px;font-weight:800;color:#3d5a80;margin-bottom:8px}
+  .disp-chips{display:flex;gap:7px;flex-wrap:wrap}
+  .chip-disp{display:inline-flex;flex-direction:column;align-items:flex-start;gap:1px;border:1.5px solid #cfe0f6;background:#f7fbff;color:var(--azul);border-radius:11px;padding:7px 11px;font-size:13px;font-weight:800;cursor:pointer}
+  .chip-disp small{font-size:10.5px;font-weight:700;color:#5d708c;letter-spacing:.2px}
+  .chip-disp.on{background:var(--azul);border-color:var(--azul);color:#fff}
+  .chip-disp.on small{color:#dce9f8}
+  .chip-disp.tomado{background:#f1f4f8;border-color:#e0e6ee;color:#9aa8ba;text-decoration:line-through;cursor:not-allowed}
+  .chip-disp.tomado small{color:#b3261e;text-decoration:none}
+  .disp-sug{margin-top:9px;font-size:12.5px;color:#5d708c;display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+  .disp-sug b{color:#3d5a80}
+  .chip-sug{background:#eef5ff;border:1px solid #cfe0f6;border-radius:999px;padding:5px 10px;font-size:12px;font-weight:800;color:var(--azul);cursor:pointer}
+
+  /* ---------- serviço escolhido ---------- */
+  .escolhido{display:flex;align-items:center;justify-content:space-between;gap:12px;background:#eef5ff;border:1.5px solid #cfe0f6;border-radius:14px;padding:12px 14px;margin:0 0 16px}
+  .escolhido .rot{font-size:10.5px;letter-spacing:.6px;text-transform:uppercase;color:#5d708c;font-weight:800}
+  .escolhido .nome{font-size:15.5px;font-weight:800;color:var(--azul);margin-top:2px;line-height:1.25}
+  .escolhido .preco{font-size:13px;color:#3d5a80;font-weight:700;margin-top:2px}
+  .escolhido .trocar{flex:0 0 auto;background:#fff;border:1px solid #cfe0f6;color:var(--azul);font-weight:800;font-size:12.5px;border-radius:999px;padding:8px 13px;cursor:pointer}
+
+  /* ---------- serviços ---------- */
+  .srv{display:flex;gap:12px;align-items:flex-start;padding:13px 10px;border-bottom:1px solid var(--linha);cursor:pointer;border-radius:12px;transition:.15s;-webkit-tap-highlight-color:transparent}
+  .srv:active{background:#eef4fc}
+  .srv:hover{background:#f5f9ff}
+  .srv .agendar{display:inline-flex;align-items:center;gap:5px;margin-top:8px;font-size:12.5px;font-weight:800;color:var(--azul);background:#e8f0fb;border:1px solid #cfe0f6;border-radius:999px;padding:6px 11px;white-space:nowrap}
+  .srv .agendar::after{content:"→"}
+  .srv:last-child{border-bottom:0;padding-bottom:0}
+  .srv .ico{
+    flex:0 0 40px;width:40px;height:40px;border-radius:12px;display:grid;place-items:center;
+    background:linear-gradient(150deg,#e8f0fb,#d7e5f8);color:var(--azul);font-size:19px
+  }
+  .srv .info{flex:1;min-width:0}
+  .srv .nome{font-weight:700;font-size:14.5px;line-height:1.3}
+  .srv .det{font-size:12.5px;color:var(--mut);margin-top:3px}
+  .srv .preco{flex:0 0 auto;text-align:right;font-weight:800;font-size:13.5px;color:var(--azul-esc);white-space:nowrap}
+  .srv .preco small{display:block;font-weight:600;font-size:10.5px;color:var(--mut);letter-spacing:.3px}
+
+  /* ---------- formulário ---------- */
+  label{display:block;font-size:12.5px;font-weight:700;color:#33475f;margin:0 0 6px;letter-spacing:.2px}
+  .campo{margin-bottom:13px}
+  input,select,textarea{
+    width:100%;padding:12px 13px;border:1.5px solid var(--linha);border-radius:12px;font-size:16px;
+    font-family:inherit;color:var(--txt);background:#fbfdff;outline:none;transition:.15s;
+  }
+  input:focus,select:focus,textarea:focus{border-color:var(--azul-cl);background:#fff;box-shadow:0 0 0 3px rgba(43,95,168,.12)}
+  textarea{min-height:78px;resize:vertical}
+  .linha2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .btn{
+    width:100%;border:0;border-radius:14px;padding:16px;font-size:16px;font-weight:800;font-family:inherit;
+    background:linear-gradient(135deg,var(--ouro),var(--ouro-esc));color:#3a2600;cursor:pointer;
+    box-shadow:0 8px 20px rgba(245,166,35,.35);letter-spacing:.2px;
+  }
+  .btn:active{transform:translateY(1px)}
+  .btn:disabled{opacity:.6;box-shadow:none}
+  .btn.zap{background:linear-gradient(135deg,#25d366,#128c43);color:#fff;box-shadow:0 8px 20px rgba(37,211,102,.32)}
+  .btn.ghost{background:#fff;color:var(--azul);border:1.5px solid var(--linha);box-shadow:none}
+  .erro{background:#fdecea;border:1px solid #f6c7c2;color:#8c1d16;font-size:13.5px;padding:11px 13px;border-radius:11px;margin-bottom:12px;display:none}
+  .erro.on{display:block}
+
+  /* ---------- sucesso ---------- */
+  .ok-ico{width:62px;height:62px;border-radius:50%;background:#e6f6ee;color:var(--ok);display:grid;place-items:center;font-size:32px;margin:0 auto 12px}
+  .ok-titulo{text-align:center;font-size:19px;font-weight:800;margin:0 0 6px}
+  .ok-sub{text-align:center;font-size:13.5px;color:var(--mut);margin:0 0 18px}
+  .resumo{background:#f7fafd;border:1px dashed #cddcee;border-radius:13px;padding:13px;font-size:13.5px;margin-bottom:16px}
+  .resumo div{display:flex;justify-content:space-between;gap:12px;padding:3px 0}
+  .resumo span:first-child{color:var(--mut)}
+  .resumo span:last-child{font-weight:700;text-align:right}
+
+  /* ---------- rodapé ---------- */
+  .rodape{margin:22px 0 10px;text-align:center;font-size:12px;color:var(--mut);line-height:1.7}
+  .rodape a{color:var(--azul);font-weight:700;text-decoration:none}
+  .barra-fixa{
+    position:fixed;left:0;right:0;bottom:0;background:rgba(255,255,255,.96);backdrop-filter:blur(8px);
+    border-top:1px solid var(--linha);padding:10px 16px 14px;display:flex;gap:10px;z-index:20;
+  }
+  .barra-fixa .btn{padding:14px;font-size:15px}
+  .oculto{display:none !important}
+</style>
+</head>
+<body>
+
+<header class="topo">
+  <div class="wrap">
+    <div class="marca">
+      <img id="logo" src="/img/hb-logo.jpg" alt="Logo">
+      <div>
+        <div class="nome" id="nomeEmpresa">Henrique Borges</div>
+        <div class="sub" id="tagline">Climatização e soluções residenciais</div>
+        <div class="slogan" id="slogan">Conforto, segurança e soluções com qualidade para o seu lar!</div>
+      </div>
+    </div>
+
+    <div class="hero">
+      <img class="hero-marca" id="heroMarca" src="/img/hb-logo.jpg" alt="">
+      <h1>Instalação, limpeza e manutenção de ar condicionado</h1>
+      <p>Escolha o serviço, diga o melhor dia e a gente confirma no WhatsApp.</p>
+      <div class="selos">
+        <span class="selo ouro">✓ Orçamento sem compromisso</span>
+        <span class="selo">🏠 Atendimento em domicílio</span>
+        <span class="selo">🗓️ Agende o melhor dia</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <section class="card">
+    <h2>Serviços e valores</h2>
+    <p class="desc">Preços de referência — o valor final é confirmado na visita, sem surpresa.</p>
+    <div id="listaServicos"></div>
+  </section>
+
+  <section class="card" id="cardForm">
+    <h2>Agendar atendimento</h2>
+    <p class="desc">Leva menos de 1 minuto. Cai direto na agenda da empresa.</p>
+
+    <div id="servicoEscolhido" class="escolhido oculto">
+      <div>
+        <div class="rot">Você está agendando</div>
+        <div class="nome" id="servicoEscolhidoNome">—</div>
+        <div class="preco" id="servicoEscolhidoPreco"></div>
+      </div>
+      <button type="button" class="trocar" id="trocarServico">Trocar</button>
+    </div>
+
+    <div class="erro" id="erro"></div>
+
+    <form id="form">
+      <div class="campo">
+        <label for="nome">Seu nome *</label>
+        <input id="nome" name="nome" autocomplete="name" placeholder="Ex.: Maria Souza" required>
+      </div>
+
+      <div class="campo">
+        <label for="telefone">WhatsApp com DDD *</label>
+        <input id="telefone" name="telefone" inputmode="tel" autocomplete="tel" placeholder="(44) 99999-9999" required>
+      </div>
+
+      <div class="campo">
+        <label for="endereco">Endereço do atendimento *</label>
+        <input id="endereco" name="endereco" placeholder="Rua, número e complemento" required>
+      </div>
+
+      <div class="campo">
+        <label for="bairro">Bairro</label>
+        <input id="bairro" name="bairro" placeholder="Ex.: Centro">
+      </div>
+
+      <div class="campo">
+        <label for="servico_id">Serviço *</label>
+        <select id="servico_id" name="servico_id" required>
+          <option value="">Carregando…</option>
+        </select>
+      </div>
+
+      <div class="linha2">
+        <div class="campo">
+          <label for="equip_tipo">Equipamento</label>
+          <select id="equip_tipo" name="equip_tipo">
+            <option>Split</option>
+            <option>Cassete</option>
+            <option>Janela</option>
+            <option>Multi-split</option>
+            <option>Portátil</option>
+            <option>Outro</option>
+          </select>
+        </div>
+        <div class="campo">
+          <label for="equip_quantidade">Quantos aparelhos</label>
+          <input id="equip_quantidade" name="equip_quantidade" type="number" min="1" value="1" inputmode="numeric">
+        </div>
+      </div>
+
+      <div class="linha2">
+        <div class="campo">
+          <label for="equip_marca">Marca</label>
+          <input id="equip_marca" name="equip_marca" placeholder="Ex.: Samsung, LG, Midea">
+        </div>
+        <div class="campo">
+          <label for="equip_ambiente">Onde fica</label>
+          <input id="equip_ambiente" name="equip_ambiente" placeholder="Ex.: quarto, sala">
+        </div>
+      </div>
+
+      <div class="linha2">
+        <div class="campo">
+          <label for="data">Melhor dia *</label>
+          <input id="data" name="data" type="date" required>
+        </div>
+        <div class="campo">
+          <label for="periodo">Período</label>
+          <select id="periodo" name="periodo">
+            <option>Manhã</option>
+            <option>Tarde</option>
+            <option>Noite</option>
+            <option>Tanto faz</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="disp" class="disp">
+        <div class="disp-tit" id="dispTit">Carregando horários…</div>
+        <div class="disp-chips" id="dispChips"></div>
+        <div class="disp-sug" id="dispSug"></div>
+      </div>
+
+      <div class="campo">
+        <label for="obs_cliente">Alguma observação?</label>
+        <textarea id="obs_cliente" name="obs_cliente" placeholder="Ex.: o aparelho está pingando água; prédio precisa de autorização…"></textarea>
+      </div>
+
+      <button class="btn" type="submit" id="btnEnviar">Solicitar agendamento</button>
+    </form>
+  </section>
+
+  <section class="card oculto" id="okBox">
+    <div class="ok-ico">✓</div>
+    <p class="ok-titulo">Pedido enviado!</p>
+    <p class="ok-sub">Já está na agenda da empresa. Agora confirme no WhatsApp para eles responderem mais rápido.</p>
+    <div class="resumo" id="resumo"></div>
+    <a class="btn zap" id="btnZap" target="_blank" rel="noopener" style="display:block;text-align:center;text-decoration:none;margin-bottom:10px">Confirmar no WhatsApp</a>
+    <button class="btn ghost" id="btnNovo" type="button">Fazer outro agendamento</button>
+  </section>
+
+  <p class="rodape">
+    <strong id="rodapeNome">Henrique Borges</strong> · Climatização e soluções residenciais<br>
+    <span id="rodapeFone"></span><br>
+    <a href="/l/" id="linkPainel">Área da empresa</a>
+  </p>
+</main>
+
+<div class="barra-fixa" id="barra">
+  <a class="btn zap" id="btnBarra" style="text-decoration:none;text-align:center;line-height:1.2" target="_blank" rel="noopener">Falar no WhatsApp</a>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  var API = location.pathname.replace(/\/+$/, '') + '/api';
+  var servicos = [];
+  var negocio = {};
+
+  function el(id) { return document.getElementById(id); }
+  function brl(c) { return (Number(c || 0) / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); }
+  function esc(t) {
+    return String(t == null ? '' : t).replace(/[&<>"]/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+    });
+  }
+  function dataBR(iso) {
+    if (!iso) return '';
+    var p = iso.split('-');
+    return p.length === 3 ? p[2] + '/' + p[1] + '/' + p[0] : iso;
+  }
+  var ICONES = { 'Instalação': '🔧', 'Limpeza': '❄️', 'Manutenção': '🛠️', 'Outros': '✨' };
+
+  function aplicarMarca() {
+    if (negocio.logo_url) el('logo').src = negocio.logo_url;
+
+    const marca = el('heroMarca');
+    if (marca) {
+      marca.src = negocio.watermark_url || negocio.logo_url || '/img/hb-logo.jpg';
+    }
+    if (negocio.nome) {
+      el('nomeEmpresa').textContent = negocio.nome;
+      el('rodapeNome').textContent = negocio.nome;
+      document.title = negocio.nome + ' · Agendar serviço';
+    }
+    if (negocio.tagline) el('tagline').textContent = negocio.tagline;
+    if (negocio.theme_color) document.documentElement.style.setProperty('--azul', negocio.theme_color);
+    if (negocio.accent_color) document.documentElement.style.setProperty('--ouro', negocio.accent_color);
+    if (negocio.whatsapp) {
+      var tel = String(negocio.whatsapp).replace(/\D/g, '');
+      if (tel && tel.indexOf('55') !== 0) tel = '55' + tel;
+      var bonito = String(negocio.whatsapp).replace(/^55/, '');
+      bonito = bonito.replace(/^(\d{2})(\d{4,5})(\d{4})$/, '($1) $2-$3');
+      el('rodapeFone').textContent = 'WhatsApp ' + bonito;
+      el('btnBarra').href = 'https://wa.me/' + tel + '?text=' + encodeURIComponent('Olá! Vi o site e quero um orçamento.');
+    } else {
+      el('btnBarra').style.display = 'none';
+    }
+  }
+
+  function renderServicos() {
+    var box = el('listaServicos');
+    if (!servicos.length) {
+      box.innerHTML = '<p style="color:#5d708c;font-size:14px;margin:0">Nenhum serviço cadastrado ainda.</p>';
+      return;
+    }
+    box.innerHTML = servicos.map(function (s) {
+      var ico = ICONES[s.categoria] || '🔧';
+      return '<div class="srv" role="button" tabindex="0" data-servico="' + s.id + '">' +
+        '<div class="ico">' + ico + '</div>' +
+        '<div class="info" style="min-width:0;flex:1 1 auto"><div class="nome">' + esc(s.nome) + '</div>' +
+        (s.descricao ? '<div class="det">' + esc(s.descricao) + '</div>' : '') +
+        '<span class="agendar">Agendar este serviço</span></div>' +
+        '<div class="preco" style="flex:0 0 auto;white-space:nowrap">' + esc(s.preco) + '</div>' +
+      '</div>';
+    }).join('');
+
+    // tocar no serviço já abre a agenda com ele escolhido
+    Array.prototype.forEach.call(box.querySelectorAll('.srv'), function (card) {
+      var ir = function () { agendarServico(card.getAttribute('data-servico')); };
+      card.addEventListener('click', ir);
+      card.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); ir(); } });
+    });
+
+    var sel = el('servico_id');
+    sel.innerHTML = '<option value="">Escolha o serviço…</option>' + servicos.map(function (s) {
+      return '<option value="' + s.id + '">' + esc(s.nome) + ' — ' + esc(s.preco) + '</option>';
+    }).join('');
+  }
+
+  var dispAtual = null;
+
+  /** Busca na empresa quais períodos daquele dia estão livres. */
+  function carregarDisponibilidade() {
+    var data = el('data').value;
+    var box = el('disp');
+    if (!box || !data) return;
+    el('dispTit').textContent = 'Vendo os horários…';
+    el('dispChips').innerHTML = '';
+    el('dispSug').innerHTML = '';
+    fetch(API + '/disponibilidade?data=' + encodeURIComponent(data), { headers: { 'Accept': 'application/json' } })
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        dispAtual = d;
+        if (d.aberto === false) {
+          el('dispTit').textContent = 'Nesse dia não tem atendimento. Escolha outra data.';
+        } else {
+          el('dispTit').textContent = 'Horários deste dia:';
+        }
+        var sel = el('periodo');
+        var escolhido = sel.value;
+        el('dispChips').innerHTML = (d.periodos || []).map(function (p) {
+          return '<button type="button" class="chip-disp' + (p.livre ? '' : ' tomado') + (escolhido === p.nome ? ' on' : '') + '"' +
+            ' data-periodo="' + esc(p.nome) + '"' + (p.livre ? '' : ' disabled') + '>' +
+            esc(p.nome) + '<small>' + (p.livre ? 'livre' : 'ocupado') + '</small></button>';
+        }).join('');
+
+        Array.prototype.forEach.call(el('dispChips').querySelectorAll('.chip-disp'), function (b) {
+          b.addEventListener('click', function () { escolherPeriodo(b.getAttribute('data-periodo')); });
+        });
+
+        // se o período escolhido encheu, limpa
+        var atual = (d.periodos || []).filter(function (p) { return p.nome === escolhido; })[0];
+        if (atual && !atual.livre) escolherPeriodo('');
+        else pintarChips();
+
+        if (d.sugestoes && d.sugestoes.length) {
+          el('dispSug').innerHTML = '<span>Próximas vagas:</span>' + d.sugestoes.slice(0, 3).map(function (s) {
+            return '<button type="button" class="chip-sug" data-dia="' + esc(s.data) + '" data-per="' + esc(s.periodo) + '">' +
+              esc(s.rotulo) + '</button>';
+          }).join('');
+          Array.prototype.forEach.call(el('dispSug').querySelectorAll('.chip-sug'), function (b) {
+            b.addEventListener('click', function () {
+              el('data').value = b.getAttribute('data-dia');
+              carregarDisponibilidade();
+              setTimeout(function () { escolherPeriodo(b.getAttribute('data-per')); }, 250);
+            });
+          });
+        }
+      })
+      .catch(function () { el('dispTit').textContent = 'Não consegui ver os horários agora.'; });
+  }
+
+  function escolherPeriodo(nome) {
+    var sel = el('periodo');
+    if (!nome) { sel.selectedIndex = 0; pintarChips(); return; }
+    var achou = false;
+    Array.prototype.forEach.call(sel.options, function (o) { if (o.value === nome) { sel.value = nome; achou = true; } });
+    if (!achou) {
+      var op = document.createElement('option');
+      op.textContent = nome; op.value = nome;
+      sel.appendChild(op); sel.value = nome;
+    }
+    pintarChips();
+  }
+
+  function pintarChips() {
+    var atual = el('periodo').value;
+    Array.prototype.forEach.call(el('dispChips').querySelectorAll('.chip-disp'), function (b) {
+      b.classList.toggle('on', b.getAttribute('data-periodo') === atual);
+    });
+  }
+
+  /** Mostra no topo do formulário qual serviço está sendo agendado. */
+  function mostrarServicoEscolhido() {
+    var id = Number((el('servico_id') || {}).value || 0);
+    var s = servicos.filter(function (x) { return Number(x.id) === id; })[0];
+    var box = el('servicoEscolhido');
+    if (!box) return;
+    if (!s) {
+      box.classList.add('oculto');
+      return;
+    }
+    box.classList.remove('oculto');
+    el('servicoEscolhidoNome').textContent = s.nome;
+    el('servicoEscolhidoPreco').textContent = s.preco || '';
+    var h2 = el('cardForm').querySelector('h2');
+    if (h2) h2.textContent = 'Agendar: ' + s.nome;
+  }
+
+  /** Leva o cliente direto para a agenda, já com o serviço escolhido. */
+  function agendarServico(id) {
+    var sel = el('servico_id');
+    if (sel && id) {
+      sel.value = String(id);
+      sel.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+    mostrarServicoEscolhido();
+    var card = el('cardForm');
+    if (card) {
+      card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      // destaca a agenda por um instante
+      card.style.transition = 'box-shadow .3s';
+      card.style.boxShadow = '0 0 0 3px rgba(43,95,168,.35)';
+      setTimeout(function () { card.style.boxShadow = ''; }, 1200);
+    }
+    // se veio pelo link (#agendar?servico=3), já deixa o foco no nome
+    setTimeout(function () {
+      var nome = el('nome');
+      if (nome && !nome.value) { try { nome.focus({ preventScroll: true }); } catch (e) {} }
+    }, 450);
+  }
+
+  if (el('data')) el('data').addEventListener('change', carregarDisponibilidade);
+  if (el('periodo')) el('periodo').addEventListener('change', pintarChips);
+
+  // troca de serviço pelo seletor também atualiza a faixa
+  if (el('servico_id')) el('servico_id').addEventListener('change', mostrarServicoEscolhido);
+
+  // "Trocar" volta para a lista de serviços
+  if (el('trocarServico')) {
+    el('trocarServico').addEventListener('click', function () {
+      var alvo = el('listaServicos');
+      if (alvo) alvo.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  }
+
+  function carregar() {
+    fetch(API + '/servicos', { headers: { 'Accept': 'application/json' } })
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        negocio = d.negocio || {};
+        servicos = d.servicos || [];
+        aplicarMarca();
+        renderServicos();
+        var hoje = new Date();
+        var iso = hoje.getFullYear() + '-' + String(hoje.getMonth() + 1).padStart(2, '0') + '-' + String(hoje.getDate()).padStart(2, '0');
+        el('data').min = iso;
+        el('data').value = iso;
+        carregarDisponibilidade();
+        // link direto: .../l/loja?servico=ID  → já abre a agenda naquele serviço
+        var alvo = new URLSearchParams(location.search).get('servico') || (location.hash.match(/servico-(\d+)/) || [])[1];
+        if (alvo) setTimeout(function () { agendarServico(alvo); }, 350);
+      })
+      .catch(function () {
+        el('listaServicos').innerHTML = '<p style="color:#b3261e;font-size:14px">Não foi possível carregar os serviços. Recarregue a página.</p>';
+      });
+  }
+
+  function mostrarErro(msg) {
+    var e = el('erro');
+    e.textContent = msg;
+    e.classList.add('on');
+    e.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
+  el('form').addEventListener('submit', function (ev) {
+    ev.preventDefault();
+    el('erro').classList.remove('on');
+    var b = el('btnEnviar');
+    b.disabled = true;
+    b.textContent = 'Enviando…';
+
+    var dados = {
+      nome: el('nome').value.trim(),
+      telefone: el('telefone').value.trim(),
+      endereco: el('endereco').value.trim(),
+      bairro: el('bairro').value.trim(),
+      servico_id: Number(el('servico_id').value || 0),
+      equip_tipo: el('equip_tipo').value,
+      equip_quantidade: Number(el('equip_quantidade').value || 1),
+      equip_marca: el('equip_marca').value.trim(),
+      equip_ambiente: el('equip_ambiente').value.trim(),
+      data: el('data').value,
+      periodo: el('periodo').value,
+      obs_cliente: el('obs_cliente').value.trim()
+    };
+
+    if (!dados.nome) { b.disabled = false; b.textContent = 'Solicitar agendamento'; return mostrarErro('Informe seu nome.'); }
+    if (dados.telefone.replace(/\D/g, '').length < 10) { b.disabled = false; b.textContent = 'Solicitar agendamento'; return mostrarErro('Informe o WhatsApp com DDD.'); }
+    if (!dados.endereco) { b.disabled = false; b.textContent = 'Solicitar agendamento'; return mostrarErro('Informe o endereço do atendimento.'); }
+    if (!dados.servico_id) { b.disabled = false; b.textContent = 'Solicitar agendamento'; return mostrarErro('Escolha o serviço.'); }
+    if (!dados.data) { b.disabled = false; b.textContent = 'Solicitar agendamento'; return mostrarErro('Escolha o melhor dia.'); }
+
+    fetch(API + '/agendar', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(dados)
+    })
+      .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); })
+      .then(function (res) {
+        b.disabled = false;
+        b.textContent = 'Solicitar agendamento';
+        if (!res.ok || !res.j.ok) {
+          var msg = res.j.error || 'Não foi possível enviar. Tente de novo.';
+          if (res.j.livres && res.j.livres.length) {
+            msg += ' ' + res.j.livres.map(function (h) { return dataBR(h.data) + ' (' + h.periodo + ')'; }).join(' · ');
+          }
+          mostrarErro(msg);
+          carregarDisponibilidade();
+          return;
+        }
+
+        var servico = servicos.filter(function (s) { return s.id === dados.servico_id; })[0] || {};
+        el('resumo').innerHTML =
+          '<div><span>Serviço</span><span>' + esc(servico.nome || '') + '</span></div>' +
+          '<div><span>Dia</span><span>' + dataBR(dados.data) + ' · ' + esc(dados.periodo) + '</span></div>' +
+          '<div><span>Local</span><span>' + esc(dados.endereco) + '</span></div>' +
+          '<div><span>Valor</span><span>' + esc(servico.preco || 'a combinar') + '</span></div>';
+        el('btnZap').href = res.j.whatsapp_url;
+        el('cardForm').classList.add('oculto');
+        el('okBox').classList.remove('oculto');
+        el('barra').classList.add('oculto');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      })
+      .catch(function () {
+        b.disabled = false;
+        b.textContent = 'Solicitar agendamento';
+        mostrarErro('Sem conexão. Confira a internet e tente novamente.');
+      });
+  });
+
+  el('btnNovo').addEventListener('click', function () {
+    el('form').reset();
+    el('okBox').classList.add('oculto');
+    el('cardForm').classList.remove('oculto');
+    el('barra').classList.remove('oculto');
+    window.scrollTo({ top: el('cardForm').offsetTop - 20, behavior: 'smooth' });
+  });
+
+  // Link do rodapé aponta para o painel da própria loja
+  el('linkPainel').href = location.pathname.replace(/\/+$/, '') + '/admin';
+
+  carregar();
+})();
+</script>
+</body>
+</html>

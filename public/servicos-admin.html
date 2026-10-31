@@ -1,0 +1,1197 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Painel da empresa</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" href="/img/hb-logo.jpg">
+<link rel="apple-touch-icon" href="/img/hb-logo.jpg">
+<style>
+  :root{
+    --azul:#14386b; --azul-esc:#0d2649; --azul-cl:#2b5fa8;
+    --ouro:#f5a623; --ouro-esc:#d88c0a;
+    --bg:#f2f5fa; --card:#fff; --linha:#dde5ef; --txt:#12213a; --mut:#5d708c;
+    --ok:#17795a; --bad:#b3261e; --warn:#8a5b00;
+    --r:16px; --sombra:0 6px 20px rgba(13,38,73,.08);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--txt);font-size:15px;line-height:1.45}
+  img{max-width:100%}
+  button{font-family:inherit}
+
+  /* ---------------- login ---------------- */
+  #login{position:fixed;inset:0;background:linear-gradient(165deg,var(--azul-esc),var(--azul) 60%,var(--azul-cl));display:grid;place-items:center;padding:20px;z-index:50}
+  #login.off{display:none}
+  .login-card{background:#fff;border-radius:22px;padding:26px 22px;width:100%;max-width:380px;box-shadow:0 18px 50px rgba(0,0,0,.28);text-align:center}
+  .login-card img{width:88px;height:88px;object-fit:contain;border-radius:18px;margin-bottom:10px}
+  .login-card h1{font-size:19px;margin:0 0 4px}
+  .login-card p{font-size:13px;color:var(--mut);margin:0 0 18px}
+  .login-card input{width:100%;padding:14px;border:1.5px solid var(--linha);border-radius:12px;font-size:16px;margin-bottom:12px;text-align:center;letter-spacing:2px}
+
+  /* ---------------- layout ---------------- */
+  .app{max-width:640px;margin:0 auto;padding:0 0 84px}
+  .topo{background:linear-gradient(150deg,var(--azul-esc),var(--azul) 70%,var(--azul-cl));color:#fff;padding:16px 16px 20px;border-radius:0 0 22px 22px;position:sticky;top:0;z-index:30;box-shadow:0 6px 20px rgba(13,38,73,.2)}
+  .topo-linha{display:flex;align-items:center;gap:12px}
+  .topo-linha img{width:44px;height:44px;object-fit:contain;background:#fff;border-radius:12px;padding:3px;flex:0 0 auto}
+  .topo-linha .nome{font-weight:800;font-size:14.5px;line-height:1.2;text-transform:uppercase;letter-spacing:.3px}
+  .topo-linha .sub{font-size:11.5px;color:#c9dbf3;margin-top:2px}
+  .topo-acoes{margin-left:auto;display:flex;gap:6px}
+  .icobtn{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.25);color:#fff;border-radius:11px;width:38px;height:38px;display:grid;place-items:center;font-size:16px;cursor:pointer}
+  .topo .data{font-size:12px;color:#c9dbf3;margin-top:12px}
+
+  main{padding:14px 14px 0}
+  .card{background:var(--card);border:1px solid var(--linha);border-radius:var(--r);padding:14px;margin-bottom:12px;box-shadow:var(--sombra)}
+  .card h2{font-size:13px;text-transform:uppercase;letter-spacing:.5px;color:var(--azul-esc);margin:0 0 10px;font-weight:800;display:flex;align-items:center;gap:8px}
+  .card h2 .qtd{background:#eaf1fa;color:var(--azul);border-radius:999px;padding:1px 8px;font-size:11.5px}
+
+  /* alerta grande */
+  .alerta{border-radius:var(--r);padding:14px;margin-bottom:12px;color:#fff;box-shadow:0 8px 22px rgba(179,38,30,.24);background:linear-gradient(140deg,#c1301f,#e05a24)}
+  .alerta.zerado{background:linear-gradient(140deg,#14795a,#1fa374);box-shadow:0 8px 22px rgba(23,121,90,.22)}
+  .alerta .tit{font-size:14px;font-weight:800;display:flex;gap:8px;align-items:center}
+  .alerta .det{font-size:12.5px;opacity:.95;margin-top:4px;line-height:1.45}
+
+  /* itens */
+  .item{border:1px solid var(--linha);border-radius:13px;padding:12px;margin-bottom:9px;background:#fff}
+  .item:last-child{margin-bottom:0}
+  .item .l1{display:flex;align-items:flex-start;gap:8px}
+  .item .tit{font-weight:750;font-size:14px;line-height:1.3;flex:1;min-width:0}
+  .item .meta{font-size:12.5px;color:var(--mut);margin-top:4px;line-height:1.5}
+  .item .meta b{color:#33475f;font-weight:650}
+  .pill{font-size:11px;font-weight:800;padding:3px 9px;border-radius:999px;white-space:nowrap;letter-spacing:.2px}
+  .pill.solicitado{background:#fdf1dc;color:#8a5b00}
+  .pill.agendado{background:#e6eefc;color:#1c4f9c}
+  .pill.a_caminho{background:#e9e3fb;color:#5b34a8}
+  .pill.concluido{background:#e3f5eb;color:#14795a}
+  .pill.cancelado{background:#f0f0f0;color:#777}
+  .pill.vencido{background:#fdecea;color:#b3261e}
+  .pill.proximo{background:#fdf1dc;color:#8a5b00}
+  .pill.ok{background:#e3f5eb;color:#14795a}
+
+  .acoes{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}
+  .btn{border:0;border-radius:11px;padding:9px 13px;font-size:13px;font-weight:750;cursor:pointer;background:#eef3fa;color:var(--azul);display:inline-flex;align-items:center;gap:6px;text-decoration:none}
+  .btn.main{background:var(--azul);color:#fff}
+  .btn.zap{background:#25d366;color:#08331a}
+  .btn.ouro{background:linear-gradient(135deg,var(--ouro),var(--ouro-esc));color:#3a2600}
+  .btn.bad{background:#fdecea;color:#b3261e}
+  .btn.bloco{width:100%;justify-content:center;padding:13px;font-size:14.5px}
+  .btn:disabled{opacity:.55}
+
+  .vazio{font-size:13px;color:var(--mut);text-align:center;padding:14px 6px}
+
+  /* nav inferior */
+  .nav{position:fixed;left:0;right:0;bottom:0;background:rgba(255,255,255,.98);backdrop-filter:blur(10px);border-top:1px solid var(--linha);display:grid;grid-template-columns:repeat(5,1fr);z-index:40;padding-bottom:env(safe-area-inset-bottom)}
+  .nav button{background:none;border:0;padding:9px 2px 10px;font-size:10.5px;color:var(--mut);font-weight:700;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;position:relative}
+  .nav button .ic{font-size:19px;line-height:1}
+  .nav button.on{color:var(--azul)}
+  .nav button.on .ic{transform:translateY(-1px)}
+  .nav .dot{position:absolute;top:5px;right:calc(50% - 17px);background:var(--bad);color:#fff;font-size:9.5px;font-weight:800;border-radius:999px;padding:1px 5px;min-width:16px}
+
+  /* modal */
+  .backdrop{position:fixed;inset:0;background:rgba(10,22,40,.55);z-index:60;display:none;align-items:flex-end;justify-content:center;padding:0}
+  .backdrop.on{display:flex}
+  .sheet{background:#fff;width:100%;max-width:560px;border-radius:20px 20px 0 0;max-height:92vh;overflow:auto;padding:18px 16px 22px;animation:sobe .2s ease-out}
+  @keyframes sobe{from{transform:translateY(30px);opacity:.6}to{transform:none;opacity:1}}
+  .sheet h3{margin:0 0 14px;font-size:16px;display:flex;align-items:center;gap:8px}
+  .sheet h3 .x{margin-left:auto;background:#f0f4fa;border:0;width:32px;height:32px;border-radius:50%;font-size:16px;color:#5d708c;cursor:pointer}
+  .campo{margin-bottom:12px}
+  .campo label{display:block;font-size:12px;font-weight:750;color:#33475f;margin-bottom:5px}
+  .campo input,.campo select,.campo textarea{width:100%;padding:12px;border:1.5px solid var(--linha);border-radius:11px;font-size:16px;font-family:inherit;background:#fbfdff;color:var(--txt)}
+  .campo textarea{min-height:66px;resize:vertical}
+  .campo .dica{font-size:11px;color:var(--mut);margin-top:3px}
+  .duplo{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+  .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:96px;background:#12213a;color:#fff;padding:11px 18px;border-radius:12px;font-size:13.5px;font-weight:650;z-index:80;opacity:0;transition:.25s;pointer-events:none;max-width:88%;text-align:center}
+  .toast.on{opacity:1;transform:translateX(-50%) translateY(-6px)}
+  .oculto{display:none !important}
+  .subtab{display:flex;gap:7px;overflow:auto;padding-bottom:10px;margin:-2px -14px 4px;padding-left:14px;padding-right:14px}
+  .subtab button{border:1.5px solid var(--linha);background:#fff;color:var(--mut);border-radius:999px;padding:7px 13px;font-size:12.5px;font-weight:750;white-space:nowrap;cursor:pointer}
+  .subtab button.on{background:var(--azul);border-color:var(--azul);color:#fff}
+  .kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+  .kpi{background:#fff;border:1px solid var(--linha);border-radius:13px;padding:10px 8px;text-align:center;box-shadow:var(--sombra)}
+  .kpi .n{font-size:19px;font-weight:800;color:var(--azul-esc);line-height:1.1}
+  .kpi .r{font-size:10.5px;color:var(--mut);font-weight:700;text-transform:uppercase;letter-spacing:.3px;margin-top:2px}
+  .foto-logo{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+  .foto-logo img{width:64px;height:64px;object-fit:contain;border:1px solid var(--linha);border-radius:14px;background:#fff;padding:3px}
+</style>
+</head>
+<body>
+
+<!-- ======================= LOGIN ======================= -->
+<div id="login">
+  <div class="login-card">
+    <img id="loginLogo" src="/img/hb-logo.jpg" alt="">
+    <h1 id="loginNome">Painel da empresa</h1>
+    <p>Área exclusiva — agenda, clientes e serviços</p>
+    <form id="loginForm">
+      <input id="senha" type="password" placeholder="Senha" autocomplete="current-password" required>
+      <button class="btn main bloco" type="submit" id="btnLogin">Entrar no painel</button>
+    </form>
+    <p style="margin-top:14px"><a id="linkSite" href="#" style="color:var(--azul);font-weight:750;font-size:12.5px;text-decoration:none">← Ver a página de agendamento</a></p>
+  </div>
+</div>
+
+<!-- ======================= APP ======================= -->
+<div class="app oculto" id="app">
+  <header class="topo">
+    <div class="topo-linha">
+      <img id="topoLogo" src="/img/hb-logo.jpg" alt="">
+      <div>
+        <div class="nome" id="topoNome">Painel</div>
+        <div class="sub" id="topoSub">Climatização</div>
+      </div>
+      <div class="topo-acoes">
+        <button class="icobtn" id="btnResumo" title="Resumo do dia no WhatsApp">💬</button>
+        <button class="icobtn" id="btnConfig" title="Dados da empresa">⚙️</button>
+        <button class="icobtn" id="btnSair" title="Sair">⏏</button>
+      </div>
+    </div>
+    <div class="data" id="topoData"></div>
+  </header>
+
+  <main>
+    <!-- ---------------- HOJE ---------------- -->
+    <section id="tab-hoje">
+      <div id="alertaTop"></div>
+
+      <div class="kpis" id="kpis"></div>
+
+      <div class="card">
+        <h2>🔔 Pedidos novos do site <span class="qtd" id="qNovos">0</span></h2>
+        <div id="listaNovos"></div>
+      </div>
+
+      <div class="card">
+        <h2>📅 Hoje <span class="qtd" id="qHoje">0</span></h2>
+        <div id="listaHoje"></div>
+      </div>
+
+      <div class="card">
+        <h2>⏱️ Próximos 7 dias <span class="qtd" id="qSem">0</span></h2>
+        <div id="listaSemana"></div>
+      </div>
+
+      <div class="card">
+        <h2>❄️ Ar precisando de limpeza/manutenção <span class="qtd" id="qVenc">0</span></h2>
+        <div id="listaVencendo"></div>
+      </div>
+
+      <div class="card" id="cardAtrasados">
+        <h2>⚠️ Atrasados (não compareceu / não foi feito) <span class="qtd" id="qAtr">0</span></h2>
+        <div id="listaAtrasados"></div>
+      </div>
+    </section>
+
+    <!-- ---------------- AGENDA ---------------- -->
+    <section id="tab-agenda" class="oculto">
+      <div class="subtab" id="filtroAgenda">
+        <button data-f="abertos" class="on">Em aberto</button>
+        <button data-f="solicitado">Solicitados</button>
+        <button data-f="agendado">Agendados</button>
+        <button data-f="concluido">Concluídos</button>
+        <button data-f="todos">Todos</button>
+      </div>
+      <div class="card" style="padding:12px">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px">
+          <div>
+            <div style="font-weight:800;font-size:14px">Vagas por período</div>
+            <div style="font-size:12px;color:var(--mut);margin-top:2px" id="txtVagas">—</div>
+          </div>
+          <button class="btn" data-acao="cfgAgenda" data-id="0">Ajustar</button>
+        </div>
+      </div>
+      <button class="btn main bloco" id="btnNovoAgend" style="margin-bottom:12px">+ Novo agendamento</button>
+      <div id="listaAgenda"></div>
+    </section>
+
+    <!-- ---------------- CLIENTES ---------------- -->
+    <section id="tab-clientes" class="oculto">
+      <div class="card" style="padding:10px">
+        <input id="buscaCliente" placeholder="Buscar por nome, telefone ou endereço…" style="width:100%;padding:12px;border:1.5px solid var(--linha);border-radius:11px;font-size:16px">
+      </div>
+      <button class="btn main bloco" id="btnNovoCliente" style="margin-bottom:12px">+ Novo cliente</button>
+      <div id="listaClientes"></div>
+    </section>
+
+    <!-- ---------------- EQUIPAMENTOS ---------------- -->
+    <section id="tab-equipamentos" class="oculto">
+      <button class="btn main bloco" id="btnNovoEquip" style="margin-bottom:12px">+ Novo equipamento</button>
+      <div id="listaEquip"></div>
+    </section>
+
+    <!-- ---------------- SERVIÇOS ---------------- -->
+    <section id="tab-servicos" class="oculto">
+      <button class="btn main bloco" id="btnNovoServ" style="margin-bottom:12px">+ Novo serviço</button>
+      <div id="listaServ"></div>
+    </section>
+
+    <!-- ---------------- EMPRESA ---------------- -->
+    <section id="tab-empresa" class="oculto">
+      <div class="card">
+        <h2>🏷️ Dados da empresa</h2>
+        <div class="foto-logo">
+          <img id="logoEmpresa" src="/img/hb-logo.jpg" alt="">
+          <div style="flex:1">
+            <button class="btn" id="btnLogo">Trocar logotipo</button>
+            <input type="file" id="logoFile" accept="image/*" class="oculto">
+            <div class="dica" style="font-size:11px;color:var(--mut);margin-top:6px">Aparece no topo, na página de agendamento e na prévia do WhatsApp.</div>
+          </div>
+        </div>
+        <div class="foto-logo" style="margin-top:14px">
+          <img id="marcaPreview" src="/img/hb-logo.jpg" alt="">
+          <div style="flex:1">
+            <button class="btn" id="btnMarca">Marca d'água do topo</button>
+            <input type="file" id="marcaFile" accept="image/*" class="oculto">
+            <div class="dica" style="font-size:11px;color:var(--mut);margin-top:6px">Imagem clarinha no canto do topo da página. Sem imagem, usamos o seu logotipo.</div>
+          </div>
+        </div>
+        <div class="campo"><label>Nome</label><input id="empNome"></div>
+        <div class="campo"><label>Subtítulo</label><input id="empTagline" placeholder="Ex.: Climatização e soluções residenciais"></div>
+        <div class="campo"><label>Frase / slogan</label><input id="empSlogan"></div>
+        <div class="campo"><label>WhatsApp (com DDD)</label><input id="empZap" inputmode="tel" placeholder="44 99833-5322"></div>
+        <div class="campo"><label>Instagram</label><input id="empInsta" placeholder="@suaempresa"></div>
+        <div class="campo"><label>Sobre / serviços em geral</label><textarea id="empSobre"></textarea></div>
+        <button class="btn main bloco" id="btnSalvarEmpresa">Salvar dados</button>
+      </div>
+
+      <div class="card">
+        <h2>🔒 Senha do painel</h2>
+        <div class="campo"><label>Nova senha</label><input id="novaSenha" type="password" placeholder="mínimo 4 caracteres"></div>
+        <button class="btn main bloco" id="btnSenha">Trocar senha</button>
+      </div>
+
+      <div class="card">
+        <h2>🔗 Links</h2>
+        <p style="font-size:13px;color:var(--mut);margin:0 0 10px">Este é o link que você manda para os clientes agendarem:</p>
+        <div style="background:#f7fafd;border:1px dashed #cddcee;border-radius:11px;padding:11px;font-size:12.5px;word-break:break-all" id="linkPublico"></div>
+        <div class="acoes">
+          <button class="btn" id="btnCopiarLink">Copiar link</button>
+          <a class="btn zap" id="btnEnviarLink" target="_blank" rel="noopener">Enviar no WhatsApp</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <nav class="nav">
+    <button data-tab="hoje" class="on"><span class="ic">🏠</span>Hoje<span class="dot oculto" id="dotHoje">0</span></button>
+    <button data-tab="agenda"><span class="ic">📅</span>Agenda</button>
+    <button data-tab="clientes"><span class="ic">👥</span>Clientes</button>
+    <button data-tab="equipamentos"><span class="ic">❄️</span>Aparelhos</button>
+    <button data-tab="servicos"><span class="ic">🛠️</span>Serviços</button>
+  </nav>
+</div>
+
+<!-- modal -->
+<div class="backdrop" id="backdrop">
+  <div class="sheet" id="sheet">
+    <h3 id="sheetTitulo">Título<button class="x" id="sheetX">✕</button></h3>
+    <div id="sheetBody"></div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+(function () {
+  'use strict';
+
+  var BASE = location.pathname.replace(/\/admin\/?$/, '') + '/api/admin';
+  var $ = function (id) { return document.getElementById(id); };
+  var S = { painel: null, clientes: [], servicos: [], equipamentos: [], agenda: [], negocio: {}, filtro: 'abertos', aba: 'hoje' };
+
+  function esc(t) {
+    return String(t == null ? '' : t).replace(/[&<>"]/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+    });
+  }
+  function brl(c) { return (Number(c || 0) / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); }
+  function dataBR(iso) { if (!iso) return ''; var p = String(iso).split('-'); return p.length === 3 ? p[2] + '/' + p[1] : iso; }
+  function dataLonga(iso) {
+    if (!iso) return 'a combinar';
+    var d = new Date(iso + 'T12:00:00');
+    var dias = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'];
+    return dias[d.getDay()] + ', ' + dataBR(iso);
+  }
+  function zapUrl(numero, texto) {
+    var n = String(numero || '').replace(/\D/g, '');
+    if (!n) return '';
+    if (n.indexOf('55') !== 0) n = '55' + n;
+    return 'https://wa.me/' + n + '?text=' + encodeURIComponent(texto || '');
+  }
+  function toast(msg) {
+    var t = $('toast');
+    t.textContent = msg;
+    t.classList.add('on');
+    clearTimeout(t._h);
+    t._h = setTimeout(function () { t.classList.remove('on'); }, 2600);
+  }
+
+  function api(path, opts) {
+    opts = opts || {};
+    return fetch(BASE + path, {
+      method: opts.method || 'GET',
+      headers: { 'Content-Type': 'application/json' },
+      body: opts.body ? JSON.stringify(opts.body) : undefined,
+      credentials: 'same-origin'
+    }).then(function (r) {
+      if (r.status === 401) { mostrarLogin(); throw new Error('Sessão expirada.'); }
+      return r.json().then(function (j) {
+        if (!r.ok) throw new Error(j.error || 'Erro na operação.');
+        return j;
+      });
+    });
+  }
+
+  /* ---------------- login ---------------- */
+  function mostrarLogin() {
+    $('app').classList.add('oculto');
+    $('login').classList.remove('off');
+  }
+  function entrar() {
+    $('login').classList.add('off');
+    $('app').classList.remove('oculto');
+    carregarTudo();
+  }
+  $('loginForm').addEventListener('submit', function (ev) {
+    ev.preventDefault();
+    var b = $('btnLogin');
+    b.disabled = true; b.textContent = 'Entrando…';
+    fetch(BASE + '/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: $('senha').value })
+    }).then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); })
+      .then(function (res) {
+        b.disabled = false; b.textContent = 'Entrar no painel';
+        if (!res.ok) { toast(res.j.error || 'Senha incorreta.'); return; }
+        entrar();
+      })
+      .catch(function () { b.disabled = false; b.textContent = 'Entrar no painel'; toast('Sem conexão.'); });
+  });
+  $('btnSair').addEventListener('click', function () {
+    fetch(BASE + '/logout', { method: 'POST' }).then(function () { location.reload(); });
+  });
+
+  /* ---------------- navegação ---------------- */
+  function irPara(alvo) {
+      S.aba = alvo;
+      Array.prototype.forEach.call(document.querySelectorAll('.nav button'), function (x) { x.classList.toggle('on', x.dataset.tab === alvo); });
+      ['hoje', 'agenda', 'clientes', 'equipamentos', 'servicos', 'empresa'].forEach(function (t) {
+        var sec = $('tab-' + t);
+        if (sec) sec.classList.toggle('oculto', t !== alvo);
+      });
+      if (alvo === 'agenda') { carregarAgendaCfg(); carregarAgenda(); }
+      if (alvo === 'clientes') carregarClientes();
+      if (alvo === 'equipamentos') carregarEquipamentos();
+      if (alvo === 'servicos') carregarServicos();
+      if (alvo === 'hoje') carregarPainel();
+      window.scrollTo({ top: 0 });
+  }
+  Array.prototype.forEach.call(document.querySelectorAll('.nav button'), function (b) {
+    b.addEventListener('click', function () { irPara(b.dataset.tab); });
+  });
+  $('btnConfig').addEventListener('click', function () { irPara('empresa'); });
+  Array.prototype.forEach.call(document.querySelectorAll('#filtroAgenda button'), function (b) {
+    b.addEventListener('click', function () {
+      S.filtro = b.dataset.f;
+      Array.prototype.forEach.call(document.querySelectorAll('#filtroAgenda button'), function (x) { x.classList.toggle('on', x === b); });
+      carregarAgenda();
+    });
+  });
+
+  /* ---------------- dados ---------------- */
+  function carregarTudo() {
+    api('/settings').then(function (s) {
+      S.negocio = (s && s.business) || {};
+      aplicarEmpresa();
+    }).catch(function () {});
+    carregarPainel();
+    api('/servicos').then(function (l) { S.servicos = l; }).catch(function () {});
+    api('/clientes').then(function (l) { S.clientes = l; }).catch(function () {});
+    api('/equipamentos').then(function (l) { S.equipamentos = l; }).catch(function () {});
+  }
+
+  function aplicarEmpresa() {
+    var n = S.negocio.name || 'Painel';
+    $('topoNome').textContent = n;
+    $('topoSub').textContent = S.negocio.tagline || 'Climatização';
+    if (S.negocio.logo_url) { $('topoLogo').src = S.negocio.logo_url; $('logoEmpresa').src = S.negocio.logo_url; $('loginLogo').src = S.negocio.logo_url; }
+    if ($('marcaPreview')) { $('marcaPreview').src = S.negocio.watermark_url || S.negocio.logo_url || '/img/hb-logo.jpg'; }
+    if (S.negocio.theme_color) { document.documentElement.style.setProperty('--azul', S.negocio.theme_color); }
+    if (S.negocio.accent_color) { document.documentElement.style.setProperty('--ouro', S.negocio.accent_color); }
+    $('empNome').value = S.negocio.name || '';
+    $('empTagline').value = S.negocio.tagline || '';
+    $('empSlogan').value = S.negocio.slogan || '';
+    $('empZap').value = S.negocio.whatsapp || '';
+    $('empInsta').value = S.negocio.instagram || '';
+    $('empSobre').value = S.negocio.about || '';
+    var link = location.origin + location.pathname.replace(/\/admin\/?$/, '');
+    $('linkPublico').textContent = link;
+    $('btnEnviarLink').href = 'https://wa.me/?text=' + encodeURIComponent('Olá! Para agendar instalação, limpeza ou manutenção do ar condicionado é só escolher o melhor dia aqui: ' + link);
+    $('linkSite').href = link;
+  }
+
+  function carregarPainel() {
+    api('/painel').then(function (p) {
+      S.painel = p;
+      renderPainel();
+    }).catch(function () {});
+  }
+
+  function statusPill(st) {
+    var rot = { solicitado: 'Solicitado', agendado: 'Agendado', a_caminho: 'A caminho', concluido: 'Concluído', cancelado: 'Cancelado' };
+    return '<span class="pill ' + st + '">' + (rot[st] || st) + '</span>';
+  }
+
+  function itemAgendamento(a, opcoes) {
+    opcoes = opcoes || {};
+    var eq = [a.equip_tipo, a.equip_marca, a.equip_ambiente].filter(Boolean).join(' · ');
+    var acoes = [];
+    if (a.status === 'solicitado') {
+      acoes.push('<button class="btn main" data-acao="agendar" data-id="' + a.id + '">✓ Confirmar dia</button>');
+    }
+    if (a.status === 'agendado') {
+      acoes.push('<button class="btn main" data-acao="a_caminho" data-id="' + a.id + '">🚗 A caminho</button>');
+    }
+    if (a.status === 'agendado' || a.status === 'a_caminho') {
+      acoes.push('<button class="btn ouro" data-acao="concluido" data-id="' + a.id + '">✓ Concluído</button>');
+    }
+    acoes.push('<button class="btn" data-acao="wpp" data-id="' + a.id + '">💬 WhatsApp</button>');
+    if (a.status !== 'cancelado') acoes.push('<button class="btn" data-acao="remarcar" data-id="' + a.id + '">🔁 Remarcar</button>');
+    acoes.push('<button class="btn" data-acao="editar" data-id="' + a.id + '">✏️</button>');
+    if (a.status !== 'cancelado') acoes.push('<button class="btn bad" data-acao="cancelar" data-id="' + a.id + '">✕</button>');
+
+    return '<div class="item">' +
+      '<div class="l1"><div class="tit">' + esc(a.servico_nome || 'Serviço') + '</div>' + statusPill(a.status) + '</div>' +
+      '<div class="meta">' +
+        '<b>' + esc(a.cliente_nome || 'Cliente') + '</b>' +
+        (a.data ? ' · ' + dataLonga(a.data) : ' · dia a combinar') +
+        (a.periodo ? ' · ' + esc(a.periodo) : '') +
+        (eq ? '<br>' + esc(eq) : '') +
+        (a.endereco ? '<br>📍 ' + esc(a.endereco) : '') +
+        (a.obs_cliente ? '<br>📝 ' + esc(a.obs_cliente) : '') +
+        (a.valor_cents ? '<br>💰 ' + brl(a.valor_cents) : '') +
+      '</div>' +
+      '<div class="acoes">' + acoes.join('') + '</div>' +
+    '</div>';
+  }
+
+  function itemVencendo(e) {
+    var al = e.alertas && e.alertas[0] ? e.alertas[0] : {};
+    var atrasado = al.dias < 0;
+    var txt = atrasado
+      ? 'venceu há ' + Math.abs(al.dias) + ' dia(s)'
+      : al.dias === 0 ? 'vence hoje' : 'vence em ' + al.dias + ' dia(s)';
+    return '<div class="item">' +
+      '<div class="l1"><div class="tit">' + esc(e.cliente_nome || 'Cliente') + '</div>' +
+        '<span class="pill ' + (atrasado ? 'vencido' : 'proximo') + '">' + txt + '</span></div>' +
+      '<div class="meta">' +
+        esc([e.tipo, e.marca, e.ambiente].filter(Boolean).join(' · ')) +
+        '<br>🔄 ' + esc(al.tipo || 'limpeza') + ' prevista: <b>' + dataBR(al.data) + '</b>' +
+        (e.cliente_telefone ? '<br>📱 ' + esc(e.cliente_telefone) : '') +
+      '</div>' +
+      '<div class="acoes">' +
+        '<button class="btn main" data-acao="agendarEquip" data-id="' + e.id + '">📅 Agendar</button>' +
+        '<button class="btn zap" data-acao="lembrete" data-id="' + e.id + '">💬 Avisar cliente</button>' +
+        '<button class="btn" data-acao="editarEquip" data-id="' + e.id + '">✏️</button>' +
+      '</div>' +
+    '</div>';
+  }
+
+  function renderPainel() {
+    var p = S.painel;
+    if (!p) return;
+    var hoje = new Date(p.hoje + 'T12:00:00');
+    $('topoData').textContent = hoje.toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long' });
+
+    var alertas = (p.novos.length ? p.novos.length + ' pedido(s) novo(s) · ' : '') +
+      (p.vencendo.length ? p.vencendo.length + ' ar(es) precisando de limpeza · ' : '') +
+      (p.atrasados.length ? p.atrasados.length + ' atrasado(s)' : '');
+    alertas = alertas.replace(/ · $/, '');
+    $('alertaTop').innerHTML = alertas
+      ? '<div class="alerta"><div class="tit">⚠️ Precisa da sua atenção</div><div class="det">' + esc(alertas) + '</div></div>'
+      : '<div class="alerta zerado"><div class="tit">✓ Tudo em dia</div><div class="det">Nenhum pedido novo e nenhum ar esperando limpeza.</div></div>';
+
+    $('kpis').innerHTML =
+      '<div class="kpi"><div class="n">' + p.hoje_lista.length + '</div><div class="r">hoje</div></div>' +
+      '<div class="kpi"><div class="n">' + p.resumo.clientes + '</div><div class="r">clientes</div></div>' +
+      '<div class="kpi"><div class="n" style="font-size:15px">' + p.resumo.faturado_mes + '</div><div class="r">no mês</div></div>';
+
+    var dot = $('dotHoje');
+    if (p.resumo.alertas > 0) { dot.textContent = p.resumo.alertas; dot.classList.remove('oculto'); }
+    else dot.classList.add('oculto');
+
+    $('qNovos').textContent = p.novos.length;
+    $('listaNovos').innerHTML = p.novos.length ? p.novos.map(function (a) { return itemAgendamento(a); }).join('') : '<div class="vazio">Nenhum pedido novo.</div>';
+
+    $('qHoje').textContent = p.hoje_lista.length;
+    $('listaHoje').innerHTML = p.hoje_lista.length ? p.hoje_lista.map(function (a) { return itemAgendamento(a); }).join('') : '<div class="vazio">Nada agendado para hoje.</div>';
+
+    $('qSem').textContent = p.proximos.length;
+    $('listaSemana').innerHTML = p.proximos.length ? p.proximos.map(function (a) { return itemAgendamento(a); }).join('') : '<div class="vazio">Semana livre.</div>';
+
+    $('qVenc').textContent = p.vencendo.length;
+    $('listaVencendo').innerHTML = p.vencendo.length ? p.vencendo.map(itemVencendo).join('') : '<div class="vazio">Nenhum aparelho com limpeza vencendo.</div>';
+
+    $('qAtr').textContent = p.atrasados.length;
+    $('listaAtrasados').innerHTML = p.atrasados.length ? p.atrasados.map(function (a) { return itemAgendamento(a); }).join('') : '<div class="vazio">Nenhum atrasado.</div>';
+    $('cardAtrasados').classList.toggle('oculto', !p.atrasados.length);
+  }
+
+  /* ---------------- agenda ---------------- */
+  function carregarAgenda() {
+    api('/agendamentos?status=' + encodeURIComponent(S.filtro)).then(function (l) {
+      S.agenda = l;
+      $('listaAgenda').innerHTML = l.length
+        ? l.map(function (a) { return itemAgendamento(a); }).join('')
+        : '<div class="card"><div class="vazio">Nenhum agendamento aqui.</div></div>';
+    }).catch(function () {});
+  }
+
+  function acharAgendamento(id) {
+    var todos = [];
+    if (S.painel) todos = [].concat(S.painel.novos, S.painel.hoje_lista, S.painel.proximos, S.painel.atrasados);
+    todos = todos.concat(S.agenda || []);
+    for (var i = 0; i < todos.length; i++) if (Number(todos[i].id) === Number(id)) return todos[i];
+    return null;
+  }
+
+  /* ---------------- clientes ---------------- */
+  function carregarClientes() {
+    var q = $('buscaCliente').value.trim();
+    api('/clientes' + (q ? '?q=' + encodeURIComponent(q) : '')).then(function (l) {
+      S.clientes = l;
+      $('listaClientes').innerHTML = l.length
+        ? l.map(function (c) {
+            var equip = S.equipamentos.filter(function (e) { return Number(e.cliente_id) === Number(c.id); });
+            return '<div class="item">' +
+              '<div class="l1"><div class="tit">' + esc(c.nome) + '</div>' +
+                (equip.length ? '<span class="pill agendado">' + equip.length + ' aparelho(s)</span>' : '') + '</div>' +
+              '<div class="meta">' +
+                (c.telefone ? '📱 ' + esc(c.telefone) : '') +
+                (c.endereco ? '<br>📍 ' + esc(c.endereco) + (c.bairro ? ' - ' + esc(c.bairro) : '') : '') +
+                (c.email ? '<br>✉️ ' + esc(c.email) : '') +
+                (c.obs ? '<br>📝 ' + esc(c.obs) : '') +
+              '</div>' +
+              '<div class="acoes">' +
+                '<button class="btn main" data-acao="novoAgendCliente" data-id="' + c.id + '">📅 Agendar</button>' +
+                '<button class="btn" data-acao="novoEquipCliente" data-id="' + c.id + '">❄️ Aparelho</button>' +
+                (c.telefone ? '<a class="btn zap" href="' + zapUrl(c.telefone, 'Olá, ' + c.nome + '!') + '" target="_blank" rel="noopener">💬</a>' : '') +
+                '<button class="btn" data-acao="editarCliente" data-id="' + c.id + '">✏️</button>' +
+              '</div>' +
+            '</div>';
+          }).join('')
+        : '<div class="card"><div class="vazio">Nenhum cliente' + (q ? ' encontrado' : ' cadastrado ainda') + '.</div></div>';
+    }).catch(function () {});
+  }
+
+  /* ---------------- equipamentos ---------------- */
+  function carregarEquipamentos() {
+    api('/equipamentos').then(function (l) {
+      S.equipamentos = l;
+      $('listaEquip').innerHTML = l.length
+        ? l.map(function (e) {
+            var st = '';
+            if (e.prox_limpeza) {
+              st = e.prox_limpeza_dias < 0
+                ? '<span class="pill vencido">limpeza vencida</span>'
+                : e.prox_limpeza_dias <= 30 ? '<span class="pill proximo">limpeza em ' + e.prox_limpeza_dias + 'd</span>'
+                : '<span class="pill ok">em dia</span>';
+            }
+            return '<div class="item">' +
+              '<div class="l1"><div class="tit">' + esc([e.tipo, e.marca].filter(Boolean).join(' ')) + (e.ambiente ? ' · ' + esc(e.ambiente) : '') + '</div>' + st + '</div>' +
+              '<div class="meta">' +
+                '<b>' + esc(e.cliente_nome || 'sem cliente') + '</b>' +
+                (e.cliente_telefone ? ' · ' + esc(e.cliente_telefone) : '') +
+                (e.btu ? '<br>' + esc(e.btu) + ' BTUs' : '') +
+                (e.quantidade > 1 ? ' · ' + e.quantidade + ' aparelhos' : '') +
+                '<br>🧽 Próxima limpeza: <b>' + (e.prox_limpeza ? dataBR(e.prox_limpeza) : 'não definida') + '</b>' +
+                (e.prox_manutencao ? '<br>🛠️ Próxima manutenção: <b>' + dataBR(e.prox_manutencao) + '</b>' : '') +
+              '</div>' +
+              '<div class="acoes">' +
+                '<button class="btn main" data-acao="agendarEquip" data-id="' + e.id + '">📅 Agendar</button>' +
+                '<button class="btn zap" data-acao="lembrete" data-id="' + e.id + '">💬</button>' +
+                '<button class="btn" data-acao="editarEquip" data-id="' + e.id + '">✏️</button>' +
+                '<button class="btn bad" data-acao="apagarEquip" data-id="' + e.id + '">🗑</button>' +
+              '</div>' +
+            '</div>';
+          }).join('')
+        : '<div class="card"><div class="vazio">Nenhum aparelho cadastrado. Cadastre na ficha do cliente ou no botão acima.</div></div>';
+    }).catch(function () {});
+  }
+
+  /* ---------------- serviços ---------------- */
+  function carregarServicos() {
+    api('/servicos').then(function (l) {
+      S.servicos = l;
+      $('listaServ').innerHTML = l.map(function (s) {
+        var preco = s.tipo_preco === 'sob_orcamento' ? 'Sob orçamento'
+          : (s.tipo_preco === 'a_partir' ? 'a partir de ' : '') + brl(s.preco_cents);
+        return '<div class="item">' +
+          '<div class="l1"><div class="tit">' + esc(s.nome) + '</div>' + (s.ativo ? '' : '<span class="pill cancelado">inativo</span>') + '</div>' +
+          '<div class="meta">' + esc(s.categoria) + ' · ' + esc(preco) + (s.duracao_min ? ' · ' + s.duracao_min + ' min' : '') +
+            (s.descricao ? '<br>' + esc(s.descricao) : '') + '</div>' +
+          '<div class="acoes">' +
+            '<button class="btn" data-acao="editarServico" data-id="' + s.id + '">✏️ Editar</button>' +
+            '<button class="btn bad" data-acao="apagarServico" data-id="' + s.id + '">🗑 Apagar</button>' +
+          '</div>' +
+        '</div>';
+      }).join('');
+    }).catch(function () {});
+  }
+
+  /* ---------------- modal / formulários ---------------- */
+  function fecharSheet() { $('backdrop').classList.remove('on'); }
+  $('sheetX').addEventListener('click', fecharSheet);
+  $('backdrop').addEventListener('click', function (ev) { if (ev.target === $('backdrop')) fecharSheet(); });
+
+  function abrirSheet(titulo, html, aoEnviar, rotulo) {
+    $('sheetTitulo').innerHTML = esc(titulo) + '<button class="x" id="sheetX2">✕</button>';
+    $('sheetBody').innerHTML = html + '<button class="btn main bloco" id="sheetSalvar" style="margin-top:6px">' + esc(rotulo || 'Salvar') + '</button>';
+    $('backdrop').classList.add('on');
+    $('sheetX2').addEventListener('click', fecharSheet);
+    $('sheetSalvar').addEventListener('click', function () {
+      var b = this;
+      b.disabled = true; b.textContent = 'Salvando…';
+      Promise.resolve(aoEnviar()).catch(function (e) { toast(e.message || 'Erro.'); })
+        .then(function () { b.disabled = false; b.textContent = rotulo || 'Salvar'; });
+    });
+  }
+
+  function campo(id, rotulo, valor, tipo, opcoes) {
+    if (tipo === 'select') {
+      return '<div class="campo"><label>' + esc(rotulo) + '</label><select id="' + id + '">' +
+        (opcoes || []).map(function (o) {
+          var v = typeof o === 'string' ? o : o.v, t = typeof o === 'string' ? o : o.t;
+          return '<option value="' + esc(v) + '"' + (String(valor) === String(v) ? ' selected' : '') + '>' + esc(t) + '</option>';
+        }).join('') + '</select></div>';
+    }
+    if (tipo === 'textarea') {
+      return '<div class="campo"><label>' + esc(rotulo) + '</label><textarea id="' + id + '">' + esc(valor || '') + '</textarea></div>';
+    }
+    if (tipo === 'numero') {
+      return '<div class="campo"><label>' + esc(rotulo) + '</label><input id="' + id + '" type="number" inputmode="numeric" value="' + esc(valor || 0) + '"></div>';
+    }
+    var t = tipo === 'data' ? 'date' : tipo === 'tel' ? 'tel' : 'text';
+    return '<div class="campo"><label>' + esc(rotulo) + '</label><input id="' + id + '" type="' + t + '" value="' + esc(valor || '') + '"></div>';
+  }
+  function v(id) { var e = $(id); return e ? e.value.trim() : ''; }
+
+  function opcoesClientes() {
+    return S.clientes.map(function (c) { return { v: c.id, t: c.nome + (c.telefone ? ' · ' + c.telefone : '') }; });
+  }
+  function opcoesServicos() {
+    return S.servicos.filter(function (s) { return s.ativo; }).map(function (s) { return { v: s.id, t: s.nome }; });
+  }
+  function opcoesEquipamentos(clienteId) {
+    return S.equipamentos
+      .filter(function (e) { return !clienteId || Number(e.cliente_id) === Number(clienteId); })
+      .map(function (e) { return { v: e.id, t: [e.tipo, e.marca, e.ambiente].filter(Boolean).join(' ') + ' — ' + (e.cliente_nome || '') }; });
+  }
+
+  /* --- agendamento --- */
+  function formAgendamento(a) {
+    a = a || {};
+    var clientePre = a.cliente_id || '';
+    // Ao confirmar um pedido que veio do site, o padrão já é "agendado".
+    var statusPre = a.status === 'solicitado' ? 'agendado' : (a.status || 'agendado');
+    var html =
+      (S.clientes.length
+        ? '<div class="campo"><label>Cliente</label><select id="agCliente"><option value="">+ Cadastrar novo cliente</option>' +
+          opcoesClientes().map(function (o) { return '<option value="' + o.v + '"' + (String(clientePre) === String(o.v) ? ' selected' : '') + '>' + esc(o.t) + '</option>'; }).join('') +
+          '</select></div>'
+        : '') +
+      '<div class="duplo">' +
+        campo('agNome', 'Nome do cliente', a.cliente_nome || '', 'text') +
+        campo('agTel', 'WhatsApp', a.cliente_telefone || '', 'tel') +
+      '</div>' +
+      campo('agEndereco', 'Endereço', a.endereco || '', 'text') +
+      '<div class="campo"><label>Serviço</label><select id="agServico">' +
+        opcoesServicos().map(function (o) { return '<option value="' + o.v + '"' + (String(a.servico_id) === String(o.v) ? ' selected' : '') + '>' + esc(o.t) + '</option>'; }).join('') +
+      '</select></div>' +
+      '<div class="campo"><label>Aparelho</label><select id="agEquip"><option value="">— nenhum —</option>' +
+        opcoesEquipamentos(clientePre).map(function (o) { return '<option value="' + o.v + '"' + (String(a.equipamento_id) === String(o.v) ? ' selected' : '') + '>' + esc(o.t) + '</option>'; }).join('') +
+      '</select></div>' +
+      '<div class="duplo">' +
+        campo('agData', 'Dia', a.data || '', 'data') +
+        '<div class="campo"><label>Período</label><select id="agPeriodo">' +
+          ['Manhã', 'Tarde', 'Noite'].map(function (p) { return '<option' + (a.periodo === p ? ' selected' : '') + '>' + p + '</option>'; }).join('') +
+        '</select></div>' +
+      '</div>' +
+      '<div class="duplo">' +
+        campo('agValor', 'Valor (R$)', a.valor_cents ? (a.valor_cents / 100).toFixed(2) : '', 'text') +
+        '<div class="campo"><label>Status</label><select id="agStatus">' +
+          [['solicitado', 'Solicitado'], ['agendado', 'Agendado'], ['a_caminho', 'A caminho'], ['concluido', 'Concluído'], ['cancelado', 'Cancelado']]
+            .map(function (s) { return '<option value="' + s[0] + '"' + (statusPre === s[0] ? ' selected' : '') + '>' + s[1] + '</option>'; }).join('') +
+        '</select></div>' +
+      '</div>' +
+      campo('agObs', 'Observações', a.obs_interno || a.obs_cliente || '', 'textarea') +
+      '<div id="agOcup" style="font-size:12px;color:var(--mut);margin:-4px 0 10px"></div>';
+
+    abrirSheet(a.id ? 'Editar agendamento' : 'Novo agendamento', html, function () {
+      var corpo = {
+        cliente_id: Number(v('agCliente') || 0),
+        cliente_nome: v('agNome'),
+        cliente_telefone: v('agTel'),
+        endereco: v('agEndereco'),
+        servico_id: Number(v('agServico') || 0),
+        equipamento_id: Number(v('agEquip') || 0),
+        data: v('agData'),
+        periodo: v('agPeriodo'),
+        valor_cents: Math.round(Number(String(v('agValor')).replace(',', '.') || 0) * 100),
+        status: v('agStatus'),
+        obs_interno: v('agObs')
+      };
+      if (!corpo.cliente_id && !corpo.cliente_nome) throw new Error('Escolha ou cadastre o cliente.');
+      if (!corpo.data) throw new Error('Escolha o dia.');
+      var p = a.id ? api('/agendamentos/' + a.id, { method: 'PUT', body: corpo })
+                   : api('/agendamentos', { method: 'POST', body: corpo });
+      return p.then(function () {
+        fecharSheet(); toast('Agendamento salvo ✓');
+        return atualizarTudo();
+      });
+    }, a.id ? 'Salvar alterações' : 'Criar agendamento');
+
+    // mostra na hora quais períodos daquele dia já estão tomados
+    function marcarOcupacao() {
+      var d = v('agData');
+      var alvo = $('agOcup');
+      if (!d || !alvo) return;
+      api('/agenda/disponibilidade?data=' + encodeURIComponent(d)).then(function (r) {
+        var mapa = {};
+        (r.periodos || []).forEach(function (p) { mapa[p.nome] = p.livre; });
+        Array.prototype.forEach.call($('agPeriodo').options, function (o) {
+          var base = o.textContent.replace(' — ocupado', '');
+          o.textContent = base + (mapa[base] === false ? ' — ocupado' : '');
+        });
+        var cheios = (r.periodos || []).filter(function (p) { return !p.livre; }).map(function (p) { return p.nome; });
+        var mesmo = a.id && r.data === a.data;
+        alvo.textContent = cheios.length
+          ? 'Já ocupados nesse dia: ' + cheios.join(', ') + (mesmo ? ' (o horário deste cliente está contado)' : '')
+          : 'Todos os períodos livres nesse dia.';
+      }).catch(function () { if (alvo) alvo.textContent = ''; });
+    }
+    if ($('agData')) $('agData').addEventListener('change', marcarOcupacao);
+    marcarOcupacao();
+  }
+
+  /* --- cliente --- */
+  function formCliente(c) {
+    c = c || {};
+    var html =
+      campo('clNome', 'Nome', c.nome || '', 'text') +
+      campo('clTel', 'WhatsApp com DDD', c.telefone || '', 'tel') +
+      campo('clEmail', 'E-mail', c.email || '', 'text') +
+      campo('clEndereco', 'Endereço', c.endereco || '', 'text') +
+      campo('clBairro', 'Bairro', c.bairro || '', 'text') +
+      campo('clObs', 'Observações', c.obs || '', 'textarea');
+    abrirSheet(c.id ? 'Editar cliente' : 'Novo cliente', html, function () {
+      if (!v('clNome')) throw new Error('Informe o nome.');
+      var corpo = {
+        nome: v('clNome'), telefone: v('clTel'), email: v('clEmail'),
+        endereco: v('clEndereco'), bairro: v('clBairro'), obs: v('clObs')
+      };
+      var p = c.id ? api('/clientes/' + c.id, { method: 'PUT', body: corpo }) : api('/clientes', { method: 'POST', body: corpo });
+      return p.then(function () { fecharSheet(); toast('Cliente salvo ✓'); return atualizarTudo(); });
+    });
+  }
+
+  /* --- equipamento --- */
+  function formEquipamento(e) {
+    e = e || {};
+    var hoje = new Date();
+    var em6 = new Date(); em6.setMonth(em6.getMonth() + 6);
+    var iso = function (d) { return d.toISOString().slice(0, 10); };
+    var html =
+      '<div class="campo"><label>Cliente</label><select id="eqCliente">' +
+        opcoesClientes().map(function (o) { return '<option value="' + o.v + '"' + (String(e.cliente_id) === String(o.v) ? ' selected' : '') + '>' + esc(o.t) + '</option>'; }).join('') +
+      '</select></div>' +
+      '<div class="duplo">' +
+        campo('eqTipo', 'Tipo', e.tipo || 'Split', 'select', ['Split', 'Cassete', 'Janela', 'Multi-split', 'Portátil', 'Outro']) +
+        campo('eqQtd', 'Quantidade', e.quantidade || 1, 'numero') +
+      '</div>' +
+      '<div class="duplo">' +
+        campo('eqMarca', 'Marca', e.marca || '', 'text') +
+        campo('eqBtu', 'BTUs', e.btu || '', 'text') +
+      '</div>' +
+      '<div class="duplo">' +
+        campo('eqAmbiente', 'Ambiente', e.ambiente || '', 'text') +
+        campo('eqInstalado', 'Instalado em', e.instalado_em || '', 'data') +
+      '</div>' +
+      '<div class="duplo">' +
+        campo('eqUltima', 'Última limpeza', e.ultima_limpeza || '', 'data') +
+        campo('eqIntervalo', 'Repetir a cada (dias)', e.intervalo_dias || 180, 'numero') +
+      '</div>' +
+      campo('eqProxLimpeza', 'Próxima limpeza', e.prox_limpeza || iso(em6), 'data') +
+      campo('eqProxManut', 'Próxima manutenção', e.prox_manutencao || '', 'data') +
+      campo('eqObs', 'Observações', e.obs || '', 'textarea') +
+      '<div class="campo"><span class="dica">As datas acima são o que fazem o painel avisar quando o cliente precisa de limpeza.</span></div>';
+    abrirSheet(e.id ? 'Editar aparelho' : 'Novo aparelho', html, function () {
+      if (!v('eqCliente')) throw new Error('Cadastre um cliente primeiro.');
+      var corpo = {
+        cliente_id: Number(v('eqCliente')), tipo: v('eqTipo'), marca: v('eqMarca'), btu: v('eqBtu'),
+        ambiente: v('eqAmbiente'), quantidade: Number(v('eqQtd') || 1), instalado_em: v('eqInstalado'),
+        ultima_limpeza: v('eqUltima'), prox_limpeza: v('eqProxLimpeza'), prox_manutencao: v('eqProxManut'),
+        intervalo_dias: Number(v('eqIntervalo') || 180), obs: v('eqObs')
+      };
+      var p = e.id ? api('/equipamentos/' + e.id, { method: 'PUT', body: corpo }) : api('/equipamentos', { method: 'POST', body: corpo });
+      return p.then(function () { fecharSheet(); toast('Aparelho salvo ✓'); return atualizarTudo(); });
+    });
+  }
+
+  /* --- serviço --- */
+  function formServico(s) {
+    s = s || {};
+    var html =
+      campo('svNome', 'Nome do serviço', s.nome || '', 'text') +
+      campo('svCategoria', 'Categoria', s.categoria || 'Limpeza', 'select', ['Instalação', 'Limpeza', 'Manutenção', 'Outros']) +
+      '<div class="duplo">' +
+        campo('svPreco', 'Preço (R$)', s.preco_cents ? (s.preco_cents / 100).toFixed(2) : '', 'text') +
+        campo('svTipo', 'Como mostrar', s.tipo_preco || 'a_partir', 'select', [{ v: 'a_partir', t: 'a partir de' }, { v: 'fixo', t: 'valor fechado' }, { v: 'sob_orcamento', t: 'sob orçamento' }]) +
+      '</div>' +
+      '<div class="duplo">' +
+        campo('svDur', 'Duração (min)', s.duracao_min || 90, 'numero') +
+        campo('svOrdem', 'Ordem', s.ordem || 99, 'numero') +
+      '</div>' +
+      campo('svDesc', 'Descrição', s.descricao || '', 'textarea');
+    abrirSheet(s.id ? 'Editar serviço' : 'Novo serviço', html, function () {
+      if (!v('svNome')) throw new Error('Informe o nome do serviço.');
+      var corpo = {
+        nome: v('svNome'), categoria: v('svCategoria'),
+        preco_cents: Math.round(Number(String(v('svPreco')).replace(',', '.') || 0) * 100),
+        tipo_preco: v('svTipo'), duracao_min: Number(v('svDur') || 60),
+        ordem: Number(v('svOrdem') || 99), descricao: v('svDesc')
+      };
+      var p = s.id ? api('/servicos/' + s.id, { method: 'PUT', body: corpo }) : api('/servicos', { method: 'POST', body: corpo });
+      return p.then(function () { fecharSheet(); toast('Serviço salvo ✓'); return api('/servicos').then(function (l) { S.servicos = l; carregarServicos(); }); });
+    });
+  }
+
+  function carregarAgendaCfg() {
+    return api('/agenda/config').then(function (r) { S.agendaCfg = r; textoVagas(); }).catch(function () {});
+  }
+
+  function atualizarTudo() {
+    return Promise.all([
+      api('/clientes').then(function (l) { S.clientes = l; }).catch(function () {}),
+      api('/equipamentos').then(function (l) { S.equipamentos = l; }).catch(function () {}),
+      api('/servicos').then(function (l) { S.servicos = l; }).catch(function () {})
+    ]).then(function () {
+      carregarPainel();
+      if (S.aba === 'agenda') carregarAgenda();
+      if (S.aba === 'clientes') carregarClientes();
+      if (S.aba === 'equipamentos') carregarEquipamentos();
+      if (S.aba === 'servicos') carregarServicos();
+    });
+  }
+
+
+  /* ---------------- agenda: vagas, remarcação ---------------- */
+  var DIAS_SEMANA = [
+    { d: 1, t: 'Seg' }, { d: 2, t: 'Ter' }, { d: 3, t: 'Qua' }, { d: 4, t: 'Qui' },
+    { d: 5, t: 'Sex' }, { d: 6, t: 'Sáb' }, { d: 0, t: 'Dom' }
+  ];
+
+  function textoVagas() {
+    var c = S.agendaCfg || {};
+    var vagas = Number(c.vagas || 1);
+    var dias = (c.dias || [1, 2, 3, 4, 5, 6]).map(function (d) {
+      var f = DIAS_SEMANA.filter(function (x) { return x.d === Number(d); })[0];
+      return f ? f.t : '';
+    }).filter(Boolean);
+    var t = $('txtVagas');
+    if (t) t.textContent = vagas + (vagas > 1 ? ' atendimentos' : ' atendimento') + ' por período · ' + (dias.join(', ') || 'sem dias');
+  }
+
+  function formCfgAgenda() {
+    var c = S.agendaCfg || { vagas: 1, dias: [1, 2, 3, 4, 5, 6], periodos: ['Manhã', 'Tarde', 'Noite'] };
+    var html =
+      '<p style="font-size:13px;color:var(--mut);margin:0 0 12px">Quantos atendimentos você consegue fazer em cada período. Se colocar 1, o sistema bloqueia o horário assim que um cliente agenda.</p>' +
+      campo('cfgVagas', 'Atendimentos por período', c.vagas || 1, 'numero') +
+      '<div class="campo"><label>Dias de atendimento</label><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px">' +
+        DIAS_SEMANA.map(function (x) {
+          var on = (c.dias || []).map(Number).indexOf(x.d) >= 0;
+          return '<button type="button" class="btn" data-dia-sem="' + x.d + '" style="' + (on ? '' : 'opacity:.45') + '">' + x.t + '</button>';
+        }).join('') +
+      '</div></div>';
+    abrirSheet('Agenda', html, function () {
+      var dias = [];
+      document.querySelectorAll('[data-dia-sem]').forEach(function (b) {
+        if (b.style.opacity !== '0.45') dias.push(Number(b.dataset.diaSem));
+      });
+      return api('/agenda/config', { method: 'PUT', body: { vagas: Number(v('cfgVagas') || 1), dias: dias.length ? dias : [1, 2, 3, 4, 5, 6] } })
+        .then(function (r) { S.agendaCfg = r; textoVagas(); fecharSheet(); toast('Agenda ajustada ✓'); });
+    }, 'Salvar');
+    document.querySelectorAll('[data-dia-sem]').forEach(function (b) {
+      b.addEventListener('click', function () { b.style.opacity = b.style.opacity === '0.45' ? '1' : '0.45'; });
+    });
+  }
+
+  function formRemarcar(a) {
+    var dataSel = a.data || new Date().toISOString().slice(0, 10);
+    var html =
+      '<p style="font-size:13px;color:var(--mut);margin:0 0 10px"><b>' + esc(a.cliente_nome || 'Cliente') + '</b>' +
+      (a.cliente_telefone ? ' · ' + esc(a.cliente_telefone) : '') + '<br>' + esc(a.servico_nome || 'Serviço') +
+      (a.data ? ' — hoje está em ' + dataLonga(a.data) + (a.periodo ? ' (' + esc(a.periodo) + ')' : '') : '') + '</p>' +
+      campo('rmData', 'Novo dia', dataSel, 'data') +
+      '<div class="campo"><label>Período</label><div id="rmChips" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px"></div></div>' +
+      '<div id="rmSug" style="font-size:12.5px;color:var(--mut);margin:2px 0 10px"></div>' +
+      '<button class="btn zap bloco" id="rmAvisar" type="button" style="margin-bottom:6px">💬 Avisar o cliente no WhatsApp</button>' +
+      '<div style="font-size:11.5px;color:var(--mut);margin-bottom:4px">O aviso já vai com os próximos horários livres para ele escolher.</div>';
+    abrirSheet('Remarcar atendimento', html, function () {
+      var chip = document.querySelector('#rmChips [data-per].on');
+      var per = chip ? chip.getAttribute('data-per') : '';
+      if (!per) { toast('Escolha o período.'); return Promise.reject(new Error('Escolha o período.')); }
+      return api('/agendamentos/' + a.id, {
+        method: 'PUT',
+        body: { data: v('rmData'), periodo: per, status: a.status === 'solicitado' ? 'agendado' : a.status }
+      }).then(function () {
+        fecharSheet(); toast('Remarcado ✓');
+        return atualizarTudo().then(function () {
+          return api('/agendamentos/' + a.id + '/whatsapp').then(function (r) { window.open(r.whatsapp_url, '_blank'); });
+        });
+      });
+    }, 'Salvar novo dia');
+
+    $('rmAvisar').addEventListener('click', function () {
+      api('/agendamentos/' + a.id + '/whatsapp-remarcar').then(function (r) {
+        if (r.whatsapp_url) window.open(r.whatsapp_url, '_blank');
+        else toast('Cliente sem WhatsApp cadastrado.');
+      }).catch(function (e) { toast(e.message); });
+    });
+
+    function carregar() {
+      var d = v('rmData');
+      if (!d) return;
+      $('rmChips').innerHTML = '<span style="font-size:12.5px;color:var(--mut)">Carregando…</span>';
+      api('/agenda/disponibilidade?data=' + encodeURIComponent(d)).then(function (r) {
+        var mesmoDia = r.data === a.data;
+        $('rmChips').innerHTML = (r.periodos || []).map(function (p) {
+          var livre = p.livre || (mesmoDia && p.nome === a.periodo);
+          var sel = livre && ((p.nome === a.periodo) || (!a.periodo && p.nome === r.periodos[0].nome));
+          return '<button type="button" class="btn' + (sel && livre ? ' main on' : '') + '" data-per="' + esc(p.nome) + '"' +
+            (livre ? '' : ' disabled style="opacity:.4"') + '>' + esc(p.nome) + '<span style="font-size:10.5px;opacity:.75"> ' +
+            (livre ? 'livre' : 'ocupado') + '</span></button>';
+        }).join('');
+        document.querySelectorAll('#rmChips [data-per]').forEach(function (b) {
+          b.addEventListener('click', function () {
+            document.querySelectorAll('#rmChips [data-per]').forEach(function (x) { x.classList.remove('on', 'main'); });
+            b.classList.add('on', 'main');
+          });
+        });
+        $('rmSug').innerHTML = (r.sugestoes || []).length
+          ? 'Horários livres: ' + r.sugestoes.slice(0, 4).map(function (s) {
+              return '<a href="#" data-sug="' + s.data + '|' + esc(s.periodo) + '" style="color:var(--azul);font-weight:700">' +
+                dataBR(s.data) + ' (' + s.periodo + ')</a>';
+            }).join(' · ')
+          : 'Nenhum horário livre nos próximos dias.';
+        document.querySelectorAll('[data-sug]').forEach(function (lnk) {
+          lnk.addEventListener('click', function (ev) {
+            ev.preventDefault();
+            var p = lnk.dataset.sug.split('|');
+            $('rmData').value = p[0];
+            carregar();
+            setTimeout(function () {
+              var btn = document.querySelector('#rmChips [data-per="' + p[1] + '"]');
+              if (btn) { document.querySelectorAll('#rmChips [data-per]').forEach(function (x) { x.classList.remove('on', 'main'); }); btn.classList.add('on', 'main'); }
+            }, 300);
+          });
+        });
+      }).catch(function () { $('rmChips').innerHTML = ''; });
+    }
+    $('rmData').addEventListener('change', carregar);
+    carregar();
+  }
+
+  /* ---------------- ações dos cartões ---------------- */
+  document.addEventListener('click', function (ev) {
+    var b = ev.target.closest('[data-acao]');
+    if (!b) return;
+    var acao = b.dataset.acao;
+    var id = Number(b.dataset.id);
+
+    if (acao === 'agendar') {
+      var a = acharAgendamento(id);
+      if (a) formAgendamento(a);
+      return;
+    }
+    if (acao === 'editar') {
+      var ag = acharAgendamento(id);
+      if (ag) formAgendamento(ag);
+      return;
+    }
+    if (acao === 'wpp') {
+      api('/agendamentos/' + id + '/whatsapp').then(function (r) { window.open(r.whatsapp_url, '_blank'); }).catch(function (e) { toast(e.message); });
+      return;
+    }
+    if (acao === 'remarcar') {
+      var agr = acharAgendamento(id);
+      if (agr) formRemarcar(agr);
+      return;
+    }
+    if (acao === 'cfgAgenda') {
+      formCfgAgenda();
+      return;
+    }
+    if (acao === 'a_caminho' || acao === 'concluido' || acao === 'cancelar') {
+      var st = acao === 'cancelar' ? 'cancelado' : acao;
+      if (st === 'concluido' && !confirm('Marcar como concluído? A próxima limpeza do aparelho será calculada automaticamente.')) return;
+      api('/agendamentos/' + id + '/status', { method: 'PATCH', body: { status: st } })
+        .then(function (r) {
+          toast(st === 'concluido' ? (r.proxima_limpeza ? 'Concluído ✓ Próxima limpeza: ' + dataBR(r.proxima_limpeza) : 'Concluído ✓') : 'Atualizado ✓');
+          return atualizarTudo();
+        }).catch(function (e) { toast(e.message); });
+      return;
+    }
+    if (acao === 'lembrete') {
+      api('/equipamentos/' + id + '/lembrete').then(function (r) { window.open(r.whatsapp_url, '_blank'); }).catch(function (e) { toast(e.message); });
+      return;
+    }
+    if (acao === 'agendarEquip') {
+      var eq = null;
+      for (var i = 0; i < S.equipamentos.length; i++) if (Number(S.equipamentos[i].id) === id) eq = S.equipamentos[i];
+      if (!eq && S.painel) {
+        for (var j = 0; j < S.painel.vencendo.length; j++) if (Number(S.painel.vencendo[j].id) === id) eq = S.painel.vencendo[j];
+      }
+      var limpeza = S.servicos.filter(function (s) { return /limpeza|higieniz/i.test(s.nome); })[0];
+      formAgendamento({
+        cliente_id: eq ? eq.cliente_id : 0,
+        cliente_nome: eq ? eq.cliente_nome : '',
+        cliente_telefone: eq ? eq.cliente_telefone : '',
+        equipamento_id: eq ? eq.id : 0,
+        servico_id: limpeza ? limpeza.id : 0,
+        status: 'agendado'
+      });
+      return;
+    }
+    if (acao === 'editarEquip') {
+      var eeq = null;
+      for (var k = 0; k < S.equipamentos.length; k++) if (Number(S.equipamentos[k].id) === id) eeq = S.equipamentos[k];
+      if (eeq) formEquipamento(eeq);
+      return;
+    }
+    if (acao === 'apagarEquip') {
+      if (!confirm('Apagar este aparelho?')) return;
+      api('/equipamentos/' + id, { method: 'DELETE' }).then(function () { toast('Apagado.'); return atualizarTudo(); });
+      return;
+    }
+    if (acao === 'editarCliente') {
+      var cc = S.clientes.filter(function (c) { return Number(c.id) === id; })[0];
+      if (cc) formCliente(cc);
+      return;
+    }
+    if (acao === 'novoAgendCliente') {
+      var cli = S.clientes.filter(function (c) { return Number(c.id) === id; })[0];
+      formAgendamento({ cliente_id: id, cliente_nome: cli ? cli.nome : '', cliente_telefone: cli ? cli.telefone : '', endereco: cli ? cli.endereco : '', status: 'agendado' });
+      return;
+    }
+    if (acao === 'novoEquipCliente') {
+      formEquipamento({ cliente_id: id });
+      return;
+    }
+    if (acao === 'editarServico') {
+      var ss = S.servicos.filter(function (s) { return Number(s.id) === id; })[0];
+      if (ss) formServico(ss);
+      return;
+    }
+    if (acao === 'apagarServico') {
+      if (!confirm('Apagar este serviço?')) return;
+      api('/servicos/' + id, { method: 'DELETE' }).then(function () { toast('Apagado.'); return api('/servicos').then(function (l) { S.servicos = l; carregarServicos(); }); });
+      return;
+    }
+  });
+
+  $('btnNovoAgend').addEventListener('click', function () { formAgendamento({ status: 'agendado' }); });
+  $('btnNovoCliente').addEventListener('click', function () { formCliente(); });
+  $('btnNovoEquip').addEventListener('click', function () { formEquipamento(); });
+  $('btnNovoServ').addEventListener('click', function () { formServico(); });
+  $('buscaCliente').addEventListener('input', function () {
+    clearTimeout(window.__bt);
+    window.__bt = setTimeout(carregarClientes, 350);
+  });
+
+  /* ---------------- resumo do dia ---------------- */
+  $('btnResumo').addEventListener('click', function () {
+    api('/resumo-dia').then(function (r) {
+      window.open(r.whatsapp_url || r.whatsapp_share, '_blank');
+    }).catch(function (e) { toast(e.message); });
+  });
+
+  /* ---------------- empresa ---------------- */
+  $('btnSalvarEmpresa').addEventListener('click', function () {
+    var b = this;
+    b.disabled = true;
+    var negocio = Object.assign({}, S.negocio, {
+      name: v('empNome'),
+      tagline: v('empTagline'),
+      slogan: v('empSlogan'),
+      whatsapp: v('empZap'),
+      instagram: v('empInsta'),
+      about: v('empSobre')
+    });
+    api('/settings', { method: 'PUT', body: { business: negocio } })
+      .then(function () { S.negocio = negocio; aplicarEmpresa(); toast('Dados salvos ✓'); })
+      .catch(function (e) { toast(e.message); })
+      .then(function () { b.disabled = false; });
+  });
+
+  $('btnSenha').addEventListener('click', function () {
+    var nova = v('novaSenha');
+    if (nova.length < 4) return toast('A senha precisa ter pelo menos 4 caracteres.');
+    api('/password', { method: 'POST', body: { password: nova } })
+      .then(function () { $('novaSenha').value = ''; toast('Senha alterada ✓'); })
+      .catch(function (e) { toast(e.message); });
+  });
+
+  $('btnLogo').addEventListener('click', function () { $('logoFile').click(); });
+  $('logoFile').addEventListener('change', function () {
+    var f = this.files && this.files[0];
+    if (!f) return;
+    var fd = new FormData();
+    fd.append('file', f);
+    toast('Enviando foto…');
+    fetch(BASE + '/upload', { method: 'POST', body: fd, credentials: 'same-origin' })
+      .then(function (r) { return r.json(); })
+      .then(function (j) {
+        if (!j.url) throw new Error(j.error || 'Falha no envio.');
+        return api('/settings', { method: 'PUT', body: { business: Object.assign({}, S.negocio, { logo_url: j.url }) } });
+      })
+      .then(function () { toast('Logotipo atualizado ✓'); return api('/settings'); })
+      .then(function (s) { S.negocio = s.business || {}; aplicarEmpresa(); })
+      .catch(function (e) { toast(e.message); });
+  });
+
+  $('btnMarca').addEventListener('click', function () { $('marcaFile').click(); });
+  $('marcaFile').addEventListener('change', function () {
+    var f = this.files && this.files[0];
+    if (!f) return;
+    var fd = new FormData();
+    fd.append('file', f);
+    toast('Enviando imagem…');
+    fetch(BASE + '/upload', { method: 'POST', body: fd, credentials: 'same-origin' })
+      .then(function (r) { return r.json(); })
+      .then(function (j) {
+        if (!j.url) throw new Error(j.error || 'Falha no envio.');
+        return api('/settings', { method: 'PUT', body: { business: Object.assign({}, S.negocio, { watermark_url: j.url }) } });
+      })
+      .then(function () { toast("Marca d'água atualizada ✓"); return api('/settings'); })
+      .then(function (s) { S.negocio = s.business || {}; aplicarEmpresa(); })
+      .catch(function (e) { toast(e.message); });
+    this.value = '';
+  });
+
+  $('btnCopiarLink').addEventListener('click', function () {
+    var t = $('linkPublico').textContent;
+    if (navigator.clipboard) navigator.clipboard.writeText(t).then(function () { toast('Link copiado ✓'); });
+    else { window.prompt('Copie o link:', t); }
+  });
+
+  /* ---------------- início ---------------- */
+  carregarAgendaCfg();
+  api('/painel')
+    .then(function (p) { S.painel = p; $('login').classList.add('off'); $('app').classList.remove('oculto'); renderPainel(); carregarTudo(); carregarAgendaCfg(); })
+    .catch(function () { mostrarLogin(); });
+})();
+</script>
+</body>
+</html>
