@@ -1,0 +1,37 @@
+const { chromium } = require('playwright');
+(async () => {
+  const base = 'https://loja-digital.onrender.com';
+  const b = await chromium.launch({ args: ['--no-sandbox'] });
+  const c = await b.newContext({ viewport: { width: 390, height: 900 }, deviceScaleFactor: 2 });
+  const p = await c.newPage();
+  const erros = [];
+  p.on('pageerror', (e) => erros.push('pageerror: ' + e.message));
+  p.on('console', (m) => { if (m.type() === 'error') erros.push('console: ' + m.text()); });
+
+  await p.goto(base + '/l/ageo-confeitaria', { waitUntil: 'networkidle' });
+  await p.waitForTimeout(1500);
+  const card = p.locator('.card, article').filter({ hasText: /Prestígio/ }).first();
+  await card.scrollIntoViewIfNeeded();
+  await p.waitForTimeout(400);
+  await p.screenshot({ path: 'tests/shots/KN-prestigio-card.png' });
+  await card.locator('[data-montar]').click();
+  await p.waitForTimeout(800);
+  console.log('caixa:', await p.locator('.montar-titulo').innerText(), '|', await p.locator('.montar-sub').innerText());
+  const opcoes = await p.locator('.mi-nome').evaluateAll((els) => els.map((e) => e.textContent.trim()));
+  console.log('sabores mostrados (só os desta caixa):', opcoes);
+  await p.locator('[data-montar-inc="Prestígio"]').click();
+  await p.waitForTimeout(120);
+  await p.locator('[data-montar-inc="Prestígio"]').click();
+  await p.waitForTimeout(120);
+  await p.locator('[data-montar-inc="Ninho com Nutella"]').click();
+  await p.waitForTimeout(120);
+  await p.locator('[data-montar-inc="Brigadeiro"]').click();
+  await p.waitForTimeout(300);
+  console.log('contador:', (await p.locator('.montar-contador').innerText()).replace(/\n/g, ' '));
+  await p.screenshot({ path: 'tests/shots/KO-prestigio-montagem.png' });
+  await p.locator('#montarAdd').click();
+  await p.waitForTimeout(800);
+  console.log('carrinho:', (await p.locator('.drawer-body').innerText()).replace(/\n/g, ' | ').slice(0, 130));
+  console.log('ERROS:', erros.length ? erros.slice(0, 4) : 0);
+  await b.close();
+})();

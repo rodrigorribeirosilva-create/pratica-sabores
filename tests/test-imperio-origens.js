@@ -1,0 +1,13 @@
+'use strict';
+const assert = require('assert');
+const fs = require('fs');
+const { aplicar } = require('../src/imperio-painel-premium');
+const html = aplicar(fs.readFileSync(require('path').join(__dirname, '../public/servicos-admin.html'), 'utf8'));
+assert(html.includes("if (a.origem === 'site') return 'Pelo link'"));
+assert(html.includes("a.origem_fonte === 'whatsapp_conversa'"));
+assert(html.includes('id="agOrigem"'));
+assert(html.includes("origem_fonte: !a.id && v('agOrigem') === 'whatsapp_conversa'"));
+assert(html.includes("status=todos&de=' + encodeURIComponent(data)"));
+assert(html.includes("status=todos&de=' + encodeURIComponent(iso)"));
+assert(html.includes('imperio-origem-lista'));
+console.log('Origem da agenda da Império: transformações OK.');

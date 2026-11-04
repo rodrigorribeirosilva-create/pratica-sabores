@@ -1,0 +1,27 @@
+const { chromium } = require('playwright');
+(async () => {
+  const base = 'https://loja-digital.onrender.com';
+  const b = await chromium.launch({ args: ['--no-sandbox'] });
+  const c = await b.newContext({ viewport: { width: 390, height: 900 }, deviceScaleFactor: 2 });
+  const p = await c.newPage();
+  const erros = [];
+  p.on('pageerror', (e) => erros.push('pageerror: ' + e.message));
+  p.on('console', (m) => { if (m.type() === 'error' && !/40[0-9]/.test(m.text())) erros.push('console: ' + m.text()); });
+  await p.goto(base + '/l/mdn-presents', { waitUntil: 'networkidle' });
+  await p.waitForTimeout(1500);
+  await p.locator('button').filter({ hasText: /adicionar|\+/i }).first().click();
+  await p.waitForTimeout(600);
+  await p.locator('#cartBarBtn').click();
+  await p.waitForTimeout(600);
+  await p.locator('button').filter({ hasText: /finalizar|continuar|fechar pedido|ir para o pagamento/i }).first().click();
+  await p.waitForTimeout(1200);
+  await p.locator('input[name="payment_method"][data-pay-id="cartao_online"]').check({ force: true });
+  await p.waitForTimeout(1000);
+  console.log('bloco do cartão:', JSON.stringify((await p.locator('#payInfo').innerText()).replace(/\n/g, ' | ').slice(0, 200)));
+  console.log('formulário de cartão (deve ser 0 sem chaves):', await p.locator('#mpNumero').count());
+  await p.locator('#payInfo').scrollIntoViewIfNeeded();
+  await p.waitForTimeout(400);
+  await p.screenshot({ path: 'tests/shots/JK-prod-cartao-ativacao.png' });
+  console.log('ERROS:', erros.length ? erros : 0);
+  await b.close();
+})();

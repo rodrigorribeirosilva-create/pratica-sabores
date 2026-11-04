@@ -1,0 +1,32 @@
+const { chromium } = require('playwright');
+(async () => {
+  const base = process.env.BASE || 'http://127.0.0.1:3978';
+  const b = await chromium.launch({ args: ['--no-sandbox'] });
+  const c = await b.newContext({ viewport: { width: 1280, height: 1000 }, deviceScaleFactor: 2 });
+  const p = await c.newPage();
+  const erros = [];
+  p.on('pageerror', (e) => erros.push('pageerror: ' + e.message));
+  p.on('console', (m) => { if (m.type() === 'error') erros.push('console: ' + m.text()); });
+  await p.goto(base + '/master', { waitUntil: 'networkidle' });
+  await p.fill('#masterPass', 'master123');
+  await p.locator('#loginForm button[type="submit"]').click();
+  await p.waitForTimeout(2000);
+  await p.locator('.tab[data-tab="trafego"]').click();
+  await p.waitForTimeout(2000);
+  console.log('KPIs:', (await p.locator('#trafKpis').innerText()).replace(/\n/g, ' | '));
+  console.log('tabela lojas:', (await p.locator('#trafLojas').innerText()).replace(/\n/g, ' | ').slice(0, 200));
+  console.log('campanhas:', await p.locator('.camp-card').count());
+  await p.screenshot({ path: 'tests/shots/JU-master-trafego.png', fullPage: true });
+  // mobile
+  const m = await b.newContext({ viewport: { width: 390, height: 900 }, deviceScaleFactor: 2 });
+  const pm = await m.newPage();
+  await pm.goto(base + '/master', { waitUntil: 'networkidle' });
+  await pm.fill('#masterPass', 'master123');
+  await pm.locator('#loginForm button[type="submit"]').click();
+  await pm.waitForTimeout(1800);
+  await pm.locator('.tab[data-tab="trafego"]').click();
+  await pm.waitForTimeout(1800);
+  await pm.screenshot({ path: 'tests/shots/JV-master-trafego-mobile.png' });
+  console.log('ERROS:', erros.length ? erros.slice(0, 5) : 0);
+  await b.close();
+})();

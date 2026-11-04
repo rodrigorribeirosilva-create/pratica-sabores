@@ -1,0 +1,26 @@
+# Blueprint do Render (https://render.com/docs/blueprint-spec)
+# Ajuste "plan" para "free" se quiser apenas testar (sem disco, dados temporários).
+services:
+  - type: web
+    name: pratica-sabores
+    runtime: node
+    plan: starter          # US$ 7/mês (0.5 CPU / 512 MB) — necessário p/ disco persistente
+    region: ohio
+    branch: main
+    buildCommand: npm install
+    startCommand: npm start
+    disk:
+      name: dados
+      mountPath: /var/data
+      sizeGB: 1
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATA_DIR
+        value: /var/data
+      - key: UPLOAD_DIR
+        value: /var/data/uploads
+      - key: ADMIN_PASSWORD
+        sync: false        # senha inicial da loja principal (solicitada no deploy)
+      - key: MASTER_PASSWORD
+        sync: false        # senha do painel /master — o SEU acesso de administrador

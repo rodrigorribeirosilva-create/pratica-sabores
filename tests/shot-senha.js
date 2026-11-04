@@ -1,0 +1,21 @@
+const { chromium } = require('playwright');
+(async () => {
+  const b = await chromium.launch();
+  const p = await b.newPage({ viewport: { width: 1280, height: 800 } });
+  const errs = [];
+  p.on('pageerror', (e) => errs.push(e.message));
+  await p.goto('http://localhost:3991/master', { waitUntil: 'domcontentloaded' });
+  await p.waitForSelector('#masterPass');
+  await p.fill('#masterPass', 'master123');
+  await p.click('#loginForm button[type=submit]');
+  await p.waitForSelector('.store');
+  await p.waitForTimeout(600);
+  const oculto = await p.locator('[data-pw]').first().textContent();
+  console.log('senha exibida (oculta):', oculto.trim());
+  await p.locator('[data-act="toggle-pw"]').first().click();
+  await p.waitForTimeout(300);
+  console.log('depois de clicar em mostrar:', (await p.locator('[data-pw]').first().textContent()).trim());
+  await p.screenshot({ path: __dirname + '/shots/G1-senha-visivel.png' });
+  console.log('erros JS:', errs.length ? errs : 'nenhum');
+  await b.close();
+})();

@@ -1,0 +1,31 @@
+const { chromium } = require('playwright');
+(async () => {
+  const b = await chromium.launch({ args: ['--no-sandbox'] });
+  const c = await b.newContext({ viewport: { width: 390, height: 900 }, deviceScaleFactor: 2 });
+  const p = await c.newPage();
+  const erros = [];
+  p.on('pageerror', (e) => erros.push(e.message));
+  p.on('console', (m) => { if (m.type() === 'error') erros.push(m.text()); });
+  await p.goto('http://127.0.0.1:3978/l/pratica-sabores', { waitUntil: 'networkidle' });
+  await p.waitForTimeout(900);
+  await p.locator('button').filter({ hasText: /adicionar|\+/i }).first().click();
+  await p.waitForTimeout(400);
+  await p.locator('#cartBarBtn').click();
+  await p.waitForTimeout(400);
+  await p.locator('button').filter({ hasText: /finalizar|continuar|fechar pedido|ir para o pagamento/i }).first().click();
+  await p.waitForTimeout(700);
+  await p.fill('input[name="customer_name"]', 'Cliente Pix');
+  await p.fill('input[name="phone"]', '48966665555');
+  const addr = p.locator('input[name="address"]');
+  if (await addr.count()) await addr.first().fill('Rua Pix 20, Centro');
+  await p.locator('input[name="payment_method"][data-pay-id="pix"]').check({ force: true });
+  await p.waitForTimeout(500);
+  console.log('botão:', (await p.locator('#submitLabel').innerText()).trim());
+  await p.locator('#submitOrder').click();
+  await p.waitForTimeout(2500);
+  const corpo = await p.locator('.drawer-body').innerText().catch(() => '');
+  console.log('tela:', corpo.replace(/\n+/g, ' | ').slice(0, 220));
+  // dinheiro com troco
+  console.log('ERROS:', erros.length ? erros.slice(0, 4) : 0);
+  await b.close();
+})();

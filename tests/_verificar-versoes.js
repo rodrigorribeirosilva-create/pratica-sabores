@@ -1,0 +1,20 @@
+const { chromium } = require('playwright');
+(async () => {
+  const b = await chromium.launch();
+  const p = await b.newPage({ viewport: { width: 1280, height: 1000 } });
+  let erros = 0;
+  p.on('pageerror', (e) => { console.log('ERRO JS:', e.message); erros++; });
+  await p.goto('https://loja-digital.onrender.com/master', { waitUntil: 'domcontentloaded' });
+  await p.fill('#masterPass', 'master123');
+  await p.click('#loginForm button[type=submit]');
+  await p.waitForTimeout(4000);
+  await p.evaluate(() => { [...document.querySelectorAll('a,button')].find(x=>/sistema|backup/i.test(x.textContent))?.click(); });
+  await p.waitForTimeout(3000);
+  const txt = await p.locator('#histBox').innerText().catch(()=> '(sem histBox)');
+  console.log('histBox:', txt);
+  const btns = await p.locator('#histBox [data-restaurar]').count();
+  console.log('botões restaurar:', btns);
+  await p.screenshot({ path: 'tests/shots/KR-master-versoes.png', fullPage: true });
+  console.log('ERROS:', erros);
+  await b.close();
+})();

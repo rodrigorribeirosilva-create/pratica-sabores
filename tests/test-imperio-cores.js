@@ -1,0 +1,22 @@
+'use strict';
+// Apenas fixture fictícia local na porta 3988. Salva preferências e não acessa produção.
+const {chromium}=require('playwright'), assert=require('assert');
+(async()=>{const b=await chromium.launch({headless:true,args:['--no-sandbox']});try{
+ const p=await b.newPage({viewport:{width:390,height:844}}), errors=[];p.on('pageerror',e=>errors.push(e.message));
+ const inicial=p.waitForResponse(r=>r.url().endsWith('/api/admin/painel'));await p.goto('http://127.0.0.1:3988/l/imperio-barber/admin');await inicial;await p.waitForTimeout(350);await p.locator('#senha').fill('teste123');await p.locator('#loginForm button').click();await p.locator('#app:not(.oculto)').waitFor();
+ await p.locator('#imperioAbrirMenu').click();await p.locator('[data-tab="agenda"]').click();await p.getByRole('button',{name:'Ver agenda de Barbeiro de Teste'}).waitFor();await p.locator('#imperioDataAgenda').fill('2026-12-01');await p.locator('#imperioDataAgenda').dispatchEvent('change');
+ const faixa=p.getByRole('button',{name:'Ver recorrência de Cliente Teste'});await faixa.waitFor();assert((await faixa.innerText()).includes('Agendado'));assert((await faixa.innerText()).includes('10:00'));
+ assert.equal(await faixa.evaluate(e=>getComputedStyle(e).backgroundColor),'rgb(187, 137, 232)');
+ const bloqueado=p.locator('#gradeHoras .imperio-bloqueado');await bloqueado.waitFor();assert.equal(await bloqueado.evaluate(e=>getComputedStyle(e).backgroundColor),'rgb(240, 168, 174)');
+ assert(await p.getByRole('button',{name:'Agendar às 11:30'}).isVisible());
+ await p.locator('#imperioAbrirCores').click();await p.getByRole('heading',{name:'Cores da agenda'}).waitFor();
+ await p.locator('[data-cor-status="agendado"]').fill('#207050');await p.locator('[data-cor-status="cancelado"]').fill('#d50000');await p.locator('[data-cor-ativar="1"]').check();await p.locator('[data-cor-servico="1"]').fill('#fef000');await p.getByRole('button',{name:'Salvar cores'}).click();
+ await p.waitForFunction(()=>{const e=document.querySelector('.imperio-hora-cliente');return e&&getComputedStyle(e).backgroundColor==='rgb(32, 112, 80)'});
+ assert((await faixa.evaluate(e=>getComputedStyle(e).boxShadow)).includes('rgb(254, 240, 0)'));
+ await faixa.click();await p.locator('.imperio-recorrencia-situacao').waitFor();const pill=p.locator('#sheetBody .pill.cancelado');await pill.waitFor();assert.equal(await pill.evaluate(e=>getComputedStyle(e).backgroundColor),'rgb(213, 0, 0)');await p.locator('#sheetSalvar').click();
+ const result=await p.evaluate(async()=>{let b='/l/imperio-barber/api';let r=await fetch(b+'/disponibilidade?data=2026-12-01&profissional=1&servico=1');return r.json()});assert(!('cliente_id_ocupando' in result.horarios.find(x=>x.hora==='10:00')));
+ await p.reload();await p.locator('#app:not(.oculto)').waitFor();await p.locator('#imperioAbrirMenu').click();await p.locator('[data-tab="agenda"]').click();await p.locator('#imperioDataAgenda').fill('2026-12-01');await p.locator('#imperioDataAgenda').dispatchEvent('change');await p.waitForFunction(()=>{let e=document.querySelector('.imperio-hora-cliente');return e&&getComputedStyle(e).backgroundColor==='rgb(32, 112, 80)'});
+ const outro=await b.newPage();await outro.goto('http://127.0.0.1:3988/l/outra-barbearia/admin');await outro.locator('#senha').fill('outra123');await outro.locator('#loginForm button').click();await outro.locator('#app:not(.oculto)').waitFor();assert.equal(await outro.locator('#imperioAbrirCores').count(),0);let otherStatus=await outro.evaluate(async()=>{let r=await fetch('/l/outra-barbearia/api/admin/agenda/cores');return r.status});assert.equal(otherStatus,404);
+ const emp=await b.newPage();await emp.goto('http://127.0.0.1:3988/l/imperio-barber/admin');await emp.locator('#senha').fill('func123');await emp.locator('#loginForm button').click();await emp.locator('#app:not(.oculto)').waitFor();await emp.waitForTimeout(300);assert(await emp.locator('#imperioAbrirCores').isHidden());let denied=await emp.evaluate(async()=>{let u='/l/imperio-barber/api/admin/agenda/cores',x=await(await fetch(u)).json(), r=await fetch(u,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(x)});return r.status});assert.equal(denied,403);
+ assert.deepEqual(errors,[]);assert(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));console.log('Cores: configuração, persistência, serviço, cancelado livre, contraste, cliente, autenticação e isolamento OK.');
+ }finally{await b.close()}})().catch(e=>{console.error(e);process.exit(1)});

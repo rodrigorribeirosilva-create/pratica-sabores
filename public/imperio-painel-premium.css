@@ -1,0 +1,295 @@
+/* Exclusivo do painel da Império Barber. Não altera os demais painéis. */
+body.tema-imperio{--bg:#0b0b0b;--card:#151515;--linha:#2b2a27;--txt:#f6f5f1;--mut:#aaa8a2;--sombra:0 8px 28px rgba(0,0,0,.12);background:#0b0b0b;font-family:system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+body.tema-imperio .app{max-width:760px;padding-bottom:calc(86px + env(safe-area-inset-bottom))}
+body.tema-imperio .topo{position:relative;top:auto;border-radius:0;background:radial-gradient(ellipse at 95% -60%,rgba(194,151,57,.13),transparent 60%),#0d0d0d;border-bottom:1px solid #26231c;box-shadow:none;padding:14px 16px 11px}
+body.tema-imperio .topo-linha{gap:10px;min-width:0}
+body.tema-imperio .topo-linha>div:not(.topo-acoes){min-width:0;flex:1}
+body.tema-imperio .topo-linha img,body.tema-imperio .topo-linha .logo-ini{width:48px;height:48px;border-radius:50%;object-fit:cover;border:1px solid #c4a353;padding:0;background:#080808}
+body.tema-imperio .topo-linha .nome{font-family:inherit;font-weight:800;font-size:15px;letter-spacing:.025em;color:#f9f8f4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+body.tema-imperio .topo-linha .sub{color:#aaa8a2;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+body.tema-imperio .topo-acoes{display:flex;align-items:center;gap:5px;flex:none}
+body.tema-imperio .icobtn,body.tema-imperio .opcoes-topo>summary{position:relative;width:36px;height:36px;border:1px solid #38352e;border-radius:10px;background:#171717;color:#eee;display:grid;place-items:center;cursor:pointer;padding:0}
+body.tema-imperio .icobtn:hover,body.tema-imperio .opcoes-topo>summary:hover{border-color:#b49a5a;color:#e9cb83}
+body.tema-imperio svg.icone-premium{width:20px;height:20px;display:block;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+body.tema-imperio .topo .data{display:inline-block;margin:9px 8px 0 0;font-size:11px;color:#aaa8a2}
+body.tema-imperio .sync-linha{display:inline-flex;gap:7px;margin:9px 0 0;font-size:10px}
+body.tema-imperio .sync{color:#69d599}
+body.tema-imperio .sync-ver{font-size:9px;color:#77756f}
+body.tema-imperio .opcoes-topo{position:relative;z-index:45}
+body.tema-imperio .opcoes-topo>summary{list-style:none}
+body.tema-imperio .opcoes-topo>summary::-webkit-details-marker{display:none}
+body.tema-imperio .opcoes-topo[open]>summary{border-color:#c9a75c}
+body.tema-imperio .opcoes-lista{position:absolute;right:0;top:42px;min-width:175px;padding:6px;background:#1b1b1a;border:1px solid #51462f;border-radius:12px;box-shadow:0 14px 30px #0009}
+body.tema-imperio .opcoes-lista .icobtn{width:100%;height:auto;min-height:42px;border:0;border-radius:8px;background:transparent;display:flex;gap:9px;justify-content:flex-start;padding:9px;color:#eae7df;font-size:12px;text-align:left;white-space:nowrap}
+body.tema-imperio .opcoes-lista .icobtn:hover{background:#302b20}
+body.tema-imperio .opcoes-lista .icobtn svg{width:17px;height:17px;color:#d4b66f}
+body.tema-imperio #imperioNotificacao .indicador{position:absolute;right:4px;top:4px;width:8px;height:8px;background:#e85b4d;border:1px solid #171717;border-radius:50%}
+body.tema-imperio main{padding:14px 14px 0}
+body.tema-imperio .card{background:#151515;border:1px solid #302e2a;border-radius:15px;box-shadow:none;padding:14px;margin-bottom:10px}
+body.tema-imperio .card h2{font-family:inherit;color:#ece8de;font-size:12px;letter-spacing:.045em;font-weight:750}
+body.tema-imperio .card h2 .qtd{background:#352d1b;color:#e2c779}
+body.tema-imperio .item{background:#1b1b1a;border-color:#34322d;border-radius:11px}
+body.tema-imperio .btn{border-radius:10px;background:#1d1c1a;color:#e1cf9c;border:1px solid #4a402d}
+body.tema-imperio .btn.main,body.tema-imperio .btn.ouro{background:linear-gradient(135deg,#eed28b,#be943e);color:#1a1408;border:1px solid #ddbd71;box-shadow:none}
+body.tema-imperio .btn.zap{background:#25d366;color:#08331a}
+body.tema-imperio .btn.bad{background:rgba(197,48,48,.18);color:#ff9b9b}
+body.tema-imperio .alerta,body.tema-imperio .alerta.zerado{padding:11px 13px;border-radius:12px;margin-bottom:10px;box-shadow:none}
+body.tema-imperio .alerta{background:#302716;border:1px solid #6b5426;color:#f2d99d}
+body.tema-imperio .alerta.zerado{background:#14211a;border:1px solid #284535;color:#c5e0cc}
+body.tema-imperio .alerta .tit{font-size:12px}
+body.tema-imperio .alerta .det{font-size:11px;margin-top:2px}
+body.tema-imperio .hoje-atalhos{grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+body.tema-imperio .hoje-atalhos .btn{min-height:46px;padding:9px 6px;font-size:12px;font-weight:750}
+body.tema-imperio .hoje-atalhos .btn svg{width:17px;height:17px}
+body.tema-imperio .kpis{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-bottom:10px}
+body.tema-imperio .kpi{min-width:0;min-height:77px;position:relative;text-align:left;display:flex;flex-direction:column;justify-content:center;padding:11px 8px 11px 45px;background:linear-gradient(145deg,#1b1b1b,#141414);border:1px solid #302e2a;border-left:2px solid #c8a150;border-radius:12px;box-shadow:none}
+body.tema-imperio .kpi::before{content:'';position:absolute;left:13px;top:50%;transform:translateY(-50%);width:21px;height:21px;background:#d0ae61;mask:var(--icone-kpi) center/contain no-repeat;-webkit-mask:var(--icone-kpi) center/contain no-repeat}
+body.tema-imperio .kpi:nth-child(1){--icone-kpi:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23000'%3E%3Cpath d='M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm0 2c-4 0-7 2-7 5v1h14v-1c0-3-3-5-7-5Z'/%3E%3C/svg%3E")}
+body.tema-imperio .kpi:nth-child(2){--icone-kpi:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23000'%3E%3Cpath d='M6 2h12v2h-1v3c0 2-1.2 3.7-3 5 1.8 1.3 3 3 3 5v3h1v2H6v-2h1v-3c0-2 1.2-3.7 3-5-1.8-1.3-3-3-3-5V4H6V2Zm3 3v2c0 1.7 1.3 3 3 4 1.7-1 3-2.3 3-4V5H9Zm3 8c-1.7 1-3 2.3-3 4v2h6v-2c0-1.7-1.3-3-3-4Z'/%3E%3C/svg%3E")}
+body.tema-imperio .kpi:nth-child(3){--icone-kpi:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23000'%3E%3Cpath d='M4 14h3v6H4v-6Zm6-4h3v10h-3V10Zm6-5h3v15h-3V5ZM3 21h18v1H3v-1Z'/%3E%3C/svg%3E")}
+body.tema-imperio .kpi:nth-child(4){--icone-kpi:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23000'%3E%3Cpath d='M7 2h2v2h6V2h2v2h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2V2ZM5 9v11h14V9H5Zm3 3h3v3H8v-3Zm5 0h3v3h-3v-3Z'/%3E%3C/svg%3E")}
+body.tema-imperio .kpi .n{color:#f6f4ef;font-family:inherit;font-weight:800;font-size:clamp(15px,4.4vw,21px);letter-spacing:-.02em;white-space:nowrap}
+body.tema-imperio .kpi .r{color:#aaa8a2;text-transform:none;letter-spacing:0;font-weight:500;font-size:11px;margin-top:3px}
+body.tema-imperio #imperioHorariosHoje summary{font-size:12px;color:#f0ede6;letter-spacing:.03em}
+body.tema-imperio #imperioHorariosHoje .grade-horas{grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+body.tema-imperio #imperioHorariosHoje .grade-hora{padding:9px 4px;background:#202020;border:1px solid #393733;color:#f1f0ed;font-size:13px}
+body.tema-imperio #imperioHorariosHoje .grade-hora small{color:#c2c0ba;font-size:10px;letter-spacing:0;text-transform:none}
+body.tema-imperio #imperioHorariosHoje .grade-hora.ocupado{background:#532020;border-color:#a03b3b;color:#fff}
+body.tema-imperio #imperioHorariosHoje .grade-hora.ocupado small{color:#fff}
+body.tema-imperio #imperioHorariosHoje .grade-hora.passou{opacity:.45}
+body.tema-imperio .nav{background:rgba(12,12,12,.98);border-top:1px solid #49402d;box-shadow:0 -5px 22px #0005;grid-auto-columns:minmax(0,1fr)}
+body.tema-imperio .nav button{min-width:0;padding:8px 1px 9px;font-size:8.5px;font-weight:500;gap:4px;color:#aaa8a2;white-space:nowrap}
+body.tema-imperio .nav button .ic{display:flex;align-items:center;justify-content:center;line-height:1}
+body.tema-imperio .nav button .ic svg{width:20px;height:20px}
+body.tema-imperio .nav button.on{color:#e6c269}
+body.tema-imperio .nav button.on::before{content:'';position:absolute;height:2px;left:16%;right:16%;top:0;background:#d7b05a;border-radius:2px}
+body.tema-imperio .nav button.on .ic{filter:none}
+body.tema-imperio .sheet{background:#191918;border-color:#51452d}
+body.tema-imperio .campo input,body.tema-imperio .campo select,body.tema-imperio .campo textarea{background:#111;color:#f4efe4;border-color:#484237}
+body.tema-imperio #buscaCliente{background:#111;color:#f4efe4;border-color:#484237!important}
+body.tema-imperio :focus-visible{outline:2px solid #e3c574;outline-offset:2px}
+@media(max-width:360px){body.tema-imperio .topo{padding-left:11px;padding-right:11px}body.tema-imperio .topo-linha{gap:6px}body.tema-imperio .topo-linha img,body.tema-imperio .topo-linha .logo-ini{width:39px;height:39px}body.tema-imperio .topo-linha .nome{font-size:12px}body.tema-imperio .icobtn,body.tema-imperio .opcoes-topo>summary{width:32px;height:34px}body.tema-imperio .nav button{font-size:8px}body.tema-imperio .kpi{padding-left:38px}body.tema-imperio .kpi::before{left:10px;width:18px;height:18px}}
+@media(min-width:900px){body.tema-imperio .app{max-width:none;padding-bottom:20px}body.tema-imperio .topo{margin-left:212px;padding:16px 24px}body.tema-imperio .app main{margin-left:212px;max-width:1050px;padding:20px 24px 40px}body.tema-imperio .nav{width:212px;background:#111;border-right:1px solid #39352c;padding:18px 10px}body.tema-imperio .nav button{font-size:13px;padding:11px 12px;gap:11px;color:#b3afa5}body.tema-imperio .nav button.on{background:#2f281a;color:#e7c979}body.tema-imperio .nav button.on::before{left:0;right:auto;top:15%;bottom:15%;height:auto;width:3px}body.tema-imperio .kpis{grid-template-columns:repeat(4,minmax(0,1fr))}body.tema-imperio #imperioHorariosHoje .grade-horas{grid-template-columns:repeat(auto-fill,minmax(105px,1fr))}}
+/* Ajustes das telas internas: contraste e leitura no celular. */
+body.tema-imperio #tab-equipe .card > p[style*="background:#f4f8fd"]{background:#211e17!important;border-color:#5a4b2f!important;color:#d5cfbf!important}
+body.tema-imperio #linkPublico,body.tema-imperio .sheet [style*="background:#f7fafd"]{background:#211e17!important;border-color:#5a4b2f!important;color:#e8dfca!important}
+body.tema-imperio .kpi2,body.tema-imperio .lp-item,body.tema-imperio .ab-col{background:#1b1b1a;border-color:#34322d}
+body.tema-imperio .ab-slot{background:#111;border-color:#32302c}
+body.tema-imperio .ab-slot.ocupado{background:#532020;border-color:#a03b3b;color:#fff}
+body.tema-imperio .lp-hora{color:#e0bd6d}
+body.tema-imperio .lp-item.feito{opacity:.72}
+body.tema-imperio #relGrafico .grafico{width:100%;max-width:100%;overflow-x:auto;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch;gap:5px;padding-bottom:3px}
+body.tema-imperio #relGrafico .grafico .col{height:90px;flex:1 0 14px;min-width:14px}
+body.tema-imperio #relGrafico .grafico .col i{flex:none}
+@media(max-width:600px){body.tema-imperio #relGrafico::after{content:'Deslize o gráfico para ver os dias';display:block;color:#aaa8a2;font-size:10px;margin-top:5px}}
+/* Os indicadores da página inicial também são atalhos acessíveis. */
+body.tema-imperio #kpis .kpi[role="button"]{cursor:pointer;transition:border-color .15s,background .15s}
+body.tema-imperio #kpis .kpi[role="button"]::after{content:'›';position:absolute;right:8px;top:5px;color:#a99466;font-size:17px;line-height:1}
+body.tema-imperio #kpis .kpi[role="button"]:hover{border-color:#a98b4e;background:#242117}
+/* Busca de agenda: uma única seleção controla todas as visões. */
+body.tema-imperio #cxFiltroBarbeiro,body.tema-imperio .imperio-grade-prof{display:none!important}
+body.tema-imperio #imperioBuscaCard{position:relative}
+body.tema-imperio .imperio-busca-titulo{display:block;color:#f0ede6;font-size:12px;letter-spacing:.04em;text-transform:uppercase;font-weight:750;margin-bottom:9px}
+body.tema-imperio .imperio-busca-linha{display:flex;gap:8px;align-items:center}
+body.tema-imperio #imperioBuscaBarbeiro{min-width:0;flex:1;width:100%;padding:11px 12px;font:inherit;font-size:16px;background:#111;color:#f4efe4;border:1px solid #484237;border-radius:10px}
+body.tema-imperio #imperioBuscaLimpar{white-space:nowrap;min-height:44px}
+body.tema-imperio #imperioBuscaLimpar[hidden],body.tema-imperio #imperioBuscaResultados[hidden]{display:none!important}
+body.tema-imperio .imperio-busca-resultados{margin-top:6px;background:#201f1d;border:1px solid #55482d;border-radius:10px;padding:4px;max-height:200px;overflow:auto}
+body.tema-imperio .imperio-busca-opcao{width:100%;text-align:left;border:0;background:transparent;color:#f5f0e4;padding:11px;border-radius:7px;font:inherit;cursor:pointer}
+body.tema-imperio .imperio-busca-opcao:hover,body.tema-imperio .imperio-busca-opcao:focus-visible{background:#382e1d}
+body.tema-imperio .imperio-busca-vazio,body.tema-imperio .imperio-busca-estado{font-size:11px;color:#aaa8a2;padding:7px 4px 0}
+body.tema-imperio .imperio-busca-vazio{padding:10px}
+/* Identificação da origem sem inferir como um link comum foi compartilhado. */
+body.tema-imperio .imperio-origem-ajuda{font-size:11px;line-height:1.45;color:#aaa8a2;margin:8px 0 0}
+body.tema-imperio .imperio-origem{display:inline-block;color:#dfc17c;font-size:10px;font-weight:700;border:1px solid #51442c;border-radius:20px;padding:1px 7px;margin-bottom:3px}
+body.tema-imperio .lp-nome .imperio-origem-lista{color:#ddbd73;font-weight:700;margin-top:2px}
+/* Navegação do painel: páginas internas e menu lateral acessível. */
+body.tema-imperio #imperioAbrirMenu{display:none;flex:none;width:40px;height:40px;padding:0;border:1px solid #51452e;border-radius:10px;background:#1a1917;color:#e8ca80;font-size:21px;line-height:1;cursor:pointer}
+body.tema-imperio #imperioFundoMenu{display:none}
+body.tema-imperio .imperio-menu-titulo{padding:10px 12px 17px;margin-bottom:8px;border-bottom:1px solid #363128}
+body.tema-imperio .imperio-menu-titulo b{display:block;color:#ecd18a;letter-spacing:.15em;font-family:Georgia,serif;font-size:17px}
+body.tema-imperio .imperio-menu-titulo span{display:block;color:#938c7c;font-size:9px;letter-spacing:.1em;margin-top:5px}
+body.tema-imperio .imperio-pagina-cabecalho{padding:2px 1px 13px}
+body.tema-imperio .imperio-pagina-cabecalho span{display:block;color:#a28e66;font-size:9px;font-weight:750;letter-spacing:.12em}
+body.tema-imperio .imperio-pagina-cabecalho h1{font-family:Georgia,serif;color:#f3ebd9;font-size:25px;line-height:1.2;font-weight:600;margin:4px 0 0}
+body.tema-imperio .nav .dot{top:8px;right:12px}
+@media(max-width:899px){
+  body.tema-imperio .app{padding-bottom:24px}
+  body.tema-imperio #imperioAbrirMenu{display:block}
+  body.tema-imperio .nav{position:fixed;top:0;bottom:0;left:0;right:auto;width:min(280px,85vw);display:flex;flex-direction:column;justify-content:flex-start;align-items:stretch;gap:4px;overflow-y:auto;overscroll-behavior:contain;padding:20px 12px calc(18px + env(safe-area-inset-bottom));background:#111;border-top:0;border-right:1px solid #51452e;box-shadow:10px 0 35px #0009;transform:translateX(-105%);visibility:hidden;transition:transform .2s ease,visibility .2s;z-index:70}
+  body.tema-imperio.imperio-menu-aberto .nav{transform:translateX(0);visibility:visible}
+  body.tema-imperio .nav button{width:100%;min-height:46px;flex-direction:row;justify-content:flex-start;gap:12px;padding:10px 12px;border-radius:10px;font-size:14px;text-align:left;color:#c1bbb0}
+  body.tema-imperio .nav button.on{background:#30291c;color:#ebce83}
+  body.tema-imperio .nav button.on::before{left:0;top:20%;bottom:20%;right:auto;height:auto;width:3px}
+  body.tema-imperio.imperio-menu-aberto #imperioFundoMenu:not([hidden]){display:block;position:fixed;inset:0;z-index:69;width:100%;height:100%;border:0;background:rgba(0,0,0,.66);cursor:pointer}
+  body.tema-imperio .topo-linha{gap:7px}
+  body.tema-imperio .topo-linha img,body.tema-imperio .topo-linha .logo-ini{width:40px;height:40px}
+  body.tema-imperio .topo-linha .nome{font-size:13px}
+}
+@media(max-width:360px){body.tema-imperio #imperioAbrirMenu{width:35px;height:35px;font-size:19px}body.tema-imperio .topo-linha img,body.tema-imperio .topo-linha .logo-ini{width:34px;height:34px}body.tema-imperio .topo-linha .sub{font-size:10px}}
+@media(prefers-reduced-motion:reduce){body.tema-imperio .nav{transition:none}}
+/* Seleção de clientes exclusiva do administrador. */
+body.tema-imperio .imperio-selecao-clientes{margin:0 0 12px;padding:12px;border:1px solid #51452e;border-radius:12px;background:#191714}
+body.tema-imperio .imperio-selecao-clientes[hidden]{display:none!important}
+body.tema-imperio .imperio-selecao-topo{display:flex;align-items:center;flex-wrap:wrap;gap:8px}
+body.tema-imperio .imperio-selecao-topo .btn{min-height:40px}
+body.tema-imperio #imperioContadorClientes{font-size:12px;color:#c9c0ae;margin-right:auto}
+body.tema-imperio .imperio-selecao-clientes p{margin:8px 0 0;color:#aaa398;font-size:11.5px;line-height:1.4}
+body.tema-imperio #imperioErroClientes:not(:empty){margin-top:10px;padding:9px 10px;border:1px solid #64513c;border-radius:8px;color:#f0d49a;font-size:12px;line-height:1.4;overflow-wrap:anywhere}
+body.tema-imperio .imperio-selecionar-cliente{display:inline-flex;align-items:center;gap:7px;color:#dfc17c;font-size:12px;font-weight:700;padding:5px 0 9px;cursor:pointer}
+body.tema-imperio .imperio-selecionar-cliente input{width:19px;height:19px;accent-color:#d8b45b;cursor:pointer}
+body.tema-imperio .imperio-selecao-topo button:disabled{opacity:.45;cursor:not-allowed}
+/* Clientes: estrutura compacta inspirada na referência, mantendo todas as ações. */
+body.tema-imperio .imperio-clientes-topo{display:flex;gap:10px;justify-content:space-between;margin-bottom:14px}
+body.tema-imperio .imperio-clientes-topo .btn{min-height:48px;flex:1;font-size:14px}
+body.tema-imperio .imperio-clientes-topo [hidden]{display:none!important}
+body.tema-imperio .imperio-pesquisa-clientes{background:#292827;border:0;padding:0!important;margin-bottom:8px}
+body.tema-imperio #buscaCliente{background:#292827;border:1px solid #49453d!important;min-height:52px}
+body.tema-imperio .imperio-filtros-clientes{background:#232220;border:1px solid #3e3a32;border-radius:10px;margin:0 0 12px;overflow:hidden}
+body.tema-imperio .imperio-filtros-clientes summary{padding:13px 15px;color:#f1e8d5;cursor:pointer;font-size:14px;font-weight:700}
+body.tema-imperio .imperio-filtros-lista{display:flex;flex-wrap:wrap;gap:7px;padding:0 12px}
+body.tema-imperio .imperio-filtros-lista button{border:1px solid #585146;border-radius:8px;padding:9px 12px;background:#3b3936;color:#f6f5f1;cursor:pointer;font:inherit;font-size:13px}
+body.tema-imperio .imperio-filtros-lista button.on{background:#d6b35f;border-color:#d6b35f;color:#16130e;font-weight:750}
+body.tema-imperio .imperio-filtros-clientes p{margin:9px 12px 12px;color:#bfb8aa;font-size:11px;line-height:1.5}
+body.tema-imperio .imperio-clientes-contagem{font-size:12px;color:#bfb8aa;margin:0 1px 8px}
+body.tema-imperio #listaClientes .item{border-radius:0;margin:0;border:0;border-bottom:1px solid #514d45;background:#212120;padding:14px 15px}
+body.tema-imperio #listaClientes .item:first-child{border-radius:11px 11px 0 0}
+body.tema-imperio #listaClientes .item:last-child{border-radius:0 0 11px 11px}
+body.tema-imperio #listaClientes .tit{font-size:16px;line-height:1.3;overflow-wrap:anywhere}
+body.tema-imperio #listaClientes .meta{color:#ddd7cc;font-size:13px;line-height:1.5;overflow-wrap:anywhere}
+body.tema-imperio .imperio-visitas{color:#d7b977;font-size:11px;font-weight:700;margin:3px 0 6px}
+body.tema-imperio #listaClientes .acoes{gap:6px;flex-wrap:wrap}
+body.tema-imperio #listaClientes .acoes .btn{min-height:38px}
+@media(max-width:360px){body.tema-imperio #listaClientes .acoes .btn{font-size:11px;padding-left:8px;padding-right:8px}}
+/* Agenda e serviços com a disposição vertical da referência, sem mudar as cores da marca. */
+body.tema-imperio #tab-agenda:not(.oculto){display:flex;flex-direction:column}
+body.tema-imperio #tab-agenda:not(.oculto)>*{order:10}
+body.tema-imperio #tab-agenda .imperio-data-agenda{order:1}
+body.tema-imperio #tab-agenda #imperioBuscaCard{order:2}
+body.tema-imperio #tab-agenda #imperioCardGrade{order:3}
+body.tema-imperio .imperio-data-agenda{display:flex;gap:9px;margin-bottom:12px}
+body.tema-imperio .imperio-data-agenda button,body.tema-imperio .imperio-data-agenda input{min-height:48px;border:1px solid #51483a;background:#292827;color:#f5efe1;border-radius:10px;font:inherit}
+body.tema-imperio .imperio-data-agenda button{width:48px;flex:none;font-size:25px;cursor:pointer}
+body.tema-imperio .imperio-data-agenda input{min-width:0;flex:1;text-align:center;padding:0 10px;color-scheme:dark}
+body.tema-imperio .imperio-barbeiros-atalhos{display:flex;gap:12px;overflow-x:auto;align-items:flex-start;margin-bottom:14px;padding-bottom:5px}
+body.tema-imperio .imperio-barbeiro-atalho{flex:none;display:flex;flex-direction:column;align-items:center;gap:4px;border:0;background:transparent;color:#ddd2b6;cursor:pointer;font:inherit;max-width:77px}
+body.tema-imperio .imperio-barbeiro-atalho img,body.tema-imperio .imperio-barbeiro-atalho span{display:grid;place-items:center;width:54px;height:54px;object-fit:cover;border-radius:50%;border:2px solid #665d4d;background:#34322e;color:#e4c778;font-size:19px}
+body.tema-imperio .imperio-barbeiro-atalho[aria-pressed="true"] img,body.tema-imperio .imperio-barbeiro-atalho[aria-pressed="true"] span{border-color:#e0bd6c;box-shadow:0 0 0 2px #6d5730}
+body.tema-imperio .imperio-barbeiro-atalho small{font-size:10px;max-width:72px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+body.tema-imperio #imperioCardGrade .grade-horas{display:grid;grid-template-columns:1fr;gap:0;border:1px solid #49453c;border-radius:10px;overflow:hidden}
+body.tema-imperio #imperioCardGrade .grade-hora{display:flex;align-items:center;gap:14px;min-height:47px;text-align:left;border:0;border-bottom:1px solid #49453c;border-radius:0;background:#242321;color:#e9dfca;padding:8px 12px;font-size:14px;font-weight:700}
+body.tema-imperio #imperioCardGrade .grade-hora small{margin:0;text-transform:none;letter-spacing:0;font-size:12px;color:#bdb5a5}
+body.tema-imperio #imperioCardGrade .grade-hora.ocupado{background:#532020;color:#fff}
+body.tema-imperio #imperioCardGrade .grade-hora.ocupado small{color:#fff}
+body.tema-imperio .imperio-servicos-filtros{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+body.tema-imperio .imperio-servicos-filtros input,body.tema-imperio .imperio-servicos-filtros select{min-width:0;flex:1 1 190px;min-height:48px;padding:10px 12px;border:1px solid #51483a;border-radius:10px;background:#292827;color:#f4efe4;font:inherit;font-size:16px}
+body.tema-imperio #listaServ .imperio-servico-item{display:flow-root;padding:17px;border:0;border-bottom:1px solid #514d45;border-radius:0;margin:0;background:#212120}
+body.tema-imperio #listaServ .imperio-servico-item[hidden]{display:none!important}
+body.tema-imperio .imperio-servico-imagem{float:left;margin:0 14px 10px 0;display:grid;place-items:center;width:65px;height:65px;border-radius:50%;overflow:hidden;background:#3c372d;color:#e0bd6c;font-size:23px}
+body.tema-imperio .imperio-servico-imagem img{width:100%;height:100%;object-fit:cover}
+body.tema-imperio #listaServ .acoes{clear:both;padding-top:6px}
+body.tema-imperio #listaServ .tit{font-size:16px}
+body.tema-imperio #finPeriodo{display:flex;flex-wrap:wrap;gap:6px}
+body.tema-imperio #finPeriodo button{min-height:43px;flex:1 1 95px}
+body.tema-imperio #imperioCardGrade .grade-hora.indisponivel{background:#3a3020;color:#ead6a1}
+body.tema-imperio #imperioCardGrade .grade-hora.indisponivel small{color:#ead6a1}
+/* A agenda abre pelo barbeiro e o horário livre leva ao cadastro. */
+body.tema-imperio .imperio-barbeiro-atalho:disabled{opacity:.45;cursor:not-allowed}
+body.tema-imperio .imperio-busca-expandir summary{cursor:pointer;color:#d8c494;font-size:11px;margin:8px 0}
+body.tema-imperio .imperio-grade-titulo{padding:5px 2px 10px;font-size:17px;font-weight:750;color:#ead2a0}
+body.tema-imperio #imperioCardGrade .grade-hora.imperio-hora-livre{width:100%;font:inherit;font-size:14px;cursor:pointer}
+body.tema-imperio #imperioCardGrade .grade-hora.imperio-hora-livre:hover,body.tema-imperio #imperioCardGrade .grade-hora.imperio-hora-livre:focus-visible{background:#3b3222;color:#fff}
+body.tema-imperio #imperioCardGrade .grade-hora.imperio-hora-livre small{color:#d4bd84}
+body.tema-imperio #imperioCardGrade .grade-hora.imperio-hora-livre:disabled{opacity:.55;cursor:wait}
+body.tema-imperio .imperio-grade-cabecalho{display:flex;align-items:center;justify-content:space-between;gap:10px;border-bottom:1px solid #4a453b;margin-bottom:10px}
+body.tema-imperio #imperioGradeDia{color:#d9c9a8;font-size:13px;text-transform:capitalize}
+body.tema-imperio .imperio-grade-data{display:none!important}
+body.tema-imperio .imperio-grade-foto{flex:0 0 48px;width:48px;height:48px;display:grid;place-items:center;border-radius:50%;overflow:hidden;background:#373027;color:#e5cf9e;font-weight:bold}
+body.tema-imperio .imperio-grade-foto img{width:100%;height:100%;object-fit:cover}
+body.tema-imperio #imperioGradeTitulo{flex:1;min-width:0}
+body.tema-imperio #imperioAbrirBloqueios{border:1px solid #74613b;background:#211e19;color:#e8d1a0;border-radius:8px;min-width:40px;min-height:40px;font-size:23px;cursor:pointer}
+body.tema-imperio #imperioCardGrade .grade-hora.imperio-bloqueado{background:#66413a;color:#fff;opacity:1}
+body.tema-imperio #imperioBloqueiosDialog{max-width:440px;width:calc(100% - 32px);max-height:85vh;overflow:auto;border:1px solid #75623e;border-radius:14px;background:#171613;color:#f3e8d0;padding:0}
+body.tema-imperio #imperioBloqueiosDialog::backdrop{background:rgba(0,0,0,.75)}
+body.tema-imperio .imperio-bloqueios-conteudo{padding:20px}
+body.tema-imperio .imperio-bloqueios-conteudo p{color:#bfb29a;font-size:13px}
+body.tema-imperio .imperio-bloqueios-campos{display:flex;gap:12px;margin:14px 0}
+body.tema-imperio .imperio-bloqueios-campos label{flex:1;min-width:0;color:#e3d3b2}
+body.tema-imperio .imperio-bloqueios-campos input{width:100%;background:#2a2823;color:#fff;border:1px solid #6a5b40;border-radius:8px;padding:9px;color-scheme:dark}
+body.tema-imperio .imperio-bloqueio-item{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:10px 0;padding:8px;border:1px solid #494031;border-radius:8px}
+body.tema-imperio #imperioBloqueiosErro{color:#ff9d97;margin:8px 0}
+body.tema-imperio .imperio-cliente-recorrencia{border:0;background:transparent;color:inherit;font:inherit;font-weight:750;text-align:left;padding:0;cursor:pointer;text-decoration:underline;text-decoration-color:#a48b55;text-underline-offset:3px}
+body.tema-imperio #imperioCardGrade .imperio-hora-cliente{width:100%;font:inherit;font-size:14px;cursor:pointer}
+body.tema-imperio #imperioCardGrade .imperio-hora-cliente:focus-visible,body.tema-imperio .imperio-cliente-recorrencia:focus-visible{outline:2px solid #dfbc70;outline-offset:2px}
+body.tema-imperio .imperio-recorrencia-resumo{background:#242019;border:1px solid #65522f;border-radius:12px;padding:14px;margin-bottom:12px;color:#f2e9d6}
+body.tema-imperio .imperio-recorrencia-situacao{color:#eed090;font-size:16px;font-weight:800;margin-bottom:12px}
+body.tema-imperio .imperio-recorrencia-kpis{display:flex;gap:10px}
+body.tema-imperio .imperio-recorrencia-kpis div{flex:1;background:#373027;border-radius:8px;padding:10px;min-width:0}
+body.tema-imperio .imperio-recorrencia-kpis b{display:block;font-size:24px;color:#efd291}
+body.tema-imperio .imperio-recorrencia-kpis span{font-size:11px;line-height:1.3;display:block}
+body.tema-imperio .imperio-recorrencia-resumo p{font-size:13px;line-height:1.5;margin:10px 0}
+body.tema-imperio .imperio-recorrencia-nota{color:#bfb19a;font-size:11px!important;line-height:1.5}
+body.tema-imperio .imperio-recorrencia-contato{padding:8px 0 12px;color:#e2d7c2}
+body.tema-imperio .imperio-cores-abrir{display:block;margin:5px 0 10px auto;border:1px solid #6a593a;border-radius:8px;background:#242019;color:#e8d0a1;padding:8px 12px;cursor:pointer;font:inherit;font-size:12px}
+body.tema-imperio .imperio-cores-abrir[hidden]{display:none!important}
+body.tema-imperio #imperioCardGrade .grade-hora.ocupado{min-height:70px;padding:10px 12px;border-bottom:2px solid #242321;border-radius:12px;text-align:center;gap:8px}
+body.tema-imperio #imperioCardGrade .grade-hora.ocupado .imperio-grade-hora-texto{flex:0 0 48px;text-align:left;font-size:15px}
+body.tema-imperio #imperioCardGrade .grade-hora.ocupado .imperio-grade-cliente,body.tema-imperio #imperioCardGrade .grade-hora.ocupado .imperio-grade-servico{flex:1;min-width:0;overflow-wrap:anywhere;font-size:13px;font-weight:650}
+body.tema-imperio #imperioCardGrade .grade-hora.ocupado small{display:block;color:inherit;opacity:.9;font-size:11px;line-height:1.3;white-space:normal;margin-top:3px}
+body.tema-imperio #imperioCardGrade .grade-hora.imperio-bloqueado{border-radius:12px;border-bottom:2px solid #242321}
+body.tema-imperio #imperioCardGrade .grade-hora.imperio-bloqueado small{color:inherit}
+body.tema-imperio .imperio-cores-lista{border:1px solid #514735;border-radius:10px;overflow:hidden;margin:10px 0}
+body.tema-imperio .imperio-cor-linha{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px;border-bottom:1px solid #514735;font-size:13px}
+body.tema-imperio .imperio-cor-linha:last-child{border-bottom:0}
+body.tema-imperio .imperio-cor-linha input[type=color]{flex:none;width:48px;height:35px;padding:2px;background:#29251d;border:1px solid #8a7550;border-radius:7px}
+body.tema-imperio .imperio-cor-linha input[type=checkbox]{accent-color:#d4b266}
+/* Planos da Império: cores da marca e situação legível, com registro manual. */
+body.tema-imperio .imperio-planos-aviso{padding:11px 13px;border:1px solid #6e5c39;border-radius:10px;color:#e7d7ae;background:#292316;font-size:12px;line-height:1.45;margin-bottom:12px}
+body.tema-imperio .imperio-planos-nav{display:flex;gap:7px;margin-bottom:14px;overflow-x:auto}
+body.tema-imperio .imperio-planos-nav button{flex:1 0 auto;border:1px solid #5a4d35;border-radius:9px;padding:10px 12px;background:#27241e;color:#e4d6bd;font:inherit;font-size:13px;cursor:pointer}
+body.tema-imperio .imperio-planos-nav button.on{background:#d0ad63;color:#1c170e;font-weight:750}
+body.tema-imperio .imperio-planos-ferramentas{display:flex;gap:8px;margin-bottom:10px}
+body.tema-imperio .imperio-planos-ferramentas input,body.tema-imperio .imperio-planos-ferramentas select{background:#292827;color:#f3ecdd;border:1px solid #51483a;border-radius:9px;padding:10px;min-height:46px;font:inherit;font-size:14px;min-width:0}
+body.tema-imperio .imperio-planos-ferramentas input{flex:1}
+body.tema-imperio .imperio-planos-ferramentas select{max-width:150px}
+body.tema-imperio .imperio-planos-novo{margin-bottom:12px;min-height:44px}
+body.tema-imperio .imperio-planos-lista{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,290px),1fr));gap:12px}
+body.tema-imperio .imperio-plano-card{background:#25231f;border:1px solid #4d4435;border-radius:14px;padding:15px;box-shadow:0 5px 18px #0005;color:#f2e9d8}
+body.tema-imperio .imperio-plano-card[hidden]{display:none!important}
+body.tema-imperio .imperio-plano-card h3{font-size:17px;margin:12px 0;color:#f6eddc;line-height:1.35;overflow-wrap:anywhere}
+body.tema-imperio .imperio-plano-card p{color:#d1c7b4;font-size:13px;line-height:1.6;margin:8px 0}
+body.tema-imperio .imperio-plano-card>strong{font-size:18px;color:#ecd29a}
+body.tema-imperio .imperio-plano-estado{display:inline-block;padding:5px 9px;border-radius:7px;font-size:11px;font-weight:750}
+body.tema-imperio .imperio-plano-estado.ativo{background:#2c6b50;color:#e6fff1}
+body.tema-imperio .imperio-plano-estado.inativo{background:#655447;color:#f1e2d3}
+body.tema-imperio .imperio-plano-acoes{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+body.tema-imperio .imperio-plano-acoes .btn{font-size:12px;min-height:38px}
+body.tema-imperio .imperio-planos-resumo{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+body.tema-imperio .imperio-planos-resumo span{flex:1 1 145px;padding:10px;border:1px solid #514735;background:#211f1a;border-radius:10px;color:#d4c6ad;font-size:12px}
+body.tema-imperio .imperio-planos-resumo b{color:#e7c77e;font-size:17px}
+body.tema-imperio .imperio-plano-nota{font-size:12px;line-height:1.5;color:#c5b79f}
+body.tema-imperio .imperio-pagamento-card{border:1px solid #625740;border-radius:10px;overflow:hidden;margin:0 0 10px;background:#24211c;color:#f7f1e4}
+body.tema-imperio .imperio-pagamento-topo{display:flex;justify-content:space-between;gap:8px;align-items:center;padding:12px;font-size:13px}
+body.tema-imperio .imperio-pagamento-card.pago .imperio-pagamento-topo{background:#176039}
+body.tema-imperio .imperio-pagamento-card.pendente .imperio-pagamento-topo{background:#8a6507}
+body.tema-imperio .imperio-pagamento-card.atrasado .imperio-pagamento-topo{background:#8a3838}
+body.tema-imperio .imperio-pagamento-card.cancelado .imperio-pagamento-topo{background:#554c48}
+body.tema-imperio .imperio-pagamento-info{padding:11px;font-size:12px;color:#e6ddcb;line-height:1.5}
+
+/* Filtro da equipe: os cadastros inativos continuam disponíveis para reativação. */
+.imperio-equipe-filtros {display:flex;gap:8px;margin:0 0 8px;}
+.imperio-equipe-filtros button {flex:1;padding:11px;border:1px solid #594a33;border-radius:10px;background:#25231f;color:#e8ddca;font-weight:700;cursor:pointer;}
+.imperio-equipe-filtros button.on {background:#d7b366;color:#17130c;border-color:#d7b366;}
+.imperio-equipe-filtros button:focus-visible {outline:2px solid #f4d996;outline-offset:2px;}
+/* Fotos de planos mensais: prévia no painel e na edição. */
+body.tema-imperio .imperio-plano-foto{width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:10px;margin-bottom:12px;background:#171612;display:block}
+body.tema-imperio .imperio-plano-foto-prev{width:min(100%,260px);aspect-ratio:16/9;object-fit:cover;border-radius:9px;margin:6px 0;background:#171612;display:block}
+body.tema-imperio .imperio-plano-foto-prev[hidden],body.tema-imperio #ipFotoRemover[hidden]{display:none!important}
+/* Sugestões opcionais, sem alterar fotos existentes até o administrador salvar. */
+body.tema-imperio .imperio-planos-sugestoes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+body.tema-imperio .imperio-plano-sugestao{padding:4px;background:#201e1a;border:1px solid #514735;border-radius:9px;color:#e4d8c2;text-align:left;cursor:pointer;min-width:0;font:inherit}
+body.tema-imperio .imperio-plano-sugestao img{display:block;width:100%;aspect-ratio:16/10;object-fit:cover;border-radius:5px}
+body.tema-imperio .imperio-plano-sugestao span{display:block;font-size:11px;line-height:1.3;padding:5px 2px;overflow-wrap:anywhere}
+body.tema-imperio .imperio-plano-sugestao.on{border:2px solid #e6c677;padding:3px}
+body.tema-imperio .imperio-plano-sugestao:focus-visible{outline:2px solid #e6c677;outline-offset:2px}
+body.tema-imperio .imperio-plano-sugestao:disabled{opacity:.5;cursor:wait}

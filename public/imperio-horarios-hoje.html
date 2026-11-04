@@ -1,0 +1,14 @@
+<style>
+  #imperioHorariosHoje summary{display:flex;align-items:center;gap:8px;cursor:pointer;list-style:none;color:#e7cf9b;font-size:14px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;min-height:44px}
+  #imperioHorariosHoje summary::-webkit-details-marker{display:none}
+  #imperioHorariosHoje summary:focus-visible{outline:2px solid #e7cf9b;outline-offset:3px;border-radius:4px}
+  #imperioHorariosHoje summary .qtd{background:rgba(201,162,39,.15);color:#e7cf9b;border-radius:100px;padding:3px 8px;font-size:11px;white-space:nowrap}
+  #imperioHorariosHoje summary .seta{margin-left:auto;font-size:15px;transition:transform .15s}
+  #imperioHorariosHoje[open] summary .seta{transform:rotate(180deg)}
+  #imperioHorariosHoje[open] summary{margin-bottom:12px}
+</style>
+<details id="imperioHorariosHoje">
+  <summary>🕐 Horários de hoje <span class="qtd" id="qLivresHoje">0</span><span class="seta" aria-hidden="true">▼</span></summary>
+  <div id="gradeHoje" class="grade-horas"></div>
+  <div class="legenda-grade"><span><i class="lg-livre"></i>livre</span><span><i class="lg-ocupado"></i>já agendado</span></div>
+</details>

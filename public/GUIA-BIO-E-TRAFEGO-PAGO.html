@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Link na bio + tráfego pago — Prática Sabores</title>
+<style>
+  :root{--ink:#20211d;--muted:#6b6a60;--gold:#a9852f;--line:#e7e0cf;--bg:#faf7f0;--ok:#1f7a4d}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;line-height:1.6}
+  .wrap{max-width:820px;margin:0 auto;padding:26px 18px 70px}
+  header{text-align:center;padding:14px 0 22px;border-bottom:2px solid var(--gold);margin-bottom:26px}
+  h1{margin:0 0 6px;font-size:26px;letter-spacing:-.02em}
+  header p{margin:0;color:var(--muted);font-size:14px}
+  h2{font-size:20px;margin:34px 0 10px;padding-top:16px;border-top:1px solid var(--line)}
+  h2 .num{display:inline-flex;width:28px;height:28px;border-radius:50%;background:var(--gold);color:#fff;
+    align-items:center;justify-content:center;font-size:15px;margin-right:9px;vertical-align:2px}
+  h3{font-size:15.5px;margin:20px 0 6px}
+  p,li{font-size:14.5px}
+  ol,ul{padding-left:22px;margin:8px 0}
+  li{margin:5px 0}
+  .card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin:14px 0}
+  .card.gold{background:#fffdf6;border-color:#e3d3a8}
+  .link-box{display:flex;gap:8px;align-items:center;background:#f5f1e6;border:1px solid #ded4bb;border-radius:10px;
+    padding:10px 12px;margin:8px 0;word-break:break-all;font-size:12.5px;font-family:ui-monospace,Menlo,monospace}
+  .link-box span{flex:1;min-width:0}
+  button{font:inherit;font-size:12.5px;font-weight:700;border:0;border-radius:8px;padding:8px 12px;cursor:pointer;
+    background:var(--ink);color:#fff;white-space:nowrap}
+  button.ok{background:var(--ok)}
+  .tag{display:inline-block;background:#f1e7cd;color:#6b4a10;border-radius:999px;padding:2px 10px;font-size:11.5px;
+    font-weight:800;letter-spacing:.04em;text-transform:uppercase}
+  .tag.ok{background:#e2f3e8;color:#14532d}
+  table{width:100%;border-collapse:collapse;margin:12px 0;font-size:13.5px}
+  th,td{border-bottom:1px solid var(--line);padding:8px 6px;text-align:left;vertical-align:top}
+  th{font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+  .num-tot{font-weight:800}
+  .callout{background:#eef7f1;border-left:4px solid var(--ok);padding:12px 14px;border-radius:0 10px 10px 0;margin:14px 0}
+  .warn{background:#fdf4e3;border-left:4px solid #d39a1e;padding:12px 14px;border-radius:0 10px 10px 0;margin:14px 0}
+  .muted{color:var(--muted);font-size:12.5px}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media(max-width:620px){.grid2{grid-template-columns:1fr}}
+  .step{font-weight:700}
+  .checklist{list-style:none;padding-left:0}
+  .checklist li{position:relative;padding-left:26px}
+  .checklist li:before{content:"□";position:absolute;left:0;font-size:16px;color:var(--gold)}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>Link na bio + tráfego pago</h1>
+  <p>Guia rápido · use os links abaixo, são os seus (com rastreio)</p>
+</header>
+
+<div class="callout">
+  <strong>A ideia em uma frase:</strong> o link da bio leva para a loja; cada clique vindo do Instagram,
+  do WhatsApp ou de um anúncio chega ao painel marcado de onde veio — assim você sabe o que trouxe pedido.
+</div>
+
+<h2><span class="num">1</span>Pegue o link certo</h2>
+<p>Copie aqui o link do que você vai divulgar. <strong>Não invente</strong> o endereço: use exatamente estes,
+porque cada um tem uma etiqueta invisível que diz de onde a pessoa veio.</p>
+
+<div class="card gold">
+  <h3 style="margin-top:0">AGEO Confeitaria</h3>
+  <div class="link-box"><span>https://loja-digital.onrender.com/l/ageo-confeitaria?utm_source=instagram&amp;utm_medium=social&amp;utm_campaign=instagram</span><button data-copiar>Copiar</button></div>
+  <div class="muted">↑ este vai na <strong>bio do Instagram</strong> (e nos stories)</div>
+  <div class="link-box" style="margin-top:12px"><span>https://loja-digital.onrender.com/l/ageo-confeitaria</span><button data-copiar>Copiar</button></div>
+  <div class="muted">↑ link limpo — para mandar no <strong>WhatsApp</strong> (conversa, grupo, status)</div>
+</div>
+
+<div class="card">
+  <h3 style="margin-top:0">Prática Sabores · MDN · Mimo de Linha · Henrique Borges</h3>
+  <div class="link-box"><span>https://loja-digital.onrender.com/l/pratica-sabores?utm_source=instagram&amp;utm_medium=social&amp;utm_campaign=instagram</span><button data-copiar>Copiar</button></div>
+  <div class="link-box"><span>https://loja-digital.onrender.com/l/mdn-presents?utm_source=instagram&amp;utm_medium=social&amp;utm_campaign=instagram</span><button data-copiar>Copiar</button></div>
+  <div class="link-box"><span>https://loja-digital.onrender.com/l/mimo-de-linha?utm_source=instagram&amp;utm_medium=social&amp;utm_campaign=instagram</span><button data-copiar>Copiar</button></div>
+  <div class="link-box"><span>https://loja-digital.onrender.com/l/henrique-borges?utm_source=instagram&amp;utm_medium=social&amp;utm_campaign=instagram</span><button data-copiar>Copiar</button></div>
+  <p class="muted" style="margin-bottom:0">Todos os links de cada loja ficam prontos no master → aba <strong>Tráfego</strong> → “Links prontos”.</p>
+</div>
+
+<h2><span class="num">2</span>Colocar o link na bio do Instagram</h2>
+<p>No celular, no app do Instagram (o caminho é o mesmo para perfil pessoal ou profissional):</p>
+<ol>
+  <li class="step">Abra o Instagram e vá no seu perfil (foto no canto de baixo à direita).</li>
+  <li class="step">Toque em <strong>Editar perfil</strong>.</li>
+  <li class="step">Toque em <strong>Links</strong> (ou em <strong>Site</strong>, nas versões mais antigas).</li>
+  <li class="step">Toque em <strong>Adicionar link externo</strong>.</li>
+  <li class="step">Em <strong>URL</strong>, cole o link da AGEO (o do bloco rosa de cima). Em <strong>Texto do link</strong>, escreva algo curto e gostoso: <em>“Peça aqui 🍫”</em>.</li>
+  <li class="step">Toque em <strong>Concluído</strong> e depois em <strong>Salvar</strong> (canto superior direito).</li>
+  <li class="step">Volte no perfil e toque no link: tem que abrir a loja com o nome da AGEO no topo.</li>
+</ol>
+<div class="warn">
+  <strong>Não coloque o link só na legenda dos posts.</strong> No Instagram, link em legenda não é clicável.
+  O clique de verdade acontece em 3 lugares: <strong>bio</strong>, <strong>stories</strong> (adesivo de link)
+  e <strong>anúncio</strong>. Na legenda use a frase “link na bio”.
+</div>
+
+<h3>Bônus: link na bio do WhatsApp Business</h3>
+<ol>
+  <li>WhatsApp Business → <strong>Configurações</strong> → <strong>Perfil comercial</strong>.</li>
+  <li>Toque em <strong>Site</strong> (ou “Endereço do site”) e cole o link.</li>
+  <li>Pronto: quem abre sua conversa vê a loja para tocar.</li>
+</ol>
+
+<h2><span class="num">3</span>O que é o “tráfego pago” e como ficar pago este mês</h2>
+<p>Tráfego pago = <strong>pagar para o Instagram/Facebook mostrar seus posts para gente que ainda não te segue</strong>.
+Você paga por visualização/clique, não por mês fechado. Para ficar “pago” você precisa de duas coisas:
+<strong>uma conta de anúncios</strong> e <strong>um cartão</strong> nela.</p>
+
+<div class="grid2">
+  <div class="card">
+    <span class="tag">Passo A</span>
+    <h3>Criar a conta de anúncios</h3>
+    <ol>
+      <li>Acesse <strong>business.facebook.com</strong> no computador (no celular é ruim demais para anunciar).</li>
+      <li>Entre com a conta do Instagram/Facebook do negócio.</li>
+      <li>Crie a conta: nome <em>AGEO Confeitaria</em>.</li>
+      <li>Em <strong>Formas de pagamento</strong>, adicione o <strong>cartão de crédito</strong> (ou Pix, se aparecer).</li>
+    </ol>
+  </div>
+  <div class="card">
+    <span class="tag ok">Passo B</span>
+    <h3>Definir quanto vai gastar</h3>
+    <p style="margin:6px 0"><strong>Sugestão para começar: R$ 12 por dia, 7 dias = R$ 84.</strong></p>
+    <ul style="margin:6px 0 0">
+      <li>Comece pequeno: <strong>R$ 10–15/dia</strong>.</li>
+      <li>Coloque <strong>limite de gasto</strong> na conta (ex.: R$ 150/mês) — o Meta nunca passa disso.</li>
+      <li>Rode <strong>4 dias</strong> antes de julgar se está bom.</li>
+    </ul>
+  </div>
+</div>
+
+<h2><span class="num">4</span>O anúncio, clique por clique</h2>
+<p>No <strong>Gerenciador de Anúncios</strong> → botão verde <strong>Criar</strong>:</p>
+
+<h3>1) Objetivo: escolha <strong>“Tráfego”</strong></h3>
+<p class="muted">Tráfego (e não “Reconhecimento”) porque você quer gente <strong>clicando</strong> e pedindo. Se aparecer
+“Vendas” e você ainda não tem catálogo ligado, fique no Tráfego.</p>
+
+<h3>2) Campanha</h3>
+<ul>
+  <li>Nome: <code>AGEO — novembro — Instagram</code> (serve para achar depois no painel).</li>
+  <li>Orçamento: <strong>no nível da campanha</strong>, <strong>R$ 12 por dia</strong>.</li>
+</ul>
+
+<h3>3) Público</h3>
+<ul>
+  <li><strong>Localização:</strong> Florianópolis + raio de 15 km (ou “Grande Florianópolis”).</li>
+  <li><strong>Idade:</strong> 25 a 55.</li>
+  <li><strong>Interesses:</strong> confeitaria, chocolate, bolos, doces, festa infantil, presente.</li>
+  <li><strong>Não</strong> mexa em “público detalhado avançado” — deixe o automático.</li>
+</ul>
+
+<h3>4) Posicionamentos</h3>
+<p>Deixe <strong>“Avançado / automático”</strong>. O Meta mostra onde rende mais (feed e stories do Instagram).</p>
+
+<h3>5) O anúncio (o que aparece na tela)</h3>
+<table>
+  <tr><th>Campo</th><th>O que escrever</th></tr>
+  <tr><td>Formato</td><td>1 imagem ou 1 vídeo curto (a foto da caixa aberta funciona melhor que a fechada)</td></tr>
+  <tr><td>Texto principal</td><td>Caixa de docinhos montada do seu jeito: escolha os sabores e quantos de cada. Entrega em Florianópolis 🍫</td></tr>
+  <tr><td>Título</td><td>Monte sua caixa de 12</td></tr>
+  <tr><td>Descrição</td><td>A partir de R$ 40 · peça pelo site</td></tr>
+  <tr><td>Botão</td><td><strong>Saiba mais</strong> (ou “Comprar”)</td></tr>
+  <tr><td>Site</td><td>o link da AGEO (o do bloco rosa de cima)</td></tr>
+</table>
+
+<h3>6) Publique e acompanhe</h3>
+<p>Clique em <strong>Publicar</strong>. Em 1–2 horas começa a rodar. No dia seguinte, olhe:
+<b>quantos cliques</b>, <b>quantas mensagens no WhatsApp</b> e <b>quantos pedidos</b> entraram.</p>
+
+<h2><span class="num">5</span>Como saber se o dinheiro valeu</h2>
+<p>No <strong>/master → aba Tráfego</strong> você vê, por loja: visitas, pessoas, cliques, pedidos e valor vendido.
+Registre ali o que você gastou, e o painel calcula <strong>custo por pedido</strong> sozinho.</p>
+<ul>
+  <li><strong>Conta simples:</strong> gastou R$ 84, vendeu R$ 320 → cada R$ 1 investido voltou R$ 3,80. <span class="tag ok">vale manter</span></li>
+  <li>Gastou R$ 84 e vendeu R$ 60? Troque a <strong>foto</strong> do anúncio antes de trocar o público.</li>
+  <li>Menos de 20 cliques em 2 dias → o anúncio não está chamando atenção (foto/preço), não é o público.</li>
+</ul>
+
+<div class="callout">
+  <strong>Ordem que funciona:</strong> primeiro deixe a bio pronta (passo 2) → poste 3 fotos boas da caixa →
+  só então ligue o anúncio. Anúncio com perfil vazio queima dinheiro.
+</div>
+
+<h2><span class="num">6</span>Checklist do mês</h2>
+<ul class="checklist">
+  <li>Link certo copiado (com a etiqueta)</li>
+  <li>Bio do Instagram atualizada e testada no celular</li>
+  <li>WhatsApp Business com o site no perfil</li>
+  <li>Conta de anúncios criada com cartão</li>
+  <li>Limite de gasto definido (ex.: R$ 150 no mês)</li>
+  <li>Anúncio com foto da caixa aberta + texto pronto</li>
+  <li>Dia 7: conferir custo por pedido e decidir se aumenta ou troca a foto</li>
+</ul>
+
+<p class="muted" style="margin-top:26px;border-top:1px solid var(--line);padding-top:14px">
+  Dúvida em algum passo é só chamar. Guia gerado para a Prática Sabores ·
+  <a href="https://loja-digital.onrender.com/status" style="color:var(--gold)">status do site</a>
+</p>
+</div>
+
+<script>
+  document.querySelectorAll('[data-copiar]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var texto = b.parentElement.querySelector('span').textContent.trim();
+      var pronto = function () {
+        var antes = b.textContent;
+        b.textContent = 'Copiado!';
+        b.classList.add('ok');
+        setTimeout(function () { b.textContent = antes; b.classList.remove('ok'); }, 1600);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(texto).then(pronto, function () { window.prompt('Copie o link:', texto); });
+      } else {
+        window.prompt('Copie o link:', texto);
+      }
+    });
+  });
+</script>
+</body>
+</html>

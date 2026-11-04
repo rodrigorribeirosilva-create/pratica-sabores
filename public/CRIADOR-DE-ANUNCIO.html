@@ -1,0 +1,300 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gerador de anúncio — Stories e Feed</title>
+<style>
+  :root{--ink:#20211d;--muted:#6b6a60;--gold:#a9852f;--line:#e7e0cf;--bg:#faf7f0;--ok:#1f7a4d}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;line-height:1.5}
+  .wrap{max-width:960px;margin:0 auto;padding:22px 16px 70px}
+  header{text-align:center;padding:8px 0 18px;border-bottom:2px solid var(--gold);margin-bottom:20px}
+  h1{margin:0 0 4px;font-size:24px;letter-spacing:-.02em}
+  header p{margin:0;color:var(--muted);font-size:13.5px}
+  .cols{display:grid;grid-template-columns:340px 1fr;gap:22px;align-items:start}
+  @media(max-width:760px){.cols{grid-template-columns:1fr}}
+  .painel{background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px}
+  .field{margin-bottom:13px}
+  label{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:#8a8272;font-weight:800;margin-bottom:5px}
+  input[type=text],input[type=file],select,textarea{width:100%;font:inherit;font-size:13.5px;padding:9px 11px;border:1px solid #ddd2b8;
+    border-radius:9px;background:#fff;color:var(--ink)}
+  textarea{resize:vertical;min-height:64px}
+  .chips{display:flex;gap:6px;flex-wrap:wrap}
+  .chip{border:1px solid #ddd2b8;background:#fff;border-radius:999px;padding:7px 12px;font-size:12.5px;font-weight:700;cursor:pointer}
+  .chip.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .btn{width:100%;font:inherit;font-weight:800;font-size:14px;padding:12px;border:0;border-radius:11px;background:var(--gold);color:#fff;cursor:pointer;margin-top:6px}
+  .btn.ghost{background:#fff;color:var(--ink);border:1px solid #ddd2b8;margin-top:8px}
+  .btn:disabled{opacity:.5;cursor:not-allowed}
+  .preview{background:#e9e4d6;border:1px solid var(--line);border-radius:16px;padding:16px;display:flex;justify-content:center}
+  canvas{max-width:100%;height:auto;border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.18);background:#111}
+  .dica{background:#eef7f1;border-left:4px solid var(--ok);padding:11px 13px;border-radius:0 10px 10px 0;font-size:13px;margin:14px 0}
+  .warn{background:#fdf4e3;border-left:4px solid #d39a1e;padding:11px 13px;border-radius:0 10px 10px 0;font-size:13px;margin:14px 0}
+  .muted{color:var(--muted);font-size:12px}
+  .oculto{display:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>Gerador de anúncio</h1>
+  <p>Suba a foto do produto, escreva a frase e baixe a arte pronta para o Stories</p>
+</header>
+
+<div class="cols">
+  <div class="painel">
+    <div class="field">
+      <label>1. Foto do produto</label>
+      <input type="file" id="foto" accept="image/*">
+      <p class="muted" style="margin:5px 0 0">Use foto tirada na hora, com o celular na vertical. Quanto mais clara, melhor.</p>
+    </div>
+
+    <div class="field">
+      <label>2. Formato</label>
+      <div class="chips" id="formatos">
+        <button class="chip on" data-f="story">Stories / Reels 9:16</button>
+        <button class="chip" data-f="feed">Feed 4:5</button>
+        <button class="chip" data-f="quad">Quadrado 1:1</button>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>3. Frase principal</label>
+      <textarea id="titulo" maxlength="70">Caixa de chocolate montada do seu jeito</textarea>
+    </div>
+
+    <div class="field">
+      <label>4. Selo de preço (opcional)</label>
+      <input type="text" id="selo" maxlength="34" value="A partir de R$ 14">
+    </div>
+
+    <div class="field">
+      <label>5. Chamada de baixo</label>
+      <input type="text" id="cta" maxlength="34" value="Peça no link da bio">
+    </div>
+
+    <div class="field">
+      <label>6. Nome da loja</label>
+      <input type="text" id="loja" maxlength="28" value="AGEO Confeitaria">
+    </div>
+
+    <button class="btn" id="baixar" disabled>Baixar imagem pronta</button>
+    <button class="btn ghost" id="exemplo">Ver com foto de exemplo</button>
+    <p class="muted" style="margin:10px 0 0">A imagem sai em 1080×1920 (Stories) — é o tamanho que o Instagram, o Facebook Stories e o YouTube Shorts usam.</p>
+  </div>
+
+  <div>
+    <div class="preview"><canvas id="cv" width="1080" height="1920"></canvas></div>
+
+    <div class="dica">
+      <strong>Como usar na campanha:</strong> no Gerenciador de Anúncios, marque os posicionamentos
+      <strong>Stories do Instagram</strong>, <strong>Stories do Facebook</strong>, <strong>Reels</strong> e
+      <strong>Feed</strong>. A mesma arte serve para os quatro.
+    </div>
+    <div class="warn">
+      <strong>Importante:</strong> o Instagram mostra o texto grande em cima da foto, mas
+      <em>não</em> deixa o cliente clicar em link dentro da imagem. O caminho do cliente é:
+      vê o anúncio → toca no botão do anúncio (ex.: “Saiba mais”) → cai na loja. Por isso o link
+      do anúncio tem que ser o da loja.
+    </div>
+  </div>
+</div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+  var cv = document.getElementById('cv');
+  var ctx = cv.getContext('2d');
+  var foto = null;
+  var formato = 'story';
+
+  var TAM = { story: [1080, 1920], feed: [1080, 1350], quad: [1080, 1080] };
+
+  function quebrar(texto, maxLargura, fonte, maxLinhas) {
+    ctx.font = fonte;
+    var palavras = String(texto || '').split(/\s+/).filter(Boolean);
+    var linhas = [], atual = '';
+    for (var i = 0; i < palavras.length; i++) {
+      var teste = atual ? atual + ' ' + palavras[i] : palavras[i];
+      if (ctx.measureText(teste).width > maxLargura && atual) {
+        linhas.push(atual);
+        atual = palavras[i];
+      } else {
+        atual = teste;
+      }
+    }
+    if (atual) linhas.push(atual);
+    if (maxLinhas && linhas.length > maxLinhas) {
+      linhas = linhas.slice(0, maxLinhas);
+      linhas[maxLinhas - 1] = linhas[maxLinhas - 1].replace(/\s+\S*$/, '') + '…';
+    }
+    return linhas;
+  }
+
+  function desenhar() {
+    var d = TAM[formato];
+    cv.width = d[0];
+    cv.height = d[1];
+    var W = cv.width, H = cv.height;
+
+    ctx.fillStyle = '#111';
+    ctx.fillRect(0, 0, W, H);
+
+    // foto cobrindo o quadro
+    if (foto) {
+      var esc = Math.max(W / foto.width, H / foto.height);
+      var w = foto.width * esc, h = foto.height * esc;
+      ctx.drawImage(foto, (W - w) / 2, (H - h) / 2, w, h);
+    } else {
+      var g0 = ctx.createLinearGradient(0, 0, W, H);
+      g0.addColorStop(0, '#3a2b1c');
+      g0.addColorStop(1, '#7a5a2e');
+      ctx.fillStyle = g0;
+      ctx.fillRect(0, 0, W, H);
+      ctx.fillStyle = 'rgba(255,255,255,.5)';
+      ctx.font = '700 40px system-ui, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('escolha a foto do produto', W / 2, H / 2);
+      ctx.textAlign = 'left';
+    }
+
+    // escurece a parte de baixo para o texto aparecer
+    var g = ctx.createLinearGradient(0, H * 0.42, 0, H);
+    g.addColorStop(0, 'rgba(0,0,0,0)');
+    g.addColorStop(0.45, 'rgba(0,0,0,.55)');
+    g.addColorStop(1, 'rgba(0,0,0,.88)');
+    ctx.fillStyle = g;
+    ctx.fillRect(0, H * 0.42, W, H * 0.58);
+
+    // nome da loja no topo
+    var loja = (document.getElementById('loja').value || '').trim();
+    if (loja) {
+      ctx.font = '800 40px system-ui, sans-serif';
+      var larg = ctx.measureText(loja).width;
+      ctx.fillStyle = 'rgba(0,0,0,.5)';
+      var pw = larg + 60, ph = 78, px = 56, py = 72;
+      var r = 39;
+      ctx.beginPath();
+      ctx.moveTo(px + r, py);
+      ctx.arcTo(px + pw, py, px + pw, py + ph, r);
+      ctx.arcTo(px + pw, py + ph, px, py + ph, r);
+      ctx.arcTo(px, py + ph, px, py, r);
+      ctx.arcTo(px, py, px + pw, py, r);
+      ctx.closePath();
+      ctx.fill();
+      ctx.fillStyle = '#fff';
+      ctx.fillText(loja, px + 30, py + 52);
+    }
+
+    // selo de preço
+    var selo = (document.getElementById('selo').value || '').trim();
+    var baseY = H - 300;
+    if (selo) {
+      ctx.font = '800 46px system-ui, sans-serif';
+      var l2 = ctx.measureText(selo).width;
+      ctx.fillStyle = '#e0b062';
+      var pw2 = l2 + 64, ph2 = 92, px2 = 56, py2 = baseY - 150, r2 = 18;
+      ctx.beginPath();
+      ctx.moveTo(px2 + r2, py2);
+      ctx.arcTo(px2 + pw2, py2, px2 + pw2, py2 + ph2, r2);
+      ctx.arcTo(px2 + pw2, py2 + ph2, px2, py2 + ph2, r2);
+      ctx.arcTo(px2, py2 + ph2, px2, py2, r2);
+      ctx.arcTo(px2, py2, px2 + pw2, py2, r2);
+      ctx.closePath();
+      ctx.fill();
+      ctx.fillStyle = '#241a08';
+      ctx.fillText(selo, px2 + 32, py2 + 62);
+      baseY = py2 - 40;
+    }
+
+    // frase principal
+    var titulo = (document.getElementById('titulo').value || '').trim();
+    var fonte = '800 92px system-ui, sans-serif';
+    var linhas = quebrar(titulo, W - 112, fonte, 4);
+    // frase longa: diminui a fonte para não "órfã" uma palavra na linha de baixo
+    if (linhas.length >= 3) {
+      fonte = '800 76px system-ui, sans-serif';
+      linhas = quebrar(titulo, W - 112, fonte, 4);
+    }
+    var alturaLinha = fonte.includes('76') ? 88 : 104;
+    ctx.font = fonte;
+    ctx.fillStyle = '#fff';
+    ctx.shadowColor = 'rgba(0,0,0,.55)';
+    ctx.shadowBlur = 24;
+    var y = baseY - (linhas.length - 1) * alturaLinha;
+    for (var i = 0; i < linhas.length; i++) {
+      ctx.fillText(linhas[i], 56, y + i * alturaLinha);
+    }
+    ctx.shadowBlur = 0;
+
+    // chamada de baixo
+    var cta = (document.getElementById('cta').value || '').trim();
+    if (cta) {
+      ctx.font = '700 46px system-ui, sans-serif';
+      ctx.fillStyle = '#e9e2d2';
+      ctx.fillText(cta, 56, H - 132);
+      // linha dourada
+      ctx.fillStyle = '#e0b062';
+      ctx.fillRect(56, H - 200, 120, 8);
+    }
+
+    document.getElementById('baixar').disabled = !foto;
+  }
+
+  document.getElementById('foto').addEventListener('change', function (e) {
+    var f = e.target.files && e.target.files[0];
+    if (!f) return;
+    var img = new Image();
+    img.onload = function () {
+      foto = img;
+      desenhar();
+    };
+    img.src = URL.createObjectURL(f);
+  });
+
+  document.getElementById('formatos').addEventListener('click', function (e) {
+    var b = e.target.closest('[data-f]');
+    if (!b) return;
+    formato = b.dataset.f;
+    Array.prototype.forEach.call(this.querySelectorAll('.chip'), function (c) {
+      c.classList.toggle('on', c === b);
+    });
+    desenhar();
+  });
+
+  ['titulo', 'selo', 'cta', 'loja'].forEach(function (id) {
+    document.getElementById(id).addEventListener('input', desenhar);
+  });
+
+  document.getElementById('baixar').addEventListener('click', function () {
+    var nome = 'anuncio-' + formato + '-' + Date.now() + '.png';
+    cv.toBlob(function (blob) {
+      var a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = nome;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(function () { URL.revokeObjectURL(a.href); }, 4000);
+    }, 'image/png');
+  });
+
+  document.getElementById('exemplo').addEventListener('click', function () {
+    var img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = function () {
+      foto = img;
+      desenhar();
+    };
+    img.onerror = function () {
+      alert('Não consegui carregar a foto de exemplo aqui. Escolha uma foto do seu celular.');
+    };
+    img.src = '/img/doces.jpg';
+  });
+
+  desenhar();
+})();
+</script>
+</body>
+</html>

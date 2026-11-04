@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sessão de stories · MDN Presents</title>
+<style>
+  :root{--creme:#f6efe3;--tinta:#241a12;--dourado:#9a6f2c;--linha:#e3d8c5}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--creme);color:var(--tinta);font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+  header{padding:28px 20px 8px;max-width:1120px;margin:0 auto}
+  h1{font-family:Georgia,'Times New Roman',serif;font-size:clamp(26px,4vw,40px);margin:0 0 8px}
+  .muted{color:#6c5a45;font-size:15px;line-height:1.5;margin:0}
+  .passo{background:#fff;border:1px solid var(--linha);border-radius:16px;padding:18px 20px;margin:20px auto;max-width:1120px}
+  .passo h2{font-size:17px;margin:0 0 10px}
+  .passo ol{margin:0;padding-left:20px;line-height:1.75;font-size:15px}
+  .grade{max-width:1120px;margin:8px auto 60px;padding:0 20px;display:grid;gap:18px}
+  .card{display:grid;grid-template-columns:200px 1fr;gap:18px;background:#fff;border:1px solid var(--linha);border-radius:18px;padding:14px}
+  .foto img{width:100%;border-radius:12px;display:block}
+  .ordem{font-size:12px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--dourado)}
+  .info h3{margin:6px 0 4px;font-size:19px;font-family:Georgia,serif}
+  .sub{margin:0 0 6px;color:#6c5a45;font-size:14px}
+  .secao{margin:0 0 12px;font-size:13px;color:#6c5a45}
+  .card label{display:block;font-size:12px;font-weight:700;color:#6c5a45;margin-bottom:6px}
+  textarea{width:100%;font-family:ui-monospace,monospace;font-size:12px;padding:10px;border:1px solid var(--linha);
+           border-radius:10px;background:#faf7f1;color:#3a2c1c;resize:vertical}
+  .botoes{display:flex;gap:10px;margin-top:10px;flex-wrap:wrap}
+  button,a{font:inherit;font-size:14px;font-weight:700;border-radius:999px;padding:10px 18px;cursor:pointer;
+           border:1px solid var(--tinta);text-decoration:none;color:var(--tinta);background:transparent}
+  button{background:var(--tinta);color:var(--creme);border-color:var(--tinta)}
+  button.ok{background:#1c7a4a;border-color:#1c7a4a}
+  @media (max-width:620px){.card{grid-template-columns:1fr}.foto img{max-width:230px;margin:0 auto}}
+</style>
+</head>
+<body>
+<header>
+  <h1>Sessão de stories · MDN Presents</h1>
+  <p class="muted">7 imagens em 1080×1920, com a faixa de baixo livre para o <strong>adesivo de link</strong> do Instagram.
+  Cada story tem o seu link pronto — o clique cai direto na seção certa do catálogo e o rastreio marca a campanha.</p>
+</header>
+
+<div class="passo">
+  <h2>Como postar (5 minutos)</h2>
+  <ol>
+    <li>Baixe as imagens (ou abra esta página no celular e salve cada uma).</li>
+    <li>Instagram → <strong>Stories</strong> → escolha a imagem.</li>
+    <li>Toque no ícone de <strong>adesivo</strong> → <strong>Link</strong> → cole o link daquele story (o campo acima já está certo).</li>
+    <li>Arraste o adesivo para a <strong>faixa de baixo</strong> da imagem — é o espaço que deixei livre.</li>
+    <li>Publique na ordem 1 → 7. A capa (1) é o que faz a pessoa tocar.</li>
+  </ol>
+</div>
+
+<div class="grade">
+  <article class="card">
+    <div class="foto"><img src="stories-mdn/mdn-story-1-capa.jpg" alt="Escolha o seu perfume" loading="lazy"></div>
+    <div class="info">
+      <div class="ordem">1. Capa</div>
+      <h3>Escolha o seu perfume</h3>
+      <p class="sub">Lattafa, Asdaaf, Bidaya e Victoria’s Secret</p>
+      <p class="secao">Abre em: <strong>Catálogo completo</strong></p>
+      <label>Link para colar no adesivo de link do story</label>
+      <textarea readonly rows="3" onclick="this.select()">https://loja-digital.onrender.com/l/mdn-presents?utm_source=instagram&utm_medium=story&utm_campaign=nov-2026-mdn&utm_content=story-capa</textarea>
+      <div class="botoes">
+        <button data-copia="https://loja-digital.onrender.com/l/mdn-presents?utm_source=instagram&utm_medium=story&utm_campaign=nov-2026-mdn&utm_content=story-capa">Copiar link</button>
+        <a href="stories-mdn/mdn-story-1-capa.jpg" download>Baixar imagem</a>
+      </div>
+    </div>
+  </article>
+  <article class="card">
+    <div class="foto"><img src="stories-mdn/mdn-story-2-femininos.jpg" alt="Raneen Asdaaf · R$ 269,90" loading="lazy"></div>
+    <div class="info">
+      <div class="ordem">2. Femininos</div>
+      <h3>Raneen Asdaaf · R$ 269,90</h3>
+      <p class="sub">Floral frutado gourmet · 100 ml</p>
+      <p class="secao">Abre em: <strong>Perfumes femininos</strong></p>
+      <label>Link para colar no adesivo de link do story</label>
+      <textarea readonly rows="3" onclick="this.select()">https://loja-digital.onrender.com/l/mdn-presents?cat=femininos&utm_source=instagram&utm_medium=story&utm_campaign=nov-2026-mdn&utm_content=story-raneen</textarea>
+      <div class="botoes">
+        <button data-copia="https://loja-digital.onrender.com/l/mdn-presents?cat=femininos&utm_source=instagram&utm_medium=story&utm_campaign=nov-2026-mdn&utm_content=story-raneen">Copiar link</button>
+        <a href="stories-mdn/mdn-story-2-femininos.jpg" download>Baixar imagem</a>
+      </div>
+    </div>
+  </article>
+  <article class="card">
+    <div class="foto"><img src="stories-mdn/mdn-story-3-now-women.jpg" alt="Now Women · R$ 249,90" loading="lazy"></div>
+    <div class="info">
+      <div class="ordem">3. Femininos</div>
+      <h3>Now Women · R$ 249,90</h3>
+      <p class="sub">Doce, frutado e elegante · 100 ml</p>
+      <p class="secao">Abre em: <strong>Perfumes femininos</strong></p>
+      <label>Link para colar no adesivo de link do story</label>
+      <textarea readonly rows="3" onclick="this.select()">https://loja-digital.onrender.com/l/mdn-presents?cat=femininos&utm_source=instagram&utm_medium=story&utm_campaign=nov-2026-mdn&utm_content=story-now-women</textarea>
+      <div class="botoes">
+        <button data-copia="https://loja-digital.onrender.com/l/mdn-presents?cat=femininos&utm_source=instagram&utm_medium=story&utm_campaign=nov-2026-mdn&utm_content=story-now-women">Copiar link</button>
+        <a href="stories-mdn/mdn-story-3-now-women.jpg" download>Baixar imagem</a>
+      </div>
+    </div>
+  </article>
+  <article class="card">
+    <div class="foto"><img src="stories-mdn/mdn-story-4-masculinos.jpg" alt="Khamrah Dukhan · R$ 269,90" loading="lazy"></div>
+    <div class="info">
+      <div class="ordem">4. Masculinos</div>
+      <h3>Khamrah Dukhan · R$ 269,90</h3>
+      <p class="sub">Oriental masculino · 100 ml</p>
+      <p class="secao">Abre em: <strong>Perfumes masculinos</strong></p>
+      <label>Link para colar no adesivo de link do story</label>
+      <textarea readonly rows="3" onclick="this.select()">https://loja-digital.onrender.com/l/mdn-presents?cat=masculinos&utm_source=instagram&utm_medium=story&utm_campaign=nov-2026-mdn&utm_content=story-khamrah</textarea>
+      <div class="botoes">
+        <button data-copia="https://loja-digital.onrender.com/l/mdn-presents?cat=masculinos&utm_source=instagram&utm_medium=story&utm_campaign=nov-2026-mdn&utm_content=story-khamrah">Copiar link</button>
+        <a href="stories-mdn/mdn-story-4-masculinos.jpg" download>Baixar imagem</a>
+      </div>
+    </div>
+  </article>
+  <article class="card">
+    <div class="foto"><img src="stories-mdn/mdn-story-5-kit.jpg" alt="Kit Lattafa Pride · R$ 269,90" loading="lazy"></div>
+    <div class="info">
+      <div class="ordem">5. Presente</div>
+      <h3>Kit Lattafa Pride · R$ 269,90</h3>
+      <p class="sub">5 fragrâncias de 20 ml</p>
+      <p class="secao">Abre em: <strong>Kits e presentes</strong></p>
+      <label>Link para colar no adesivo de link do story</label>
+      <textarea readonly rows="3" onclick="this.select()">https://loja-digital.onrender.com/l/mdn-presents?cat=kits&utm_source=instagram&utm_medium=story&utm_campaign=nov-2026-mdn&utm_content=story-kit</textarea>
+      <div class="botoes">
+        <button data-copia="https://loja-digital.onrender.com/l/mdn-presents?cat=kits&utm_source=instagram&utm_medium=story&utm_campaign=nov-2026-mdn&utm_content=story-kit">Copiar link</button>
+        <a href="stories-mdn/mdn-story-5-kit.jpg" download>Baixar imagem</a>
+      </div>
+    </div>
+  </article>
+  <article class="card">
+    <div class="foto"><img src="stories-mdn/mdn-story-6-miniaturas.jpg" alt="Miniaturas · R$ 79,90" loading="lazy"></div>
+    <div class="info">
+      <div class="ordem">6. Miniaturas</div>
+      <h3>Miniaturas · R$ 79,90</h3>
+      <p class="sub">25 ml e 30 ml</p>
+      <p class="secao">Abre em: <strong>Miniaturas</strong></p>
+      <label>Link para colar no adesivo de link do story</label>
+      <textarea readonly rows="3" onclick="this.select()">https://loja-digital.onrender.com/l/mdn-presents?cat=miniaturas&utm_source=instagram&utm_medium=story&utm_campaign=nov-2026-mdn&utm_content=story-miniaturas</textarea>
+      <div class="botoes">
+        <button data-copia="https://loja-digital.onrender.com/l/mdn-presents?cat=miniaturas&utm_source=instagram&utm_medium=story&utm_campaign=nov-2026-mdn&utm_content=story-miniaturas">Copiar link</button>
+        <a href="stories-mdn/mdn-story-6-miniaturas.jpg" download>Baixar imagem</a>
+      </div>
+    </div>
+  </article>
+  <article class="card">
+    <div class="foto"><img src="stories-mdn/mdn-story-7-corpo.jpg" alt="Body splash e hidratante" loading="lazy"></div>
+    <div class="info">
+      <div class="ordem">7. Corpo e banho</div>
+      <h3>Body splash e hidratante</h3>
+      <p class="sub">Body splash 300 ml · hidratante 236 ml</p>
+      <p class="secao">Abre em: <strong>Catálogo completo</strong></p>
+      <label>Link para colar no adesivo de link do story</label>
+      <textarea readonly rows="3" onclick="this.select()">https://loja-digital.onrender.com/l/mdn-presents?utm_source=instagram&utm_medium=story&utm_campaign=nov-2026-mdn&utm_content=story-corpo</textarea>
+      <div class="botoes">
+        <button data-copia="https://loja-digital.onrender.com/l/mdn-presents?utm_source=instagram&utm_medium=story&utm_campaign=nov-2026-mdn&utm_content=story-corpo">Copiar link</button>
+        <a href="stories-mdn/mdn-story-7-corpo.jpg" download>Baixar imagem</a>
+      </div>
+    </div>
+  </article></div>
+
+<script>
+document.querySelectorAll('button[data-copia]').forEach(function (b) {
+  b.addEventListener('click', async function () {
+    var t = b.getAttribute('data-copia');
+    try { await navigator.clipboard.writeText(t); } catch (e) {
+      var ta = document.createElement('textarea'); ta.value = t; document.body.appendChild(ta);
+      ta.select(); document.execCommand('copy'); ta.remove();
+    }
+    var antigo = b.textContent; b.textContent = 'Copiado ✓'; b.classList.add('ok');
+    setTimeout(function () { b.textContent = antigo; b.classList.remove('ok'); }, 1800);
+  });
+});
+</script>
+</body>
+</html>
