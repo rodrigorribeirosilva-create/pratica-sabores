@@ -22,7 +22,7 @@ const APP_VERSAO = (() => {
     const fs = require('fs');
     const p = require('path');
     const h = require('crypto').createHash('md5');
-    ['public/servicos.html', 'public/servicos-admin.html', 'public/imperio-horarios-hoje.html', 'public/imperio-painel-premium.css', 'public/imperio-busca-agenda.js', 'public/imperio-menu-painel.js', 'public/imperio-clientes.js', 'public/imperio-referencia.js', 'public/imperio-bloqueios.js', 'public/imperio-recorrencia.js', 'public/imperio-cores.js', 'public/imperio-planos.js', 'public/imperio-planos-site.js', 'public/imperio-painel-sw.js', 'src/imperio-painel-premium.js', 'src/imperio-site-planos.js', 'public/index.html', 'public/admin.html'].forEach((f) => {
+    ['public/servicos.html', 'public/servicos-admin.html', 'public/imperio-horarios-hoje.html', 'public/imperio-painel-premium.css', 'public/imperio-busca-agenda.js', 'public/imperio-menu-painel.js', 'public/imperio-clientes.js', 'public/imperio-referencia.js', 'public/imperio-bloqueios.js', 'public/imperio-recorrencia.js', 'public/imperio-cores.js', 'public/imperio-planos.js', 'public/imperio-cartaz-admin.js', 'src/imperio-cartaz.js', 'public/imperio-planos-site.js', 'public/imperio-painel-sw.js', 'src/imperio-painel-premium.js', 'src/imperio-site-planos.js', 'public/index.html', 'public/admin.html'].forEach((f) => {
       try {
         h.update(fs.readFileSync(p.join(__dirname, f)));
       } catch {}
@@ -688,6 +688,10 @@ async function main() {
   // Importação isolada de clientes da Império: não altera clientes existentes.
   app.use('/l/:slug/api/admin', resolveStoreFromParam, require('./src/imperio-importar-clientes').router);
   app.use('/l/:slug/api/admin', resolveStoreFromParam, require('./src/imperio-planos').router);
+  // Cartaz independente da Império; protegido no painel e público somente para leitura.
+  const imperioCartaz = require('./src/imperio-cartaz');
+  app.use('/l/:slug/api/admin/imperio-cartaz', resolveStoreFromParam, imperioCartaz.admin);
+  app.use('/l/:slug/api/imperio-cartaz', resolveStoreFromParam, imperioCartaz.publico);
   // Módulo de serviços (climatização): agenda, clientes, aparelhos e lembretes.
   const servicosRotas = require('./src/routes.servicos');
   app.use('/l/:slug/api/admin', resolveStoreFromParam, servicosRotas.admin);

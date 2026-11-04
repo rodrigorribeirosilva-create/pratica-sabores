@@ -11,6 +11,7 @@ const bloqueiosImperio = fs.readFileSync(path.join(__dirname, '../public/imperio
 const recorrenciaImperio = fs.readFileSync(path.join(__dirname, '../public/imperio-recorrencia.js'), 'utf8');
 const coresImperio = fs.readFileSync(path.join(__dirname, '../public/imperio-cores.js'), 'utf8');
 const planosImperio = fs.readFileSync(path.join(__dirname, '../public/imperio-planos.js'), 'utf8');
+const cartazImperio = fs.readFileSync(path.join(__dirname, '../public/imperio-cartaz-admin.js'), 'utf8');
 const caminhos = {
   hoje:'<path d="m3 10 9-7 9 7v10H4V10"/><path d="M9 20v-6h6v6"/>',
   agenda:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4M17 3v4M3 10h18M7 14h2M12 14h2M7 18h2"/>',
@@ -72,7 +73,7 @@ function aplicar(html) {
   html = html.replace('<div class="topo-linha">', `<div class="topo-linha"><button type="button" id="imperioAbrirMenu" aria-controls="imperioMenu" aria-expanded="false" aria-label="Abrir menu">☰</button>`);
   // A nova área é exclusiva do dono na Império e não altera o menu de outras lojas.
   html = html.replace('<button data-tab="clientes"><span class="ic">👥</span>Clientes</button>', '<button data-tab="clientes"><span class="ic">👥</span>Clientes</button><button data-tab="planos" class="oculto" id="imperioNavPlanos"><span class="ic" aria-hidden="true">◈</span>Planos</button>');
-  html = html.replace('<section id="tab-servicos" class="oculto">', `<section id="tab-planos" class="oculto"><div class="imperio-planos-aviso">Controle manual: não cobra cartão, não confirma pagamentos automaticamente e não lança valores no caixa ou financeiro. A quantidade de serviços incluídos não é controlada automaticamente.</div><div class="imperio-planos-nav"><button type="button" class="on" data-planos-visao="planos">Planos e pacotes</button><button type="button" data-planos-visao="assinantes">Assinantes e pagamentos</button></div><div id="imperioPlanosConteudo"></div></section><section id="tab-servicos" class="oculto">`);
+  html = html.replace('<section id="tab-servicos" class="oculto">', `<section id="tab-planos" class="oculto"><div class="card"><h2>Cartaz no link dos clientes</h2><p>Edite a imagem e a chamada para os planos e assinaturas.</p><button type="button" class="btn" id="imperioEditarCartaz">Editar cartaz</button></div><div class="imperio-planos-aviso">Controle manual: não cobra cartão, não confirma pagamentos automaticamente e não lança valores no caixa ou financeiro. A quantidade de serviços incluídos não é controlada automaticamente.</div><div class="imperio-planos-nav"><button type="button" class="on" data-planos-visao="planos">Planos e pacotes</button><button type="button" data-planos-visao="assinantes">Assinantes e pagamentos</button></div><div id="imperioPlanosConteudo"></div></section><section id="tab-servicos" class="oculto">`);
   html = html.replace("['hoje', 'agenda', 'clientes', 'equipamentos', 'equipe', 'servicos', 'promocoes', 'financeiro', 'relatorios', 'empresa'].forEach", "['hoje', 'agenda', 'clientes', 'equipamentos', 'equipe', 'servicos', 'promocoes', 'financeiro', 'relatorios', 'empresa', 'planos'].forEach");
   html = html.replace("      if (alvo === 'clientes') carregarClientes();", "      if (alvo === 'clientes') carregarClientes();\n      if (alvo === 'planos') carregarPlanosImperio();");
   html = html.replace('<nav class="nav">', `<button type="button" id="imperioFundoMenu" aria-label="Fechar menu" hidden></button><nav class="nav" id="imperioMenu" aria-label="Navegação do painel"><div class="imperio-menu-titulo"><b>IMPÉRIO</b><span>PAINEL ADMINISTRATIVO</span></div>`);
@@ -211,7 +212,7 @@ function aplicar(html) {
   // Captura inclusive erros síncronos de validação, sem travar o botão do formulário.
   html = html.replace('Promise.resolve(aoEnviar()).catch', 'Promise.resolve().then(function () { return aoEnviar(); }).catch');
   html = html.replace('  function abrirHistoricoCliente(id) {', '  function abrirHistoricoCliente(id) { imperioMostrarRecorrencia(id); return;');
-  html = html.replace('  /* ---------------- início ---------------- */', buscaAgenda + '\n' + menuPainel + '\n' + clientesImperio + '\n' + referenciaImperio + '\n' + bloqueiosImperio + '\n' + coresImperio + '\n' + recorrenciaImperio + '\n' + planosImperio + '\n  /* ---------------- início ---------------- */');
+  html = html.replace('  /* ---------------- início ---------------- */', buscaAgenda + '\n' + menuPainel + '\n' + clientesImperio + '\n' + referenciaImperio + '\n' + bloqueiosImperio + '\n' + coresImperio + '\n' + recorrenciaImperio + '\n' + planosImperio + '\n' + cartazImperio + '\n  /* ---------------- início ---------------- */');
   // Os filtros já existentes passam a usar a lógica de período do próprio painel.
   html = html.replace("var FIN = { periodo: 'mes', dados: null };", `var FIN = { periodo: 'mes', dados: null }, imperioFinSequencia = 0;
   Array.prototype.forEach.call(document.querySelectorAll('#finPeriodo [data-fin]'), function(b) {
