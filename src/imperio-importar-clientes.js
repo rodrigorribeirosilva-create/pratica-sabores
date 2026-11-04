@@ -76,11 +76,21 @@ router.post('/imperio-clientes/importar-pdf', requireAuth, requireDono, (req, re
 router.get('/imperio-clientes/atividade', requireAuth, (req, res) => {
   if (req.store.slug !== 'imperio-barber') return res.status(404).json({ error: 'Não encontrado.' });
   const hoje = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Sao_Paulo', year:'numeric', month:'2-digit', day:'2-digit' }).format(new Date());
-  const registros = db.prepare(`SELECT a.cliente_id AS id, COUNT(*) AS atendimentos, MAX(a.data) AS ultima_visita
+  const valida = `(a.data GLOB '[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]' AND COALESCE(date(a.data, '+0 days') = a.data, 0))`;
+  const registros = db.prepare(`SELECT a.cliente_id AS id,
+      SUM(CASE WHEN ${valida} AND a.data <= @hoje THEN 1 ELSE 0 END) AS atendimentos,
+      SUM(CASE WHEN ${valida} AND a.data >= @mes AND a.data <= @hoje THEN 1 ELSE 0 END) AS no_mes,
+      SUM(CASE WHEN ${valida} AND a.data > @hoje THEN 0 ELSE 1 END) AS total_concluidos,
+      SUM(CASE WHEN NOT ${valida} THEN 1 ELSE 0 END) AS sem_data,
+      SUM(CASE WHEN ${valida} AND a.data > @hoje THEN 1 ELSE 0 END) AS data_futura,
+      MIN(CASE WHEN ${valida} AND a.data <= @hoje THEN a.data END) AS primeira_visita,
+      MAX(CASE WHEN ${valida} AND a.data <= @hoje THEN a.data END) AS ultima_visita
     FROM agendamentos a JOIN clientes c ON c.id = a.cliente_id AND c.store_id = a.store_id
-    WHERE a.store_id = ? AND a.status = 'concluido' AND a.data <= ?
-      AND a.data GLOB '[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]'
-    GROUP BY a.cliente_id`).all(req.store.id, hoje);
+    WHERE a.store_id = @store AND a.status = 'concluido'
+    GROUP BY a.cliente_id`).all({store:req.store.id, hoje, mes:hoje.slice(0,7)+'-01'}).map(r=>({
+      ...r,
+      media_dias: r.atendimentos >= 2 ? Math.round((Date.parse(r.ultima_visita+'T00:00:00Z')-Date.parse(r.primeira_visita+'T00:00:00Z'))/86400000/(r.atendimentos-1)) : null,
+    }));
   res.set('Cache-Control', 'no-store');
   res.json({ hoje, registros });
 });

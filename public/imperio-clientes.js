@@ -1,5 +1,12 @@
 /* Filtros: nenhum cliente sem visitas importadas é tratado como ausente. */
 var imperioFiltroClientes = 'todos', imperioClientesSequencia = 0;
+function imperioResumoFrequencia(a) {
+  if (!a || Number(a.total_concluidos) === 0) return 'Sem atendimento concluído no histórico<br>0 visita(s) neste mês · 0 atendimento(s) concluído(s) no histórico<br>Média ainda não calculável';
+  var total=Number(a.total_concluidos)||0, mes=Number(a.no_mes)||0, datados=Number(a.atendimentos)||0, sem=Number(a.sem_data)||0;
+  var perfil=total===1 && datados===1 && sem===0 && Number(a.data_futura)===0 ? 'Primeiro atendimento registrado' : total>1 ? 'Cliente recorrente no histórico' : 'Histórico a conferir';
+  var media=a.media_dias===null || a.media_dias===undefined ? 'Média ainda não calculável' : Number(a.media_dias)===0 ? 'Média inferior a 1 dia' : 'Média de '+Number(a.media_dias)+' dia(s) entre visitas';
+  return '<b>'+perfil+'</b><br>'+mes+' visita(s) neste mês · '+total+' atendimento(s) concluído(s) no histórico<br>'+media+(sem?' · '+sem+' sem data':'');
+}
 (function () {
   var filtros = document.querySelector('.imperio-filtros-lista');
   var relatorio = document.getElementById('imperioRelatorioClientes');

@@ -36,7 +36,7 @@ function aplicar(html) {
   html = html.replace('<section id="tab-clientes" class="oculto">\n      <div class="card" style="padding:10px">', `<section id="tab-clientes" class="oculto">
       <div class="imperio-clientes-topo"><button type="button" class="btn" id="imperioRelatorioClientes">Relatórios</button><button class="btn main" id="btnNovoCliente">+ Cadastrar</button></div>
       <div class="card imperio-pesquisa-clientes" style="padding:10px">`);
-  html = html.replace('<button class="btn main bloco" id="btnNovoCliente" style="margin-bottom:12px">+ Novo cliente</button>', `<details class="imperio-filtros-clientes"><summary>Filtrar clientes</summary><div class="imperio-filtros-lista" role="group" aria-label="Filtrar clientes por última visita"><button type="button" class="on" data-imperio-filtro="todos" aria-pressed="true">Todos</button><button type="button" data-imperio-filtro="30" aria-pressed="false">Ausente 30 dias</button><button type="button" data-imperio-filtro="60" aria-pressed="false">Ausente 60 dias</button><button type="button" data-imperio-filtro="90" aria-pressed="false">Ausente 90 dias</button><button type="button" data-imperio-filtro="120" aria-pressed="false">Ausente 120 dias</button><button type="button" data-imperio-filtro="sem" aria-pressed="false">Sem histórico</button></div><p>Ausência conta a partir do último atendimento concluído. Clientes importados sem histórico não são considerados ausentes.</p></details><div class="imperio-clientes-contagem" id="imperioClientesContagem" aria-live="polite"></div>`);
+  html = html.replace('<button class="btn main bloco" id="btnNovoCliente" style="margin-bottom:12px">+ Novo cliente</button>', `<details class="imperio-filtros-clientes"><summary>Frequência de clientes</summary><div class="imperio-filtros-lista" role="group" aria-label="Filtrar clientes por frequência e última visita"><button type="button" class="on" data-imperio-filtro="todos" aria-pressed="true">Todos</button><button type="button" data-imperio-filtro="30" aria-pressed="false">Ausente 30 dias</button><button type="button" data-imperio-filtro="60" aria-pressed="false">Ausente 60 dias</button><button type="button" data-imperio-filtro="90" aria-pressed="false">Ausente 90 dias</button><button type="button" data-imperio-filtro="120" aria-pressed="false">Ausente 120 dias</button><button type="button" data-imperio-filtro="recentes" aria-pressed="false">Cadastros recentes</button><button type="button" data-imperio-filtro="primeiro" aria-pressed="false">Primeiro atendimento registrado</button><button type="button" data-imperio-filtro="mes0" aria-pressed="false">Sem visitas no mês</button><button type="button" data-imperio-filtro="mes1" aria-pressed="false">1 visita no mês</button><button type="button" data-imperio-filtro="mes2" aria-pressed="false">2 visitas no mês</button><button type="button" data-imperio-filtro="mes3mais" aria-pressed="false">3 ou mais no mês</button><button type="button" data-imperio-filtro="sem" aria-pressed="false">Sem histórico</button></div><p>Ausência conta a partir do último atendimento concluído. Cadastros recentes são ordenados pela data de cadastro no painel; clientes importados podem aparecer juntos. Primeiro atendimento e frequência consideram somente o histórico registrado. Contamos visitas concluídas até hoje; datas ausentes ficam fora da contagem mensal e da média.</p></details><div class="imperio-clientes-contagem" id="imperioClientesContagem" aria-live="polite"></div>`);
   // A seleção reutiliza a lista e a pesquisa existentes; visível apenas ao administrador.
   html = html.replace('<div id="listaClientes"></div>', `<div id="imperioSelecaoClientes" class="imperio-selecao-clientes" hidden>
         <div class="imperio-selecao-topo"><button type="button" class="btn" id="imperioSelecionarTodos">Selecionar exibidos</button><span id="imperioContadorClientes" aria-live="polite">0 selecionados</span><button type="button" class="btn bad" id="imperioExcluirClientes" disabled>Excluir selecionados</button></div>
@@ -48,22 +48,31 @@ function aplicar(html) {
   if (clientesInicio !== -1 && clientesFim !== -1) {
     let trecho = html.slice(clientesInicio, clientesFim);
     trecho = trecho.replace("api('/clientes' + (q ? '?q=' + encodeURIComponent(q) : '')).then(function (l) {", `var sequencia = ++imperioClientesSequencia;
-    Promise.all([api('/clientes' + (q ? '?q=' + encodeURIComponent(q) : '')), api('/imperio-clientes/atividade')]).then(function (resposta) {
+    var paramsClientes = new URLSearchParams();
+    if (q) paramsClientes.set('q', q);
+    if (['recentes','primeiro','mes0','mes1','mes2','mes3mais'].includes(imperioFiltroClientes)) paramsClientes.set('imperio_filtro', imperioFiltroClientes);
+    Promise.all([api('/clientes' + (paramsClientes.toString() ? '?' + paramsClientes.toString() : '')), api('/imperio-clientes/atividade')]).then(function (resposta) {
       if (sequencia !== imperioClientesSequencia) return;
       var l = resposta[0], atividade = resposta[1], mapa = {};
       (atividade.registros || []).forEach(function (r) { mapa[Number(r.id)] = r; });
       var hoje = Date.parse(atividade.hoje + 'T00:00:00Z');
       var filtrados = l.filter(function (c) {
         var a = mapa[Number(c.id)];
-        if (imperioFiltroClientes === 'todos') return true;
-        if (imperioFiltroClientes === 'sem') return !a;
+        if (imperioFiltroClientes === 'todos' || imperioFiltroClientes === 'recentes') return true;
+        if (imperioFiltroClientes === 'primeiro') return !!a && Number(a.atendimentos) === 1 && Number(a.sem_data) === 0 && Number(a.data_futura) === 0;
+        if (imperioFiltroClientes === 'mes0') return !a || Number(a.no_mes) === 0;
+        if (imperioFiltroClientes === 'mes1') return !!a && Number(a.no_mes) === 1;
+        if (imperioFiltroClientes === 'mes2') return !!a && Number(a.no_mes) === 2;
+        if (imperioFiltroClientes === 'mes3mais') return !!a && Number(a.no_mes) >= 3;
+        if (imperioFiltroClientes === 'sem') return !a || Number(a.total_concluidos) === 0;
         if (!a || !a.ultima_visita) return false;
         var dias = Math.floor((hoje - Date.parse(a.ultima_visita + 'T00:00:00Z')) / 86400000);
         return Number.isFinite(dias) && dias >= Number(imperioFiltroClientes);
       });
+      if (imperioFiltroClientes === 'recentes') filtrados.sort(function (a,b) { return String(b.criado_em||'').localeCompare(String(a.criado_em||'')) || Number(b.id)-Number(a.id); });
       $('imperioClientesContagem').textContent = filtrados.length + (filtrados.length === 1 ? ' cliente exibido' : ' clientes exibidos');`);
     trecho = trecho.replace("$('listaClientes').innerHTML = l.length\n        ? l.map(function (c) {", "$('listaClientes').innerHTML = filtrados.length\n        ? filtrados.map(function (c) {");
-    trecho = trecho.replace("'<div class=\"meta\">' +\n                (c.telefone ?", "'<div class=\"imperio-visitas\">' + (mapa[Number(c.id)] ? esc(String(mapa[Number(c.id)].atendimentos)) + ' atendimento(s) concluído(s)' : 'Sem histórico de atendimento') + '</div>' +\n              '<div class=\"meta\">' +\n                (c.telefone ?");
+    trecho = trecho.replace("'<div class=\"meta\">' +\n                (c.telefone ?", "'<div class=\"imperio-visitas\">' + imperioResumoFrequencia(mapa[Number(c.id)]) + '</div>' +\n              '<div class=\"meta\">' +\n                (c.telefone ?");
     trecho = trecho.replace("'<div class=\"l1\"><div class=\"tit\">' + esc(c.nome) + '</div>' +", "'<div class=\"l1\"><button type=\"button\" class=\"tit imperio-cliente-recorrencia\" data-imperio-recorrencia=\"' + c.id + '\">' + esc(c.nome) + '</button>' +");
     trecho = trecho.replace("' encontrado' : ' cadastrado ainda'", "' encontrado' : imperioFiltroClientes !== 'todos' ? ' neste filtro' : ' cadastrado ainda'");
     trecho = trecho.replace("}).catch(function () {});", "}).catch(function () { if (sequencia === imperioClientesSequencia) $('imperioClientesContagem').textContent = 'Não foi possível carregar os clientes. Tente novamente.'; });");

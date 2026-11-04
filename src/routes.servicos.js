@@ -892,8 +892,26 @@ admin.get('/clientes', requireAuth, (req, res) => {
   const excluir = ocultos.length ? ` AND id NOT IN (${ocultos.map(() => '?').join(',')})` : '';
   const busca = q ? ' AND (nome LIKE ? OR telefone LIKE ? OR endereco LIKE ?)' : '';
   const args = [req.store.id, ...ocultos, ...(q ? [`%${q}%`, `%${q}%`, `%${q}%`] : [])];
-  const limite = req.store.slug === 'imperio-barber' ? 1000 : 300;
-  const lista = db.prepare('SELECT * FROM clientes WHERE store_id = ?' + excluir + busca + ` ORDER BY nome LIMIT ${limite}`).all(...args);
+  const ehImperio = req.store.slug === 'imperio-barber';
+  const filtroImperio = ehImperio ? String(req.query.imperio_filtro || '') : '';
+  let apenasPrimeiros = '';
+  const filtrosMes = ['mes0','mes1','mes2','mes3mais'];
+  if (filtroImperio === 'primeiro' || filtrosMes.includes(filtroImperio)) {
+    const hoje = new Intl.DateTimeFormat('en-CA', { timeZone:'America/Sao_Paulo', year:'numeric', month:'2-digit', day:'2-digit' }).format(new Date());
+    const valida = `(a.data GLOB '[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]' AND COALESCE(date(a.data, '+0 days') = a.data, 0))`;
+    if (filtroImperio === 'primeiro') {
+      apenasPrimeiros = ` AND id IN (SELECT a.cliente_id FROM agendamentos a WHERE a.store_id = ? AND a.status = 'concluido' GROUP BY a.cliente_id HAVING SUM(CASE WHEN ${valida} AND a.data <= ? THEN 1 ELSE 0 END) = 1 AND SUM(CASE WHEN NOT ${valida} THEN 1 ELSE 0 END) = 0 AND SUM(CASE WHEN ${valida} AND a.data > ? THEN 1 ELSE 0 END) = 0)`;
+      args.push(req.store.id, hoje, hoje);
+    } else {
+      const op = filtroImperio === 'mes0' ? 'NOT IN' : 'IN';
+      const quantidade = filtroImperio === 'mes1' ? '= 1' : filtroImperio === 'mes2' ? '= 2' : filtroImperio === 'mes3mais' ? '>= 3' : '>= 1';
+      apenasPrimeiros = ` AND id ${op} (SELECT a.cliente_id FROM agendamentos a WHERE a.store_id = ? AND a.status = 'concluido' AND ${valida} AND a.data >= ? AND a.data <= ? GROUP BY a.cliente_id HAVING COUNT(*) ${quantidade})`;
+      args.push(req.store.id, hoje.slice(0,7)+'-01', hoje);
+    }
+  }
+  const limite = ehImperio ? 1000 : 300;
+  const ordem = filtroImperio === 'recentes' ? 'criado_em DESC, id DESC' : 'nome';
+  const lista = db.prepare('SELECT * FROM clientes WHERE store_id = ?' + excluir + busca + apenasPrimeiros + ` ORDER BY ${ordem} LIMIT ${limite}`).all(...args);
   res.json(lista);
 });
 
