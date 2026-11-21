@@ -979,6 +979,27 @@ const escXml = (t) =>
  * Cartão vertical 1080x1350 com o LOGO da loja, o nome, o link do painel,
  * a senha e o QR Code — a mesma imagem que vai junto da mensagem no WhatsApp.
  */
+/**
+ * QR Code de um link da loja (agendamento, cardápio, painel).
+ * Fica no master para você imprimir o QR de qualquer loja sem entrar no
+ * painel dela. Só aceita https/http e usa a mesma biblioteca do cardápio.
+ */
+router.get('/stores/:id/qr', requireMaster, async (req, res) => {
+  const url = String(req.query.url || '').trim();
+  if (!/^https?:\/\//.test(url)) return res.status(400).send('URL inválida');
+  const store = getStoreById(Number(req.params.id));
+  if (!store) return res.status(404).send('Loja não encontrada.');
+  try {
+    const QRCode = require('qrcode');
+    const b = getSetting(store.id, 'business', {}) || {};
+    const cor = /^#[0-9a-f]{6}$/i.test(b.theme_color || '') ? b.theme_color : '#17211c';
+    const png = await QRCode.toBuffer(url, { width: 720, margin: 2, color: { dark: cor, light: '#ffffff' } });
+    res.type('png').set('Cache-Control', 'private, max-age=60').send(png);
+  } catch {
+    res.status(500).send('Erro ao gerar QR');
+  }
+});
+
 router.get('/stores/:id/cartao-acesso.png', requireMaster, async (req, res) => {
   try {
     const store = getStoreById(Number(req.params.id));

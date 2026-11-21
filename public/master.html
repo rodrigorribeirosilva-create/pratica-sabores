@@ -1011,6 +1011,7 @@
         </div>
         <div class="actions">
           <button class="btn btn-sm main" data-act="copy-menu">${ehServ ? 'Copiar link de agendamento' : `Copiar link do ${palavra}`}</button>
+          <button class="btn btn-sm" data-act="qr-menu">QR Code do link</button>
           <a class="btn btn-sm" href="${esc(s.menu_path)}" target="_blank" rel="noopener">${ehServ ? 'Ver página de agendamento' : `Ver ${palavra}`}</a>
           <a class="btn btn-sm" href="${esc(s.admin_path)}" target="_blank" rel="noopener">${ehServ ? 'Abrir painel de serviços' : 'Abrir painel'}</a>
           <button class="btn btn-sm" data-act="share">${ehServ ? 'Mandar link de agendamento' : `Mandar ${palavra} ao cliente`}</button>
@@ -1048,6 +1049,25 @@
           );
         }
         if (act === 'copy-admin') return copy(location.origin + store.admin_path + linkNovo(), 'Link do painel copiado! (prévia nova)');
+        if (act === 'qr-menu') {
+          // QR do link público: mostra na tela e permite baixar para imprimir
+          const url = location.origin + store.menu_path;
+          const src = `/api/master/stores/${id}/qr?url=${encodeURIComponent(url)}`;
+          const win = window.open('', '_blank');
+          if (win) {
+            win.document.write(
+              `<!doctype html><meta charset="utf-8"><title>QR · ${esc(store.name)}</title>` +
+              `<div style="font-family:system-ui;text-align:center;padding:28px">` +
+              `<h2 style="font-size:18px;margin:0 0 4px">${esc(store.name)}</h2>` +
+              `<p style="color:#666;font-size:13px;margin:0 0 16px">${esc(url)}</p>` +
+              `<img src="${src}" width="420" height="420" alt="QR Code" style="border:1px solid #ddd;border-radius:12px">` +
+              `<p><a href="${src}" download="qr-${esc(store.slug)}.png" style="font-size:14px">Baixar PNG para imprimir</a></p>` +
+              `<p style="color:#666;font-size:12px">Aponte a câmera do celular para o QR: cai direto na agenda.</p></div>`
+            );
+            win.document.close();
+          }
+          return;
+        }
         if (act === 'contrato') {
           abrirContrato(id);
           return;

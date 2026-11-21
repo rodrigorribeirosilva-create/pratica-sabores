@@ -70,6 +70,12 @@ funcionando; `?profissional=3` também), histórico, agenda e preços.
 5. **Serviços**: cadastre limpeza de pele, massagem, unhas etc., com duração.
 6. Envie o link `/l/nome-da-loja` no WhatsApp/Instagram.
 
+## Link de agendamento
+
+O link, o QR Code para imprimir e o link de cada profissional ficam em
+**Loja → 🔗 Link de agendamento** no painel (e no master, botão
+**QR Code do link**). Passo a passo em [`LINK-DE-AGENDAMENTO.md`](LINK-DE-AGENDAMENTO.md).
+
 ## Teste automático
 
 Com o servidor rodando (`npm start`), em outro terminal:

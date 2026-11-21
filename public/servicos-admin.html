@@ -665,12 +665,34 @@
       </div>
 
       <div class="card">
-        <h2>🔗 Links</h2>
-        <p style="font-size:13px;color:var(--mut);margin:0 0 10px">Este é o link que você manda para os clientes agendarem:</p>
+        <h2 id="linkTitulo">🔗 Link de agendamento</h2>
+        <p style="font-size:13px;color:var(--mut);margin:0 0 10px">É este o link que você manda para os clientes. Ao abrir, o cliente escolhe o serviço, o profissional e o horário.</p>
         <div style="background:#f7fafd;border:1px dashed #cddcee;border-radius:11px;padding:11px;font-size:12.5px;word-break:break-all" id="linkPublico"></div>
-        <div class="acoes">
-          <button class="btn" id="btnCopiarLink">Copiar link</button>
+        <div class="acoes" style="margin-top:10px">
+          <button class="btn main" id="btnCopiarLink">Copiar link</button>
           <a class="btn zap" id="btnEnviarLink" target="_blank" rel="noopener">Enviar no WhatsApp</a>
+        </div>
+
+        <div style="display:flex;gap:12px;align-items:center;margin-top:16px;padding-top:14px;border-top:1px solid var(--linha)">
+          <img id="qrLink" alt="QR Code do link de agendamento" width="104" height="104"
+               style="width:104px;height:104px;border-radius:10px;border:1px solid var(--linha);background:#fff;flex:none">
+          <div style="flex:1;min-width:0">
+            <div style="font-weight:800;font-size:13px">QR Code para imprimir</div>
+            <div style="font-size:11.5px;color:var(--mut);margin:2px 0 8px">Cole no balcão, no espelho ou na vitrine. O cliente aponta a câmera e cai direto na agenda.</div>
+            <button class="btn" id="btnBaixarQr" style="font-size:12px;padding:6px 10px">Baixar QR Code</button>
+          </div>
+        </div>
+
+        <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--linha)">
+          <div style="font-weight:800;font-size:13px">Mensagem pronta para o WhatsApp</div>
+          <div id="msgLink" style="background:#f7fafd;border:1px dashed #cddcee;border-radius:11px;padding:11px;font-size:12.5px;white-space:pre-wrap;margin:8px 0"></div>
+          <button class="btn" id="btnCopiarMsg" style="font-size:12px;padding:6px 10px">Copiar mensagem</button>
+        </div>
+
+        <div id="boxLinksEquipe" class="oculto" style="margin-top:16px;padding-top:14px;border-top:1px solid var(--linha)">
+          <div style="font-weight:800;font-size:13px">Link de cada profissional</div>
+          <div style="font-size:11.5px;color:var(--mut);margin:2px 0 8px">Serve para a pessoa colocar na bio do Instagram ou no status: abre já com a agenda dela.</div>
+          <div id="linksEquipe"></div>
         </div>
       </div>
     </section>
@@ -966,7 +988,11 @@
     api('/servicos').then(function (l) { S.servicos = l; }).catch(function () {});
     api('/clientes').then(function (l) { S.clientes = l; }).catch(function () {});
     api('/equipamentos').then(function (l) { S.equipamentos = l; }).catch(function () {});
-    api('/profissionais').then(function (d) { S.prof = (d.profissionais || []).filter(function (p) { return p.ativo; }); }).catch(function () {});
+    api('/profissionais').then(function (d) {
+      S.prof = (d.profissionais || []).filter(function (p) { return p.ativo; });
+      S.equipe = d.profissionais || [];
+      renderLink(); // links individuais de cada profissional
+    }).catch(function () {});
   }
 
   function aplicarEmpresa() {
@@ -1010,6 +1036,7 @@
     if ($('empChamada')) $('empChamada').value = S.negocio.hero_chamada || '';
     $('linkSite').href = link;
     preencherRotulos();
+    renderLink();
   }
 
   /* ---------- palavras da loja (barbeiro x profissional x esteticista) ---------- */
@@ -1224,7 +1251,21 @@
 
   /** A loja é barbearia? (então não mostramos dados de ar-condicionado) */
   function ehBarbearia() {
-    return !!(S.negocio && S.negocio.perfil_agenda === 'barbearia');
+    // nomes antigos e o novo (perfil_agenda) valem: loja com agenda no local
+    if (!S.negocio) return false;
+    if (S.negocio.perfil_agenda === 'barbearia') return true;
+    return false;
+  }
+
+  /**
+   * Nome do link desta loja. Este painel é o das lojas com agenda, então o
+   * padrão é "agendamento"; quem atende em domicílio/sem equipe continua com
+   * o mesmo texto de antes (serviços).
+   */
+  function nomeDoLink() {
+    return (S.negocio && S.negocio.perfil_agenda === 'barbearia') || (S.equipe || []).length
+      ? 'Link de agendamento'
+      : 'Link de serviços';
   }
 
   function itemAgendamento(a, opcoes) {
@@ -2483,6 +2524,11 @@
     var acao = b.dataset.acao;
     var id = Number(b.dataset.id);
 
+    if (acao === 'copiarLinkProf') {
+      var pr = (S.equipe || []).filter(function (x) { return Number(x.id) === id; })[0];
+      if (pr) copiar(comMarca(linkDaPagina() + '/?profissional=' + pr.id), 'Link de ' + pr.nome + ' copiado ✓');
+      return;
+    }
     if (acao === 'agendar') {
       var a = acharAgendamento(id);
       if (a) formAgendamento(a);
@@ -2632,11 +2678,13 @@
       // link só com a agenda deste barbeiro (para ele colocar na bio/status)
       var p2 = (S.equipe || []).filter(function (x) { return x.id === Number(id); })[0];
       if (!p2) return;
-      var base = location.origin + location.pathname.replace(/\/admin\/?$/, '') + '/?barbeiro=' + p2.id;
+      var base = linkDaPagina() + '/?profissional=' + p2.id;
       var nomeLoja = (S.negocio && S.negocio.name) || 'nossa loja';
-      var texto = 'Olá! Para agendar um horário com ' + p2.nome + ' é só clicar no link abaixo 👇\n' + base;
+      var rp = (window.Rotulos && Rotulos.palavras && Rotulos.palavras()) || {};
+      var texto = 'Olá! Para agendar um horário com ' + p2.nome + ' é só abrir o link abaixo 👇\n' + base;
+      if (rp.profissional) texto += '\n\n' + (rp.Profissional || 'Profissional') + ': ' + p2.nome + ' · ' + nomeLoja;
       abrirSheet('Link de ' + p2.nome,
-        '<div class="campo"><label>Link direto (agenda só deste barbeiro)</label>' +
+        '<div class="campo"><label>Link direto (agenda só ' + ((window.Rotulos && Rotulos.palavras && Rotulos.palavras().doProfissional) || 'deste') + ' ' + ((window.Rotulos && Rotulos.palavras && Rotulos.palavras().profissional) || 'barbeiro') + ')</label>' +
           '<div style="background:#f7fafd;border:1px dashed #cddcee;border-radius:11px;padding:11px;font-size:12.5px;word-break:break-all">' + esc(base) + '</div></div>' +
           '<div class="campo"><label>Mensagem pronta</label>' +
           '<div style="background:#f7fafd;border:1px dashed #cddcee;border-radius:11px;padding:11px;font-size:12.5px;white-space:pre-wrap">' + esc(texto) + '</div></div>' +
@@ -2947,11 +2995,96 @@
     this.value = '';
   });
 
+  /* ------------------- link de agendamento (completo) ------------------- */
+  /** URL pública da loja, sem query: é a base de todos os links. */
+  function linkDaPagina() {
+    return location.origin + location.pathname.replace(/\/admin\/?$/, '');
+  }
+
+  /** "?v=xxxx": o WhatsApp guarda a prévia antiga do link; isso força a nova. */
+  function comMarca(url) {
+    return url + (url.indexOf('?') === -1 ? '?' : '&') + 'v=' + Math.random().toString(36).slice(2, 6);
+  }
+
+  function copiar(txt, ok) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      return navigator.clipboard.writeText(txt).then(function () { toast(ok || 'Copiado ✓'); })
+        .catch(function () { window.prompt('Copie:', txt); });
+    }
+    window.prompt('Copie:', txt);
+  }
+
+  /** Mensagem pronta que acompanha o link (muda a palavra conforme a loja). */
+  function textoDoLink() {
+    var r = (window.Rotulos && Rotulos.palavras && Rotulos.palavras()) || {};
+    var nome = (S.negocio && S.negocio.name) || 'nossa loja';
+    var prof = r.profissional || 'barbeiro';
+    var plural = r.profissionais || 'barbeiros';
+    var link = linkDaPagina();
+    var quem = (r.artigo === 'a' ? 'a ' : 'o ') + prof;
+    if (r.ehBarbearia === false) {
+      return 'Olá! 😊 Aqui está o link de agendamento ' + (r.doLocal || 'da loja') + ' ' + nome + ' 👇\n' + link +
+        '\n\nEm menos de 1 minuto você escolhe o serviço, ' + quem + ' e o melhor horário.' +
+        '\n\nQualquer dúvida me chama por aqui!';
+    }
+    return 'Olá! 😊 Aqui está o link de agendamento de ' + nome + ' 👇\n' + link +
+      '\n\nEscolha o serviço, ' + quem + ' e o melhor horário.' +
+      '\n\nCada ' + prof + ' tem a própria agenda. Qualquer dúvida me chama por aqui!';
+  }
+
+  /** Desenha o card "Link de agendamento": texto, QR e link de cada pessoa. */
+  function renderLink() {
+    if (!S.negocio) return;
+    var link = linkDaPagina();
+    if ($('linkPublico')) $('linkPublico').textContent = link;
+    if ($('linkTitulo')) $('linkTitulo').textContent = '🔗 ' + nomeDoLink();
+    var texto = textoDoLink();
+    if ($('msgLink')) $('msgLink').textContent = texto;
+    if ($('btnEnviarLink')) $('btnEnviarLink').href = 'https://wa.me/?text=' + encodeURIComponent(texto);
+    if ($('qrLink')) $('qrLink').src = BASE + '/qr?url=' + encodeURIComponent(link) + '&t=' + Date.now();
+
+    // link individual de cada profissional (bio do Instagram / status)
+    var box = $('boxLinksEquipe'), lista = $('linksEquipe');
+    var ativos = (S.equipe || []).filter(function (p) { return p.ativo !== 0; });
+    if (box && lista) {
+      if (!ativos.length) { box.classList.add('oculto'); lista.innerHTML = ''; }
+      else {
+        box.classList.remove('oculto');
+        lista.innerHTML = ativos.map(function (p) {
+          var url = comMarca(link + '/?profissional=' + p.id);
+          return '<div class="item" style="padding:8px 0">' +
+            '<div class="l1"><div class="tit" style="font-size:13px">' + esc(p.nome) + '</div></div>' +
+            '<div class="meta" style="word-break:break-all;font-size:11.5px">' + esc(url) + '</div>' +
+            '<div class="acoes" style="margin-top:6px">' +
+              '<button class="btn" data-acao="copiarLinkProf" data-id="' + p.id + '" style="font-size:12px;padding:6px 10px">Copiar</button>' +
+              '<a class="btn zap" style="font-size:12px;padding:6px 10px" target="_blank" rel="noopener" href="https://wa.me/?text=' +
+                encodeURIComponent('Olá! Para agendar com ' + p.nome + ' é só abrir este link 👇\n' + url) + '">WhatsApp</a>' +
+            '</div></div>';
+        }).join('');
+      }
+    }
+  }
+
+  if ($('btnBaixarQr')) {
+    $('btnBaixarQr').addEventListener('click', function () {
+      // baixa o PNG do QR (mesmo que está na tela)
+      var a = document.createElement('a');
+      a.href = BASE + '/qr?url=' + encodeURIComponent(linkDaPagina());
+      a.download = 'qr-' + ((S.negocio && S.negocio.name) || 'loja').toLowerCase().replace(/[^a-z0-9]+/g, '-') + '.png';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      toast('Baixando o QR Code…');
+    });
+  }
+
+  if ($('btnCopiarMsg')) {
+    $('btnCopiarMsg').addEventListener('click', function () { copiar(textoDoLink(), 'Mensagem copiada ✓'); });
+  }
+
   $('btnCopiarLink').addEventListener('click', function () {
     // código novo a cada cópia: o WhatsApp busca a prévia atualizada
-    var t = $('linkPublico').textContent.trim() + '?v=' + Math.random().toString(36).slice(2, 6);
-    if (navigator.clipboard) navigator.clipboard.writeText(t).then(function () { toast('Link copiado ✓'); });
-    else { window.prompt('Copie o link:', t); }
+    copiar(comMarca(linkDaPagina()), 'Link copiado ✓');
   });
 
 
