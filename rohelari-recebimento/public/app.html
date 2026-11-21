@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#0f1512" />
+<title>ROHELARI RECEBIMENTO</title>
+<link rel="icon" href="/assets/favicon.svg" />
+<link rel="stylesheet" href="/assets/app.css" />
+</head>
+<body class="app-body">
+
+<!-- sprite de ícones (inline, sem dependência de rede) -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-dash" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></symbol>
+  <symbol id="i-agenda" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></symbol>
+  <symbol id="i-list" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13M3.5 6h.01M3.5 12h.01M3.5 18h.01"/></symbol>
+  <symbol id="i-truck" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 3h15v13H1z"/><path d="M16 8h4l3 3v5h-7"/><circle cx="5.5" cy="18.5" r="2"/><circle cx="18.5" cy="18.5" r="2"/></symbol>
+  <symbol id="i-store" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l1.5-6h15L21 9"/><path d="M4 9v11a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1V9"/><path d="M9 21v-6h6v6"/></symbol>
+  <symbol id="i-dock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V5a2 2 0 0 1 2-2h6v18M13 21V9h4a2 2 0 0 1 2 2v10"/></symbol>
+  <symbol id="i-users" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2"/><circle cx="10" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></symbol>
+  <symbol id="i-factory" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h20M4 20V8l6 4V8l6 4V4h4v16"/></symbol>
+  <symbol id="i-report" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M9 15l2 2 4-4"/></symbol>
+  <symbol id="i-bell" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 0 1-3.46 0"/></symbol>
+  <symbol id="i-audit" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22c5.5 0 9-3.5 9-10V5l-9-3-9 3v7c0 6.5 3.5 10 9 10z"/><path d="M9 12l2 2 4-4"/></symbol>
+  <symbol id="i-link" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/></symbol>
+  <symbol id="i-settings" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h0a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51h0a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v0a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></symbol>
+  <symbol id="i-logout" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></symbol>
+  <symbol id="i-menu" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M3 12h18M3 18h18"/></symbol>
+  <symbol id="i-close" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></symbol>
+  <symbol id="i-camera" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></symbol>
+</svg>
+
+<aside class="sidebar" id="sidebar" aria-label="Navegação principal">
+  <div class="brand">
+    <div class="brand-mark">R</div>
+    <div>
+      <div class="brand-name">ROHELARI <span>RECEBIMENTO</span></div>
+      <div class="brand-tag" id="sidebarNetwork">Rede</div>
+    </div>
+  </div>
+
+  <nav class="nav" id="nav">
+    <div class="nav-label">Operação</div>
+    <button class="nav-item" data-nav="dashboard" data-roles="rede_admin,loja_gerente,recebimento,fornecedor"><svg><use href="#i-dash"/></svg>Painel</button>
+    <button class="nav-item" data-nav="agenda" data-roles="rede_admin,loja_gerente,recebimento,fornecedor"><svg><use href="#i-agenda"/></svg>Agenda de recebimento</button>
+    <button class="nav-item" data-nav="agendamentos" data-roles="rede_admin,loja_gerente,recebimento,fornecedor"><svg><use href="#i-list"/></svg>Agendamentos</button>
+
+    <div class="nav-label" data-roles="rede_admin,loja_gerente,recebimento">Gestão</div>
+    <button class="nav-item" data-nav="lojas" data-roles="rede_admin"><svg><use href="#i-store"/></svg>Lojas da rede</button>
+    <button class="nav-item" data-nav="docas" data-roles="rede_admin,loja_gerente,recebimento"><svg><use href="#i-dock"/></svg>Docas &amp; bloqueios</button>
+    <button class="nav-item" data-nav="fornecedores" data-roles="rede_admin"><svg><use href="#i-factory"/></svg>Fornecedores</button>
+    <button class="nav-item" data-nav="transportadoras" data-roles="rede_admin"><svg><use href="#i-truck"/></svg>Transportadoras</button>
+    <button class="nav-item" data-nav="usuarios" data-roles="rede_admin,loja_gerente"><svg><use href="#i-users"/></svg>Usuários &amp; acessos</button>
+
+    <div class="nav-label">Sistema</div>
+    <button class="nav-item" data-nav="relatorios" data-roles="rede_admin,loja_gerente,recebimento,fornecedor"><svg><use href="#i-report"/></svg>Relatórios</button>
+    <button class="nav-item" data-nav="notificacoes" data-roles="rede_admin,loja_gerente,recebimento,fornecedor"><svg><use href="#i-bell"/></svg>Notificações <span id="navUnread" class="chip chip-pendente" style="margin-left:auto" hidden>0</span></button>
+    <button class="nav-item" data-nav="auditoria" data-roles="rede_admin,loja_gerente"><svg><use href="#i-audit"/></svg>Auditoria</button>
+    <button class="nav-item" data-nav="integracao" data-roles="rede_admin"><svg><use href="#i-link"/></svg>Integração Sysmo</button>
+    <button class="nav-item" data-nav="configuracoes" data-roles="rede_admin,loja_gerente,recebimento,fornecedor"><svg><use href="#i-settings"/></svg>Configurações</button>
+  </nav>
+
+  <div class="sidebar-foot">
+    <div class="sidebar-user">
+      <div class="avatar" id="userAvatar">U</div>
+      <div><strong id="userName">Usuário</strong><small id="userRole">perfil</small></div>
+    </div>
+    <button class="logout-btn" id="btnLogout"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>Sair com segurança</button>
+  </div>
+</aside>
+<div class="overlay" id="overlay"></div>
+
+<div class="main">
+  <header class="topbar">
+    <button class="icon-btn hamburger" id="btnHamburger" aria-label="Abrir menu"><svg><use href="#i-menu"/></svg></button>
+    <h1 id="viewTitle">Painel</h1>
+    <button class="icon-btn" id="btnBell" aria-label="Notificações"><svg><use href="#i-bell"/></svg><span class="badge" id="bellBadge" hidden>0</span></button>
+  </header>
+  <main class="content" id="content">
+    <div class="empty"><strong>Carregando…</strong>Preparando seu ambiente.</div>
+  </main>
+</div>
+
+<div class="modal-root" id="modalRoot" role="dialog" aria-modal="true"></div>
+<div class="toast-root" id="toastRoot" aria-live="polite"></div>
+
+<script src="/assets/app.js" defer></script>
+</body>
+</html>

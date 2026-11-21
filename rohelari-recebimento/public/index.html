@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#0f1512" />
+<title>ROHELARI RECEBIMENTO — Acesso</title>
+<link rel="icon" href="/assets/favicon.svg" />
+<link rel="stylesheet" href="/assets/app.css" />
+</head>
+<body class="login-page">
+  <main class="login-shell">
+    <section class="login-hero">
+      <div class="brand brand-lg">
+        <div class="brand-mark" aria-hidden="true">R</div>
+        <div>
+          <div class="brand-name">ROHELARI <span>RECEBIMENTO</span></div>
+          <div class="brand-tag">Operação de recebimento sob controle</div>
+        </div>
+      </div>
+      <h1>Recebimento organizado,<br>pontual e rastreável.</h1>
+      <p class="login-hero-sub">Agendamento inteligente de fornecedores, transportadoras, veículos, docas e conferência de mercadorias para redes de supermercados.</p>
+      <ul class="login-points">
+        <li><strong>Agenda de 30 minutos</strong> com capacidade real por loja e faixa horária</li>
+        <li><strong>Fluxo completo</strong>: solicitação → aprovação → chegada → doca → conferência</li>
+        <li><strong>Multi-loja</strong> com visões separadas para rede, loja, equipe e fornecedor</li>
+      </ul>
+      <div class="login-hero-foot">Ambiente seguro · Dados protegidos por rede e loja · LGPD</div>
+    </section>
+
+    <section class="login-panel">
+      <div class="brand brand-sm only-mobile">
+        <div class="brand-mark">R</div>
+        <div class="brand-name">ROHELARI <span>RECEBIMENTO</span></div>
+      </div>
+
+      <div class="auth-tabs" role="tablist">
+        <button class="auth-tab active" data-tab="login" role="tab">Entrar</button>
+        <button class="auth-tab" data-tab="register" role="tab">Sou fornecedor</button>
+        <button class="auth-tab" data-tab="forgot" role="tab">Esqueci a senha</button>
+      </div>
+
+      <form id="form-login" class="auth-card" autocomplete="on">
+        <label class="field"><span>E-mail</span>
+          <input type="email" name="email" required autocomplete="username" inputmode="email" placeholder="voce@empresa.com.br" />
+        </label>
+        <label class="field"><span>Senha</span>
+          <input type="password" name="password" required autocomplete="current-password" placeholder="••••••••" />
+        </label>
+        <div class="form-error" data-error hidden></div>
+        <button type="submit" class="btn btn-primary btn-xl btn-block">Entrar no sistema</button>
+        <p class="auth-foot">Acesso restrito. O uso indevido é monitorado e auditado.</p>
+      </form>
+
+      <form id="form-register" class="auth-card" hidden autocomplete="off">
+        <p class="auth-note">Cadastro externo de <strong>fornecedor/transportadora</strong>. Após o envio, a rede valida os dados antes de liberar o acesso.</p>
+        <label class="field"><span>Código de convite da rede *</span>
+          <input type="text" name="signupCode" required placeholder="Ex.: DEMO-ROHELARI" autocomplete="off" />
+        </label>
+        <div class="grid-2">
+          <label class="field"><span>Razão social *</span><input type="text" name="legalName" required maxlength="200" /></label>
+          <label class="field"><span>Nome fantasia</span><input type="text" name="tradeName" maxlength="200" /></label>
+        </div>
+        <div class="grid-2">
+          <label class="field"><span>CNPJ *</span><input type="text" name="cnpj" required inputmode="numeric" placeholder="00.000.000/0000-00" /></label>
+          <label class="field"><span>Telefone/WhatsApp *</span><input type="text" name="phone" required inputmode="tel" placeholder="(48) 99999-0000" /></label>
+        </div>
+        <div class="grid-2">
+          <label class="field"><span>Seu nome *</span><input type="text" name="name" required maxlength="200" autocomplete="name" /></label>
+          <label class="field"><span>Representante</span><input type="text" name="representative" maxlength="200" /></label>
+        </div>
+        <label class="field"><span>E-mail de acesso *</span><input type="email" name="email" required inputmode="email" autocomplete="email" /></label>
+        <label class="field"><span>Criar senha (mín. 8) *</span><input type="password" name="password" required minlength="8" autocomplete="new-password" /></label>
+        <div class="form-error" data-error hidden></div>
+        <div class="form-ok" data-ok hidden></div>
+        <button type="submit" class="btn btn-primary btn-xl btn-block">Enviar cadastro para aprovação</button>
+      </form>
+
+      <form id="form-forgot" class="auth-card" hidden autocomplete="off">
+        <label class="field"><span>E-mail cadastrado</span><input type="email" name="email" required inputmode="email" /></label>
+        <div class="form-error" data-error hidden></div>
+        <div class="form-ok" data-ok hidden>Se o e-mail existir, as instruções serão enviadas. Sem e-mail configurado, o código fica com o administrador da rede.</div>
+        <button type="submit" class="btn btn-ghost btn-xl btn-block">Enviar recuperação</button>
+        <hr class="sep" />
+        <p class="auth-note"><strong>Tenho um código</strong> — redefinir senha:</p>
+        <label class="field"><span>Código de 6 dígitos</span><input type="text" name="code" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" placeholder="000000" /></label>
+        <label class="field"><span>Nova senha (mín. 8)</span><input type="password" name="newPassword" minlength="8" autocomplete="new-password" /></label>
+        <button type="button" class="btn btn-primary btn-block" id="btn-reset">Redefinir senha</button>
+      </form>
+    </section>
+  </main>
+  <script src="/assets/login.js"></script>
+</body>
+</html>
