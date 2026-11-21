@@ -37,6 +37,13 @@ A loja principal também responde na raiz (`/`), então links antigos continuam 
 
 No painel dele: cadastra produtos, preços, fotos, categorias, taxa de entrega, horários, formas de pagamento (Pix/chave, link de pagamento), mensagens de WhatsApp, abre/fecha pedidos, vê e atualiza pedidos e baixa backup em JSON.
 
+## Cada loja com as palavras do seu ramo
+
+Barbearia fala **barbeiro**, estúdio de estética fala **esteticista**, salão fala
+**cabeleireiro** — o sistema inteiro acompanha (site, painel, mensagens).
+No master: aba **Lojas** → **Palavras da loja**. Detalhes em
+[`PALAVRAS-DE-CADA-LOJA.md`](PALAVRAS-DE-CADA-LOJA.md).
+
 ## Personalizar a cara de cada cliente
 
 No painel do cliente → **Configurações › Dados do negócio**: nome, logo (upload), foto de capa, Instagram, endereço, cor principal. A logo e as cores aparecem no cardápio **e** na tela de login do painel dele — assim cada empresa parece ter sistema próprio.

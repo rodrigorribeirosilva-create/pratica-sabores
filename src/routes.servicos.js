@@ -27,10 +27,12 @@ admin.use((req, res, next) => {
   if (ROTAS_ABERTAS.has(req.path)) return next();
   return requireAuth(req, res, () => {
     if (req.papel !== 'funcionario') return next();
-    const podeVer = /^\/(painel|agendamentos|clientes|agenda|disponibilidade|dias|profissionais|servicos|equipamentos|por-profissional)(\/|$)/.test(req.path);
+    // /rotulos é leitura pura: o funcionário também precisa das palavras da loja
+    const podeVer = /^\/(painel|agendamentos|clientes|agenda|disponibilidade|dias|profissionais|servicos|equipamentos|por-profissional|rotulos)(\/|$)/.test(req.path);
     const podeEscrever = /^\/(agendamentos|clientes)(\/|$)/.test(req.path) || (req.store.slug === 'imperio-barber' && /^\/agenda\/bloqueios(?:\/\d+)?$/.test(req.path) && ['POST','DELETE'].includes(req.method));
     if (podeVer && (req.method === 'GET' || podeEscrever)) return next();
-    return res.status(403).json({ error: 'Esse setor é só do dono da barbearia.' });
+    const r = require('./rotulos').rotulos(lojaBusiness(req));
+    return res.status(403).json({ error: `Esse setor é só do dono ${r.doLocal}.` });
   });
 });
 
@@ -457,10 +459,11 @@ function proximaVaga(storeId, profissionalId) {
 }
 
 /** Nome da forma de pagamento escolhida pelo cliente. */
-function rotuloPagamento(p) {
+function rotuloPagamento(p, palavras) {
+  const r = palavras || require('./rotulos').rotulos({});
   return (
     {
-      local: 'na barbearia, no dia do atendimento',
+      local: `${r.noLocal}, no dia do atendimento`,
       pix: 'Pix antecipado (enviar comprovante no WhatsApp)',
       cartao: 'cartão na maquininha, no atendimento',
     }[String(p || '')] || 'a combinar'
@@ -542,6 +545,24 @@ const SQL_AGENDA = `
 /* ------------------------------------------------------------------ */
 /* PAINEL — resumo do dia                                              */
 /* ------------------------------------------------------------------ */
+
+/**
+ * Palavras que ESTA loja usa ("barbeiro/barbearia", "profissional/estúdio"…).
+ * O painel usa isso para não escrever "barbeiro" numa loja de estética.
+ */
+admin.get('/rotulos', requireAuth, (req, res) => {
+  const business = lojaBusiness(req);
+  const r = require('./rotulos');
+  const palavras = r.rotulos(business);
+  res.json({
+    ...palavras,
+    padrao: { profissional: r.PADRAO_PROFISSIONAL, local: r.PADRAO_LOCAL },
+    opcoes_profissional: r.opcoesProfissional(),
+    opcoes_local: r.opcoesLocal(),
+    // só o dono muda as palavras da própria loja
+    pode_editar: req.papel !== 'funcionario',
+  });
+});
 
 admin.get('/painel', requireAuth, (req, res) => {
   const semDinheiro = req.papel === 'funcionario';
@@ -1625,6 +1646,9 @@ publico.get('/servicos', (req, res) => {
       // Perfil da agenda desta loja. 'domicilio' = como sempre foi (Henrique).
       // 'barbearia' = cliente no local, com equipe e sem campos de equipamento.
       perfil: b.perfil_agenda === 'barbearia' ? 'barbearia' : 'domicilio',
+      // Palavras desta loja: "barbeiro/barbearia", "profissional/estúdio"…
+      // A página usa isso para não chamar de barbeiro quem é esteticista.
+      rotulos: require('./rotulos').rotulos(b),
     },
     servicos: lista.map((s) => ({ ...s, preco: s.tipo_preco === 'sob_orcamento' ? 'Sob orçamento' : `${s.tipo_preco === 'a_partir' ? 'a partir de ' : ''}${brl(s.preco_cents)}` })),
     // Dias de atendimento e períodos: a página monta os atalhos de dia sem
@@ -1732,6 +1756,7 @@ publico.post('/agendar', (req, res) => {
   if (!String(b.nome || '').trim()) return res.status(400).json({ error: 'Informe seu nome.' });
   if (soDigitos(b.telefone).length < 10) return res.status(400).json({ error: 'Informe um WhatsApp válido com DDD.' });
   const businessLoja = lojaBusiness(req);
+  const palavras = require('./rotulos').rotulos(businessLoja);
   const ehBarbearia = businessLoja.perfil_agenda === 'barbearia';
   if (ehBarbearia) {
     // o cliente é atendido no endereço da loja
@@ -1772,7 +1797,7 @@ publico.post('/agendar', (req, res) => {
   const profId = Number(b.profissional_id || 0);
   if (temEquipe(req.store.id) && profId) {
     const prof = profissionalDa(req.store.id, profId);
-    if (!prof) return res.status(400).json({ error: 'Escolha um barbeiro da equipe.' });
+    if (!prof) return res.status(400).json({ error: `Escolha ${palavras.artigo === 'a' ? 'uma' : 'um'} ${palavras.profissional} da equipe.` });
     if (!horaPedida && b.data && b.periodo && profissionalOcupado(req.store.id, String(b.data).slice(0, 10), b.periodo, profId)) {
       const dia = String(b.data).slice(0, 10);
       const livres = profissionaisLivres(req.store.id, dia, b.periodo).map((p) => ({ id: p.id, nome: p.nome }));
@@ -1784,7 +1809,7 @@ publico.post('/agendar', (req, res) => {
     b.profissional_id = profId;
     b.profissional_nome = prof.nome;
   } else if (temEquipe(req.store.id) && !profId) {
-    return res.status(400).json({ error: 'Escolha o barbeiro para o atendimento.' });
+    return res.status(400).json({ error: `Escolha ${palavras.oProfissional} para o atendimento.` });
   }
 
   // Não deixa dois clientes caírem no mesmo período já tomado.
@@ -1817,11 +1842,11 @@ publico.post('/agendar', (req, res) => {
   const texto =
     `*Nova solicitação de agendamento* 🗓️\n\n` +
     `Cliente: ${b.nome}\nWhatsApp: ${b.telefone}\n` +
-    (b.profissional_nome ? `Barbeiro: ${b.profissional_nome}\n` : '') +
+    (b.profissional_nome ? `${palavras.Profissional}: ${b.profissional_nome}\n` : '') +
     `Serviço: ${registro.servico_nome}${servico && servico.tipo_preco !== 'sob_orcamento' ? ` (${brl(servico.preco_cents)})` : ''}\n` +
     `Data preferida: ${b.data ? `${dataBR(b.data)} (${diaSemana(b.data)})` : 'a combinar'}${b.periodo ? ` — ${b.periodo}` : ''}\n` +
     `Endereço: ${b.endereco}${b.bairro ? ` - ${b.bairro}` : ''}\n` +
-    `Pagamento: ${rotuloPagamento(b.pagamento)}\n` +
+    `Pagamento: ${rotuloPagamento(b.pagamento, palavras)}\n` +
     (b.equip_tipo || b.equip_marca || b.equip_ambiente
       ? `Equipamento: ${[b.equip_tipo, b.equip_marca, b.equip_ambiente].filter(Boolean).join(' ')}\n`
       : '') +

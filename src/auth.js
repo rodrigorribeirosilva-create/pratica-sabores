@@ -104,7 +104,16 @@ function requireAuth(req, res, next) {
 /** Só o DONO passa: dinheiro, relatórios, serviços, promoções e configurações. */
 function requireDono(req, res, next) {
   if (req.papel === 'funcionario') {
-    return res.status(403).json({ error: 'Esse setor é só do dono da barbearia.' });
+    // a mensagem respeita o nome que a loja usa (barbearia, estúdio, salão…)
+    let local = 'do estabelecimento';
+    try {
+      const b = require('./db').getSetting(req.store.id, 'business', {}) || {};
+      const r = require('./rotulos').rotulos(b);
+      local = r.doLocal;
+    } catch {
+      /* mantém o texto genérico */
+    }
+    return res.status(403).json({ error: `Esse setor é só do dono ${local}.` });
   }
   return next();
 }

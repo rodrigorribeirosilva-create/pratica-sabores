@@ -300,6 +300,8 @@ function storeSummary(store) {
     rotulo_item: ehServicos ? 'serviço' : segLoja === 'catalogo' ? 'produto' : 'item',
     rotulo_itens: ehServicos ? 'serviços' : 'produtos',
     rotulo_pedidos: ehServicos ? 'agendamentos' : 'pedidos',
+    // como ESTA loja chama a equipe e o lugar (padrão: barbeiro/barbearia)
+    rotulos: require('./rotulos').rotulos(business),
     created_at: formatDateTimeBR(store.created_at),
     // números de venda: a mesma conta da aba "Vendas" do painel da loja
     vendas: (vendasPorLoja()[store.id] || {
@@ -309,6 +311,18 @@ function storeSummary(store) {
     menu_path: `/l/${store.slug}`,
     admin_path: `/l/${store.slug}/admin`,
   };
+}
+
+/**
+ * Palavras que a loja usa para as pessoas e para o lugar.
+ * Devolve null quando nada foi escolhido (aí vale o padrão barbeiro/barbearia).
+ */
+function palavrasDaLoja(b) {
+  const r = require('./rotulos');
+  const out = {};
+  if (b && b.rotulo_profissional !== undefined) out.rotulo_profissional = r.limpar(b.rotulo_profissional, 24);
+  if (b && b.rotulo_local !== undefined) out.rotulo_local = r.limpar(b.rotulo_local, 24);
+  return Object.keys(out).length ? out : null;
 }
 
 router.get('/stores', requireMaster, (req, res) => {
@@ -343,6 +357,13 @@ router.post('/stores', requireMaster, (req, res) => {
       segment: ['catalogo', 'servicos'].includes(b.segment) ? b.segment : 'food',
       withSeedProducts: b.withSeedProducts === true,
     });
+    // Palavras da loja (ex.: "profissional"/"estúdio" numa loja de estética).
+    // Vazio = padrão (barbeiro/barbearia), então nada muda para quem já existe.
+    const rot = palavrasDaLoja(b);
+    if (rot) {
+      const business = getSetting(store.id, 'business', {}) || {};
+      setSetting(store.id, 'business', { ...business, ...rot });
+    }
     res.status(201).json({ ok: true, store: storeSummary(store) });
   } catch (err) {
     console.error('[master/create]', err);
@@ -475,6 +496,12 @@ router.patch('/stores/:id', requireMaster, (req, res) => {
   }
   if (b.active !== undefined) {
     db.prepare('UPDATE stores SET active = ? WHERE id = ?').run(b.active ? 1 : 0, store.id);
+  }
+  // Palavras da loja (ex.: loja de estética = "profissional"/"estúdio").
+  // Serve para consertar loja já criada sem precisar entrar no painel dela.
+  if (b.rotulo_profissional !== undefined || b.rotulo_local !== undefined) {
+    const business = getSetting(store.id, 'business', {}) || {};
+    setSetting(store.id, 'business', { ...business, ...palavrasDaLoja(b) });
   }
   if (b.new_password !== undefined) {
     const pw = String(b.new_password || '');

@@ -339,9 +339,39 @@
                 <select id="nSegment" style="border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:#fff;width:100%">
                   <option value="food">Comida — marmitas, lanches, doces</option>
                   <option value="catalogo">Catálogo — perfumes, presentes, cosméticos</option>
-                  <option value="servicos">Serviços — climatização, assistência técnica, agenda</option>
+                  <option value="servicos">Serviços — agenda com equipe (barbearia, estética, salão…)</option>
                 </select>
                 <span class="hint">Muda os produtos de exemplo e o jeito de pedir (catálogo ganha botão de WhatsApp em cada item).</span>
+              </div>
+              <div class="row" id="nPalavras" hidden>
+                <div class="field">
+                  <label for="nProf">Quem atende é…</label>
+                  <select id="nProf" style="border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:#fff;width:100%">
+                    <option value="barbeiro">barbeiro (barbearia)</option>
+                    <option value="profissional">profissional (estúdio)</option>
+                    <option value="esteticista">esteticista (estúdio de estética)</option>
+                    <option value="cabeleireiro">cabeleireiro (salão)</option>
+                    <option value="manicure">manicure (estúdio de unhas)</option>
+                    <option value="massagista">massagista (espaço)</option>
+                    <option value="terapeuta">terapeuta (clínica)</option>
+                    <option value="tatuador">tatuador (estúdio)</option>
+                    <option value="atendente">atendente (loja)</option>
+                  </select>
+                  <span class="hint">É a palavra que o cliente vê no link e no painel. Dá para trocar depois.</span>
+                </div>
+                <div class="field">
+                  <label for="nLocal">E o espaço é…</label>
+                  <select id="nLocal" style="border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:#fff;width:100%">
+                    <option value="barbearia">barbearia</option>
+                    <option value="estudio">estúdio</option>
+                    <option value="salao">salão</option>
+                    <option value="salao de beleza">salão de beleza</option>
+                    <option value="clinica">clínica</option>
+                    <option value="espaco">espaço</option>
+                    <option value="consultorio">consultório</option>
+                    <option value="loja">loja</option>
+                  </select>
+                </div>
               </div>
               <div class="field">
                 <label for="nPass">Senha do painel do cliente *</label>
@@ -516,6 +546,7 @@
   </div>
 </div>
 
+<script src="/rotulos-painel.js?v=1"></script>
 <script>
 (() => {
   'use strict';
@@ -963,6 +994,11 @@
                 ? '<span class="pill warn">cartão online desligado</span>'
                 : '<span class="pill warn">cartão online sem chaves</span>'
             }
+            ${
+              ehServ && s.rotulos
+                ? `<span class="pill">${esc(s.rotulos.profissionais)} · ${esc(s.rotulos.local)}</span>`
+                : ''
+            }
             ${s.must_change ? '<span class="pill warn">senha ainda é a inicial</span>' : ''}
             ${s.whatsapp ? `<span class="pill">${esc(s.whatsapp)}</span>` : '<span class="pill bad">sem WhatsApp</span>'}
           </div>
@@ -982,6 +1018,8 @@
           <button class="btn btn-sm muted" data-act="contrato">Contrato de mensalidade</button>
           <div class="sep"></div>
           <button class="btn btn-sm muted" data-act="copy-admin">Copiar link do painel</button>
+          <button class="btn btn-sm muted" data-act="nome">Renomear loja</button>
+          ${ehServ ? '<button class="btn btn-sm muted" data-act="palavras">Palavras da loja</button>' : ''}
           <button class="btn btn-sm muted" data-act="reset">Redefinir senha</button>
           <button class="btn btn-sm muted" data-act="toggle">${s.active ? 'Desativar' : 'Ativar'}</button>
           <button class="btn btn-sm danger" data-act="delete">Excluir</button>
@@ -1035,6 +1073,34 @@
           toast('Senha redefinida. Avise o cliente.');
           return loadStores();
         }
+        if (act === 'palavras') {
+          // Como ESTA loja chama as pessoas e o lugar (ex.: estética → profissional/estúdio)
+          const atualP = (store.rotulos && store.rotulos.profissional) || 'barbeiro';
+          const atualL = (store.rotulos && store.rotulos.local) || 'barbearia';
+          const p = prompt(
+            `Como a loja "${store.name}" chama quem atende?\n(barbeiro, profissional, esteticista, cabeleireiro, manicure, massagista…)`,
+            atualP
+          );
+          if (p === null) return;
+          const l = prompt(
+            'E o espaço onde atende?\n(barbearia, estúdio, salão, salão de beleza, clínica, espaço, consultório, loja)',
+            atualL
+          );
+          if (l === null) return;
+          await api(`/api/master/stores/${id}`, {
+            method: 'PATCH',
+            body: JSON.stringify({ rotulo_profissional: p.trim(), rotulo_local: l.trim() }),
+          });
+          toast('Palavras salvas. Abra o painel da loja para ver.');
+          return loadStores();
+        }
+        if (act === 'nome') {
+          const nome = prompt(`Novo nome da loja (aparece no site e no painel do cliente):`, store.name);
+          if (!nome || !nome.trim()) return;
+          await api(`/api/master/stores/${id}`, { method: 'PATCH', body: JSON.stringify({ name: nome.trim() }) });
+          toast('Nome atualizado.');
+          return loadStores();
+        }
         if (act === 'toggle') {
           await api(`/api/master/stores/${id}`, { method: 'PATCH', body: JSON.stringify({ active: !store.active }) });
           return loadStores();
@@ -1047,6 +1113,13 @@
           return loadStores();
         }
       });
+    });
+  }
+
+  /* Palavras da equipe aparecem só quando a loja nova é de serviços/agenda */
+  if (el('nSegment')) {
+    el('nSegment').addEventListener('change', () => {
+      if (el('nPalavras')) el('nPalavras').hidden = el('nSegment').value !== 'servicos';
     });
   }
 
@@ -1097,6 +1170,9 @@
         about: el('nAbout').value,
         segment: el('nSegment').value,
         withSeedProducts: el('nSeed').checked,
+        // só vale para loja com agenda: define as palavras da equipe e do lugar
+        rotulo_profissional: el('nProf') && el('nProf').value !== 'barbeiro' ? el('nProf').value : undefined,
+        rotulo_local: el('nLocal') && el('nLocal').value !== 'barbearia' ? el('nLocal').value : undefined,
       };
       const { store } = await api('/api/master/stores', { method: 'POST', body: JSON.stringify(payload) });
       el('newStoreForm').reset();

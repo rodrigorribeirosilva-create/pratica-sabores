@@ -782,14 +782,16 @@
   </div>
 </section>
 
-<!-- ==================== BARBEIROS (depois dos cortes) ==================== -->
-<!-- EQUIPE (barbeiros): só aparece na loja que cadastrar a equipe no painel -->
+<!-- ==================== EQUIPE (depois dos serviços) ==================== -->
+<!-- EQUIPE: só aparece na loja que cadastrar a equipe no painel.
+     A palavra (barbeiro / profissional / esteticista…) vem de ROT, que é
+     preenchido com d.negocio.rotulos antes de desenhar a lista. -->
 <section class="sec oculto" id="equipe">
   <div class="wrap">
     <div class="sec-head">
       <span class="eyebrow">Nossa equipe</span>
-      <h2 style="margin-top:10px">Escolha seu barbeiro</h2>
-      <p>Cada barbeiro tem a própria agenda. Escolha quem vai te atender.</p>
+      <h2 style="margin-top:10px" id="equipeTitulo">Escolha seu barbeiro</h2>
+      <p id="equipeTexto">Cada barbeiro tem a própria agenda. Escolha quem vai te atender.</p>
     </div>
     <!-- 1º passo: o serviço escolhido fica fixado aqui -->
     <div class="servico-escolhido oculto" id="servicoEscolhidoTopo"></div>
@@ -881,7 +883,7 @@
       <div class="barbeiro-escolhido oculto" id="barbeiroEscolhido">
         <img id="barbeiroFoto" alt="">
         <div>
-          <small>Seu barbeiro</small>
+          <small id="barbeiroRotulo">Seu barbeiro</small>
           <div class="nome" id="barbeiroNome">—</div>
         </div>
         <button type="button" class="trocar" id="trocarBarbeiro">Trocar</button>
@@ -1040,7 +1042,7 @@
 <!-- atalhos flutuantes (aparecem na loja com equipe) -->
 <nav class="atalhos oculto" id="atalhos">
   <a href="#agendar" class="atalho"><span>📅</span>Agendar</a>
-  <a href="#equipe" class="atalho"><span>👤</span>Barbeiros</a>
+  <a href="#equipe" class="atalho"><span>👤</span><span id="atalhoEquipe">Barbeiros</span></a>
   <a href="#servicos" class="atalho"><span>✂️</span>Serviços</a>
 </nav>
 
@@ -1066,6 +1068,24 @@
   var servicos = [];
   var negocio = {};
   var promo = null; // campanha de promoção vigente (montada no painel)
+
+  /* Palavras da loja: barbearia fala "barbeiro/barbearia", estúdio fala
+     "profissional/estúdio". Vem do servidor em d.negocio.rotulos. */
+  var ROT = {
+    profissional: 'barbeiro', profissionais: 'barbeiros',
+    Profissional: 'Barbeiro', Profissionais: 'Barbeiros',
+    artigo: 'o', oProfissional: 'o barbeiro', osProfissionais: 'os barbeiros',
+    doProfissional: 'do', sobreProfissional: 'sobre o',
+    local: 'barbearia', Local: 'Barbearia', noLocal: 'na barbearia',
+    doLocal: 'da barbearia', aoLocal: 'à barbearia', ehBarbearia: true
+  };
+  function usarRotulos(r) {
+    if (!r || !r.profissional) return;
+    for (var k in ROT) if (r[k] !== undefined) ROT[k] = r[k];
+    ROT.ehBarbearia = !!r.ehBarbearia;
+  }
+  /** "Escolha seu barbeiro" / "Escolha sua esteticista" */
+  function seuProfissional() { return (ROT.artigo === 'a' ? 'sua ' : 'seu ') + ROT.profissional; }
 
   function el(id) { return document.getElementById(id); }
   function esc(t) {
@@ -1250,6 +1270,11 @@
     if (!sec || !box) return;
     if (!equipe.length) { sec.classList.add('oculto'); return; }
     sec.classList.remove('oculto');
+    // títulos e o nome no card acompanham a palavra da loja
+    if (el('equipeTitulo')) el('equipeTitulo').textContent = 'Escolha ' + seuProfissional();
+    if (el('equipeTexto')) el('equipeTexto').textContent = 'Cada ' + ROT.profissional + ' tem a própria agenda. Escolha quem vai te atender.';
+    if (el('atalhoEquipe')) el('atalhoEquipe').textContent = ROT.Profissionais;
+    if (el('barbeiroRotulo')) el('barbeiroRotulo').textContent = (ROT.artigo === 'a' ? 'Sua ' : 'Seu ') + ROT.profissional;
     box.innerHTML = equipe.map(function (p) {
       var foto = p.foto_url
         ? '<img src="' + esc(p.foto_url) + '" alt="' + esc(p.nome) + '" loading="lazy">'
@@ -1260,7 +1285,7 @@
         : '';
       return '<div class="card-barbeiro" data-barbeiro="' + p.id + '">' +
         '<div class="cb-foto">' + foto +
-          '<span class="cb-tag">' + esc(p.apelido || 'Barbeiro') + '</span>' +
+          '<span class="cb-tag">' + esc(p.apelido || ROT.Profissional) + '</span>' +
           '<div class="cb-nome"><small>Agende com</small>' + esc(p.nome) + '</div>' +
         '</div>' +
         '<div class="cb-corpo">' +
@@ -1350,7 +1375,7 @@
     if (!aiServico) {
       var secSv = el('servicos');
       if (secSv) secSv.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      toastSimples('Escolha primeiro o serviço (o corte) e depois o barbeiro.');
+      toastSimples('Escolha primeiro o serviço e depois ' + ROT.oProfissional + '.');
       return;
     }
     aiProf = profId;
@@ -1540,11 +1565,11 @@
         '</div>' +
         (aiPagamento === 'pix'
           ? '<div class="pix-box">' +
-              '<small>Chave Pix da barbearia</small>' +
+              '<small>Chave Pix ' + ROT.doLocal + '</small>' +
               (pix
                 ? '<div class="chave"><code id="aiChavePix">' + esc(pix) + '</code>' +
                   '<button type="button" id="aiCopiarPix">Copiar</button></div>'
-                : '<div class="aviso">A barbearia envia a chave Pix no WhatsApp.</div>') +
+                : '<div class="aviso">' + ROT.Local + ' envia a chave Pix no WhatsApp.</div>') +
               '<div class="aviso">Pague e envie o comprovante no WhatsApp.</div>' +
             '</div>'
           : '') +
@@ -1610,13 +1635,13 @@
             '<div class="tick">✓</div>' +
             '<b style="font-size:17px">Horário reservado no seu nome!</b>' +
             '<div style="font-size:12.5px;opacity:.85;margin:4px 0 2px;line-height:1.4">' +
-              'Ninguém mais consegue pegar esse horário. A barbearia confirma no WhatsApp.' +
+              'Ninguém mais consegue pegar esse horário. ' + ROT.Local + ' confirma no WhatsApp.' +
             '</div>' +
             '<div class="resumo">' +
               esc(sv.nome || '') + '<br>' + esc(p.nome || '') + '<br>' +
               dataBR(aiData) + ' · ' + esc(aiHora) + '<br>' +
               '<span style="opacity:.8">' +
-                (aiPagamento === 'pix' ? 'Pix antecipado — envie o comprovante' : 'Pagamento na barbearia, no dia') +
+                (aiPagamento === 'pix' ? 'Pix antecipado — envie o comprovante' : 'Pagamento ' + ROT.noLocal + ', no dia') +
               '</span>' +
             '</div>' +
             (pixOk
@@ -1811,6 +1836,7 @@
       .then(function (r) { return r.json(); })
       .then(function (d) {
         negocio = d.negocio || {};
+        usarRotulos(negocio.rotulos);
         servicos = d.servicos || [];
         promo = d.promocao || null;
         equipe = d.equipe || [];
@@ -1866,20 +1892,20 @@
   function aplicarTextosBarbearia() {
     document.body.setAttribute('data-ramo', 'outro');
     var eb = el('heroEyebrow'), t = el('heroTitulo'), sub = el('heroSub');
-    if (eb) eb.textContent = 'Barbearia';
-    if (t) t.textContent = negocio.nome || 'Sua barbearia';
-    if (sub) sub.textContent = negocio.about || negocio.tagline || 'Escolha seu barbeiro e o melhor horário.';
+    if (eb) eb.textContent = ROT.Local;
+    if (t) t.textContent = negocio.nome || (ROT.artigo === 'a' ? 'Sua ' : 'Seu ') + ROT.local;
+    if (sub) sub.textContent = negocio.about || negocio.tagline || ('Escolha ' + seuProfissional() + ' e o melhor horário.');
     var s1 = el('selo1'), s2 = el('selo2'), s3 = el('selo3');
-    if (s1) s1.innerHTML = '<i>✓</i> Escolha seu barbeiro';
-    if (s2) s2.innerHTML = '<i>⌂</i> Atendimento na barbearia';
+    if (s1) s1.innerHTML = '<i>✓</i> Escolha ' + seuProfissional();
+    if (s2) s2.innerHTML = '<i>⌂</i> Atendimento ' + ROT.noLocal;
     if (s3) s3.innerHTML = '<i>★</i> Horário garantido';
     var f1 = el('faixa1'), f2 = el('faixa2'), f3 = el('faixa3');
-    if (f1) f1.textContent = negocio.address || 'Na barbearia';
+    if (f1) f1.textContent = negocio.address || (ROT.noLocal.charAt(0).toUpperCase() + ROT.noLocal.slice(1));
     if (f2) f2.textContent = 'Na hora';
     if (f3) f3.textContent = 'Seg a Sáb';
     var st = el('servTitulo'), sd = el('servDesc'), se = el('servEyebrow');
     if (st) st.textContent = 'Nossos serviços';
-    if (sd) sd.textContent = 'Escolha o serviço, o barbeiro e o horário. Leva menos de 1 minuto.';
+    if (sd) sd.textContent = 'Escolha o serviço, ' + ROT.oProfissional + ' e o horário. Leva menos de 1 minuto.';
     if (se) se.textContent = 'Serviços';
     var b1 = el('btnOrcamento');
     if (b1) b1.textContent = 'Agendar horário';
@@ -1919,7 +1945,7 @@
     // aviso de onde é o atendimento
     var aviso = document.createElement('div');
     aviso.className = 'aviso-local';
-    aviso.innerHTML = '📍 Atendimento na barbearia' + (negocio.address ? ': <strong>' + esc(negocio.address) + '</strong>' : '');
+    aviso.innerHTML = '📍 Atendimento ' + ROT.noLocal + (negocio.address ? ': <strong>' + esc(negocio.address) + '</strong>' : '');
     var form = el('form');
     if (form && !document.querySelector('.aviso-local')) form.insertBefore(aviso, form.firstChild.nextSibling);
   }
@@ -2002,7 +2028,7 @@
       volta();
       var sec = el('equipe');
       if (sec) sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      return mostrarErro('Escolha o barbeiro na agenda acima: é só tocar na foto dele.');
+      return mostrarErro('Escolha ' + ROT.oProfissional + ' na agenda acima: é só tocar na foto.');
     }
     if (!dados.nome) { volta(); return mostrarErro('Informe seu nome.'); }
     if (dados.telefone.replace(/\D/g, '').length < 10) { volta(); return mostrarErro('Informe o WhatsApp com DDD.'); }
@@ -2034,7 +2060,7 @@
         var servico = servicos.filter(function (s) { return s.id === dados.servico_id; })[0] || {};
         el('resumo').innerHTML =
           '<div><span>Serviço</span><span>' + esc(servico.nome || '') + '</span></div>' +
-          (dados.profissional_id ? '<div><span>Barbeiro</span><span>' + esc((equipe.filter(function (p) { return p.id === dados.profissional_id; })[0] || {}).nome || '') + '</span></div>' : '') +
+          (dados.profissional_id ? '<div><span>' + ROT.Profissional + '</span><span>' + esc((equipe.filter(function (p) { return p.id === dados.profissional_id; })[0] || {}).nome || '') + '</span></div>' : '') +
           '<div><span>Dia</span><span>' + dataBR(dados.data) + ' · ' + esc(dados.periodo) + '</span></div>' +
           '<div><span>Local</span><span>' + esc(dados.endereco || (negocio.perfil === 'barbearia' ? (negocio.address || 'Na barbearia') : '')) + '</span></div>' +
           '<div><span>Valor</span><span>' + esc(servico.preco || 'a combinar') + '</span></div>';

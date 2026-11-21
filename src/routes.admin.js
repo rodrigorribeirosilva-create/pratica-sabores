@@ -328,6 +328,17 @@ router.put('/settings', requireAuth, (req, res) => {
       about: String(b.about || '').trim().slice(0, 400),
       cover_url: String(b.cover_url || '').trim(),
       logo_url: String(b.logo_url || '').trim(),
+      /* como ESTA loja chama as pessoas da equipe e o próprio espaço
+         (barbeiro/barbearia, profissional/estúdio, esteticista/salão…).
+         Vazio = padrão. Não muda o de nenhuma outra loja. */
+      rotulo_profissional:
+        b.rotulo_profissional === undefined
+          ? current.rotulo_profissional || ''
+          : require('./rotulos').limpar(b.rotulo_profissional, 24),
+      rotulo_local:
+        b.rotulo_local === undefined
+          ? current.rotulo_local || ''
+          : require('./rotulos').limpar(b.rotulo_local, 24),
       watermark_url:
         b.watermark_url === undefined
           ? current.watermark_url || ''

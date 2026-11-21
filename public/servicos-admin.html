@@ -633,6 +633,21 @@
         <button class="btn main bloco" id="btnSalvarEmpresa">Salvar dados</button>
       </div>
 
+      <div class="card">
+        <h2>💬 Como o cliente chama quem atende</h2>
+        <p style="font-size:12.5px;color:var(--mut);margin:0 0 10px">
+          Aqui você escolhe como a sua equipe aparece no site e no painel. Não muda a agenda
+          nem os dados: só o nome.
+        </p>
+        <div class="campo"><label>Profissional é…</label>
+          <select id="rotProf"></select>
+          <div class="dica">Cada pessoa da equipe aparece com essa palavra no link de agendamento.</div></div>
+        <div class="campo"><label>E o seu espaço é…</label>
+          <select id="rotLocal"></select>
+          <div class="dica">Usado nas frases do tipo “Pagamento na …”.</div></div>
+        <button class="btn main bloco" id="btnSalvarRotulos">Salvar palavras</button>
+      </div>
+
       <div class="card oculto" id="cardPagamentos">
         <h2>💰 Formas de pagamento</h2>
         <p style="font-size:12.5px;color:var(--mut);margin:0 0 10px">Marque o que o cliente pode escolher na hora de agendar.</p>
@@ -827,9 +842,15 @@
   function entrar() {
     $('login').classList.add('off');
     $('app').classList.remove('oculto');
-    carregarTudo();
-    ligarSync(); // ao entrar com a senha, os dados já passam a vir sozinhos do site
-    aplicarPapel();
+    // palavras da loja ANTES de desenhar: ninguém vê "barbeiro" piscar numa
+    // loja de estética (se a chamada falhar, segue com o texto padrão)
+    var rot = window.Rotulos ? Rotulos.carregar(BASE + '/rotulos') : Promise.resolve();
+    rot.then(function () {
+      carregarTudo();
+      ligarSync(); // ao entrar com a senha, os dados já passam a vir sozinhos do site
+      aplicarPapel();
+      if (window.Rotulos) Rotulos.aplicar(document.body);
+    });
   }
   $('loginForm').addEventListener('submit', function (ev) {
     ev.preventDefault();
@@ -988,6 +1009,57 @@
     );
     if ($('empChamada')) $('empChamada').value = S.negocio.hero_chamada || '';
     $('linkSite').href = link;
+    preencherRotulos();
+  }
+
+  /* ---------- palavras da loja (barbeiro x profissional x esteticista) ---------- */
+  var ROT_PADRAO = ['barbeiro', 'esteticista', 'cabeleireiro', 'manicure', 'massagista', 'terapeuta', 'tatuador', 'veterinario', 'atendente', 'profissional'];
+  var LOC_PADRAO = [['barbearia', 'barbearia'], ['estudio', 'estúdio'], ['salao', 'salão'], ['salao de beleza', 'salão de beleza'], ['clinica', 'clínica'], ['espaco', 'espaço'], ['consultorio', 'consultório'], ['loja', 'loja']];
+
+  function preencherRotulos() {
+    var sp = $('rotProf'), sl = $('rotLocal');
+    if (!sp || !sl) return;
+    // o servidor guarda a escolha sem acento ("salao de beleza"), com espaço
+    var atualP = String(S.negocio.rotulo_profissional || 'barbeiro').toLowerCase().trim();
+    var atualL = String(S.negocio.rotulo_local || 'barbearia')
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[-_]+/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+    var listaP = ROT_PADRAO.slice();
+    // a palavra salva pela loja pode não estar na lista curta: entra do mesmo jeito
+    if (atualP && listaP.indexOf(atualP) === -1) listaP.unshift(atualP);
+    sp.innerHTML = listaP.map(function (k) {
+      var r = (window.Rotulos && Rotulos.preset(k)) || { profissional: k };
+      return '<option value="' + esc(k) + '"' + (k === atualP ? ' selected' : '') + '>' + esc(r.profissional) + '</option>';
+    }).join('');
+    var listaL = LOC_PADRAO.slice();
+    if (atualL && !listaL.some(function (x) { return x[0] === atualL; })) listaL.unshift([atualL, atualL]);
+    sl.innerHTML = listaL.map(function (x) {
+      return '<option value="' + esc(x[0]) + '"' + (x[0] === atualL ? ' selected' : '') + '>' + esc(x[1]) + '</option>';
+    }).join('');
+  }
+
+  if ($('btnSalvarRotulos')) {
+    $('btnSalvarRotulos').addEventListener('click', function () {
+      var b = this;
+      b.disabled = true;
+      var negocio = Object.assign({}, S.negocio, {
+        rotulo_profissional: ($('rotProf') || {}).value || '',
+        rotulo_local: ($('rotLocal') || {}).value || ''
+      });
+      api('/settings', { method: 'PUT', body: { business: negocio } })
+        .then(function () {
+          S.negocio = negocio;
+          toast('Palavras salvas ✓');
+          // recarrega para o painel inteiro já aparecer com as palavras novas
+          setTimeout(function () { location.reload(); }, 700);
+        })
+        .catch(function (e) { toast(e.message); })
+        .then(function () { b.disabled = false; });
+    });
   }
 
   /* ================= DADOS CRUZADOS: site -> painel, sozinho =================
@@ -3086,10 +3158,25 @@
   /* ---------------- início ---------------- */
   carregarAgendaCfg();
   api('/painel')
-    .then(function (p) { S.painel = p; $('login').classList.add('off'); $('app').classList.remove('oculto'); renderPainel(); carregarTudo(); carregarAgendaCfg(); ligarSync(); aplicarPapel(); })
+    .then(function (p) {
+      S.painel = p;
+      $('login').classList.add('off');
+      $('app').classList.remove('oculto');
+      // palavras da loja (barbeiro/barbearia, profissional/estúdio…)
+      var rot = window.Rotulos ? Rotulos.carregar(BASE + '/rotulos') : Promise.resolve();
+      rot.then(function () {
+        renderPainel();
+        carregarTudo();
+        carregarAgendaCfg();
+        ligarSync();
+        aplicarPapel();
+        if (window.Rotulos) Rotulos.aplicar(document.body);
+      });
+    })
     .catch(function () { mostrarLogin(); });
 })();
 </script>
+<script src="/rotulos-painel.js?v=1"></script>
 <script src="/suporte-painel.js?v=1"></script>
 </body>
 </html>
