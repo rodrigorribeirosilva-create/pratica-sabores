@@ -9,7 +9,7 @@
 <link rel="icon" href="/img/favicon.png">
 <link rel="apple-touch-icon" href="/img/logo-256.png">
 <link rel="stylesheet" href="/assets/base.css">
-<link rel="stylesheet" href="/assets/admin.css">
+<link rel="stylesheet" href="/assets/admin.css?v=2">
 <style>.suporte-nav[hidden]{display:none!important}.suporte-card{max-width:760px;border:1px solid #aaa5;border-radius:14px;padding:20px;background:var(--card,#fff);color:inherit}.suporte-card form{display:flex;flex-direction:column;gap:9px}.suporte-card label{font-weight:700;margin-top:8px}.suporte-card input:not([type=file]),.suporte-card textarea{font:inherit;padding:10px;border:1px solid #aaa;border-radius:8px;width:100%;background:var(--bg,#fff);color:inherit}.suporte-card button{align-self:flex-start;border:0;border-radius:8px;padding:11px 18px;font-weight:700;background:var(--green,var(--azul,#14386b));color:white;cursor:pointer}.suporte-card button:disabled{opacity:.6}.suporte-pedido{border-top:1px solid #aaa6;padding:12px 0;overflow-wrap:anywhere}.suporte-pedido p{white-space:pre-wrap;margin:6px 0}</style></head>
 <body class="admin-body">
 
@@ -62,11 +62,22 @@
         Pedidos
         <span class="nav-badge" id="navOrdersBadge" hidden>0</span>
       </button>
+      <button class="side-link" data-view="clientes">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 5.2a3.5 3.5 0 0 1 0 6.6M17 14a5.5 5.5 0 0 1 4.5 5.4"/></svg>
+        Clientes
+      </button>
+      <button class="side-link" data-view="financeiro">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>
+        Financeiro
+      </button>
       <button class="side-link" data-view="config">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06A1.7 1.7 0 0 0 15 19.4a1.7 1.7 0 0 0-1 1.55V21a2 2 0 1 1-4 0v-.09A1.7 1.7 0 0 0 9 19.4a1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.55-1H3a2 2 0 1 1 0-4h.09A1.7 1.7 0 0 0 4.6 9a1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 9 4.6 1.7 1.7 0 0 0 10 3.05V3a2 2 0 1 1 4 0v.09A1.7 1.7 0 0 0 15 4.6a1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 19.4 9v.09a1.7 1.7 0 0 0 1.55 1H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.51 1Z"/></svg>
         Configurações
       </button>
-      <button type="button" class="side-link suporte-nav" data-view="suporte" hidden>🛠️ Pedir suporte ou manutenção</button>
+      <button type="button" class="side-link suporte-nav" data-view="suporte" aria-label="Suporte">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.6 9a2.5 2.5 0 1 1 4.4 1.6c-1.1 1-2 1.2-2 2.9M12 17h.01"/></svg>
+        Suporte
+      </button>
     </nav>
 
     <div class="side-foot">
@@ -109,18 +120,35 @@
       <button class="btn btn-sm btn-soft" id="bannerGoSecurity">Trocar agora</button>
     </div>
 
-    <section class="view" id="view-suporte" hidden><div id="suporte-area"><header><h2>Pedir suporte ou manutenção</h2></header>
-<div class="suporte-card"><form id="suporte-form">
-<label for="suporte-titulo">O que precisa de manutenção?</label>
-<input id="suporte-titulo" name="titulo" required minlength="3" maxlength="120" autocomplete="off">
-<label for="suporte-descricao">Relate o problema</label>
-<textarea id="suporte-descricao" name="descricao" maxlength="2000" rows="5"></textarea>
-<label for="suporte-fotos">Fotos ou prints (até 3, máximo 5 MB cada)</label>
-<input id="suporte-fotos" type="file" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" multiple>
-<small>As imagens poderão ser acessadas por quem tiver seus links. Evite incluir dados sensíveis.</small>
-<button id="suporte-enviar" type="submit">Enviar pedido</button>
-<p id="suporte-feedback" role="status" aria-live="polite"></p>
-</form><h3>Seus pedidos</h3><div id="suporte-lista" aria-live="polite">Abra esta área para carregar seus pedidos.</div></div></div></section>
+    <section class="view" id="view-suporte" hidden>
+      <div id="suporte-area">
+        <header class="view-head">
+          <div><h2>Suporte</h2><p>Peça ajuda com o painel ou acompanhe seus chamados.</p></div>
+        </header>
+        <div id="suporte-carregando" class="support-unavailable" role="status">Verificando a disponibilidade do atendimento…</div>
+        <div id="suporte-indisponivel" class="support-unavailable" role="status" hidden>
+          <strong>Atendimento pelo painel indisponível no momento.</strong>
+          <p>Procure o responsável pelo sistema para receber ajuda.</p>
+        </div>
+        <div id="suporte-habilitado" hidden>
+          <div class="suporte-card">
+            <form id="suporte-form">
+              <label for="suporte-titulo">Como podemos ajudar?</label>
+              <input id="suporte-titulo" name="titulo" required minlength="3" maxlength="120" autocomplete="off">
+              <label for="suporte-descricao">Descreva sua dúvida ou problema</label>
+              <textarea id="suporte-descricao" name="descricao" maxlength="2000" rows="5"></textarea>
+              <label for="suporte-fotos">Fotos ou prints (até 3, máximo 5 MB cada)</label>
+              <input id="suporte-fotos" type="file" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" multiple>
+              <small>As imagens poderão ser acessadas por quem tiver seus links. Evite incluir dados sensíveis.</small>
+              <button id="suporte-enviar" type="submit">Enviar pedido</button>
+              <p id="suporte-feedback" role="status" aria-live="polite"></p>
+            </form>
+            <h3>Seus pedidos</h3>
+            <div id="suporte-lista" aria-live="polite">Abra esta área para carregar seus pedidos.</div>
+          </div>
+        </div>
+      </div>
+    </section>
     <!-- ------------------------- PRODUTOS ------------------------- -->
     <section class="view" id="view-produtos">
       <header class="view-head">
@@ -189,6 +217,81 @@
       <p class="hint" style="margin-top:14px">
         Dica: o resumo do dia também aparece no topo da aba Cardápio.
       </p>
+    </section>
+
+    <!-- ------------------------- CLIENTES ------------------------- -->
+    <section class="view" id="view-clientes" hidden>
+      <header class="view-head">
+        <div>
+          <h2>Clientes</h2>
+          <p>Veja quem compra com frequência, o último pedido e o histórico por telefone.</p>
+        </div>
+        <button class="btn btn-primary btn-sm" id="newCustomerBtn" type="button">+ Novo cliente</button>
+      </header>
+      <div class="stat-row" id="customerStats"></div>
+      <div class="filters" id="customerFilters">
+        <button class="cat active" data-customer-filter="todos">Todos</button>
+        <button class="cat" data-customer-filter="recorrentes">Recorrentes</button>
+      </div>
+      <div class="toolbar">
+        <input class="input" id="customerSearch" type="search" placeholder="Buscar por nome, telefone ou e-mail…" autocomplete="off" style="max-width:420px">
+        <span class="muted-sm" id="customerCount"></span>
+      </div>
+      <div class="customer-list" id="customerList" aria-live="polite"></div>
+    </section>
+
+    <!-- ------------------------- FINANCEIRO ------------------------- -->
+    <section class="view" id="view-financeiro" hidden>
+      <header class="view-head">
+        <div>
+          <h2>Financeiro</h2>
+          <p>Receitas dos pedidos não cancelados, inclusive os que ainda estão em andamento, e despesas da loja.</p>
+        </div>
+        <button class="btn btn-ghost btn-sm" id="refreshFinance" type="button">Atualizar</button>
+      </header>
+      <div class="toolbar finance-period">
+        <label for="financeFrom">De <input class="input" type="date" id="financeFrom"></label>
+        <label for="financeTo">Até <input class="input" type="date" id="financeTo"></label>
+        <button class="btn btn-primary btn-sm" id="applyFinancePeriod" type="button">Aplicar período</button>
+        <span class="muted-sm" id="financePeriodLabel"></span>
+      </div>
+      <p class="finance-error" id="financeError" role="alert" hidden></p>
+      <div class="stat-row" id="financeCards"></div>
+      <div class="finance-grid">
+        <div class="panel">
+          <div class="panel-head"><h3>Movimento por dia</h3><p>Pedidos na data de Brasília; despesas pela data do lançamento.</p></div>
+          <div class="panel-body"><div class="finance-table-wrap"><table class="finance-table">
+            <thead><tr><th>Data</th><th>Pedidos</th><th>Receitas</th><th>Despesas</th><th>Líquido</th></tr></thead>
+            <tbody id="financeDays"></tbody>
+          </table></div></div>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><h3>Receitas por forma de pagamento</h3><p>Valores dos pedidos não cancelados.</p></div>
+          <div class="panel-body">
+            <div id="financePayments" class="finance-payment-list"></div>
+            <div class="cash-box">
+              <div class="cash-box-head"><div><strong>Fechamento do caixa de hoje</strong><small id="cashDateLabel"></small></div><span id="cashExpected" class="cash-expected">—</span></div>
+              <p>Estimativa em dinheiro: vendas pagas em espécie menos despesas pagas em dinheiro.</p>
+              <form id="closeCashForm" class="cash-close-form">
+                <input type="hidden" id="cashDate">
+                <label for="cashCounted">Valor contado (R$)</label>
+                <input class="input" id="cashCounted" inputmode="decimal" placeholder="0,00" required>
+                <label for="cashObs">Observação (opcional)</label>
+                <input class="input" id="cashObs" maxlength="200" placeholder="Ex.: troco separado">
+                <button class="btn btn-primary btn-sm" type="submit" id="cashCloseBtn">Salvar fechamento</button>
+                <p id="cashCloseFeedback" role="status" aria-live="polite"></p>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="panel finance-expenses-panel">
+        <div class="panel-head finance-expenses-head">
+          <div><h3>Despesas</h3><p>Registre e acompanhe os custos da loja no período selecionado.</p></div>
+          <button class="btn btn-primary btn-sm" id="newExpenseBtn" type="button">+ Lançar despesa</button>
+        </div>
+        <div class="panel-body"><div id="expenseList" class="expense-list" aria-live="polite"></div></div>
+      </div>
     </section>
 
     <section class="view" id="view-pedidos" hidden>
@@ -583,13 +686,94 @@
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2h12l2 5H4l2-5Z"/><path d="M4 7v13a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7"/><path d="M9 12h6"/></svg>
         Pedidos
       </button>
+      <button class="side-link" data-view="clientes">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 5.2a3.5 3.5 0 0 1 0 6.6M17 14a5.5 5.5 0 0 1 4.5 5.4"/></svg>
+        Clientes
+      </button>
+      <button class="side-link" data-view="financeiro">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>
+        Financeiro
+      </button>
       <button class="side-link" data-view="config">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06A1.7 1.7 0 0 0 15 19.4a1.7 1.7 0 0 0-1 1.55V21a2 2 0 1 1-4 0v-.09A1.7 1.7 0 0 0 9 19.4a1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.55-1H3a2 2 0 1 1 0-4h.09A1.7 1.7 0 0 0 4.6 9a1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 9 4.6 1.7 1.7 0 0 0 10 3.05V3a2 2 0 1 1 4 0v.09A1.7 1.7 0 0 0 15 4.6a1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 19.4 9v.09a1.7 1.7 0 0 0 1.55 1H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.51 1Z"/></svg>
         Config.
       </button>
-      <button type="button" class="side-link suporte-nav" data-view="suporte" hidden><span>🛠️</span> Pedir suporte ou manutenção</button>
+      <button type="button" class="side-link suporte-nav" data-view="suporte" aria-label="Suporte">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.6 9a2.5 2.5 0 1 1 4.4 1.6c-1.1 1-2 1.2-2 2.9M12 17h.01"/></svg>
+        Suporte
+      </button>
     </nav>
   </main>
+</div>
+
+<!-- ==================== MODAL CLIENTE ==================== -->
+<div class="modal-backdrop" id="customerModal" hidden>
+  <div class="modal customer-modal">
+    <div class="modal-head">
+      <h3 id="customerModalTitle">Novo cliente</h3>
+      <button class="close-x" type="button" data-close-modal="customerModal" aria-label="Fechar">✕</button>
+    </div>
+    <form id="customerForm">
+      <div class="modal-body">
+        <input type="hidden" id="customerId">
+        <div class="field"><label for="customerName">Nome *</label><input class="input" id="customerName" required maxlength="120" autocomplete="name"></div>
+        <div class="row two">
+          <div class="field"><label for="customerPhone">Telefone com DDD *</label><input class="input" id="customerPhone" type="tel" required maxlength="40" autocomplete="tel" placeholder="(48) 99999-9999"></div>
+          <div class="field"><label for="customerEmail">E-mail</label><input class="input" id="customerEmail" type="email" maxlength="160" autocomplete="email"></div>
+        </div>
+        <div class="row two">
+          <div class="field"><label for="customerAddress">Endereço</label><input class="input" id="customerAddress" maxlength="240" autocomplete="street-address"></div>
+          <div class="field"><label for="customerNeighborhood">Bairro</label><input class="input" id="customerNeighborhood" maxlength="100"></div>
+        </div>
+        <div class="field"><label for="customerObs">Observações</label><textarea class="textarea" id="customerObs" maxlength="500" rows="3"></textarea></div>
+        <p class="hint">Os pedidos e a recorrência são associados pelo telefone do cliente.</p>
+      </div>
+      <div class="modal-foot">
+        <button class="btn btn-ghost" type="button" data-close-modal="customerModal">Cancelar</button>
+        <button class="btn btn-primary" type="submit" id="customerSaveBtn">Salvar cliente</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ==================== HISTÓRICO DO CLIENTE ==================== -->
+<div class="modal-backdrop" id="customerHistoryModal" hidden>
+  <div class="modal customer-history-modal">
+    <div class="modal-head">
+      <h3 id="customerHistoryTitle">Histórico de pedidos</h3>
+      <button class="close-x" type="button" data-close-modal="customerHistoryModal" aria-label="Fechar">✕</button>
+    </div>
+    <div class="modal-body"><div id="customerHistoryList" class="customer-history-list" aria-live="polite"></div></div>
+    <div class="modal-foot"><button class="btn btn-ghost" type="button" data-close-modal="customerHistoryModal">Fechar</button></div>
+  </div>
+</div>
+
+<!-- ==================== MODAL DESPESA ==================== -->
+<div class="modal-backdrop" id="expenseModal" hidden>
+  <div class="modal expense-modal">
+    <div class="modal-head">
+      <h3 id="expenseModalTitle">Lançar despesa</h3>
+      <button class="close-x" type="button" data-close-modal="expenseModal" aria-label="Fechar">✕</button>
+    </div>
+    <form id="expenseForm">
+      <div class="modal-body">
+        <input type="hidden" id="expenseId">
+        <div class="row two">
+          <div class="field"><label for="expenseDate">Data *</label><input class="input" type="date" id="expenseDate" required></div>
+          <div class="field"><label for="expenseValue">Valor (R$) *</label><input class="input" id="expenseValue" inputmode="decimal" placeholder="0,00" required></div>
+        </div>
+        <div class="row two">
+          <div class="field"><label for="expenseCategory">Categoria</label><input class="input" id="expenseCategory" maxlength="40" placeholder="Ex.: Mercadoria"></div>
+          <div class="field"><label for="expenseForma">Pago com</label><select class="input" id="expenseForma"><option value="dinheiro">Dinheiro</option><option value="pix">Pix</option><option value="debito">Cartão de débito</option><option value="credito">Cartão de crédito</option><option value="outro">Outro</option></select></div>
+        </div>
+        <div class="field"><label for="expenseDescription">Descrição</label><input class="input" id="expenseDescription" maxlength="160" placeholder="Ex.: compra de embalagens"></div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn btn-ghost" type="button" data-close-modal="expenseModal">Cancelar</button>
+        <button class="btn btn-primary" type="submit" id="expenseSaveBtn">Salvar despesa</button>
+      </div>
+    </form>
+  </div>
 </div>
 
 <!-- ==================== MODAL PRODUTO ==================== -->
@@ -769,7 +953,7 @@
 
 <div class="toast-stack" id="toasts"></div>
 
-<script src="/assets/admin.js"></script>
+<script src="/assets/admin.js?v=2"></script>
 <script>
   // O painel abre na hora no celular, mesmo com o servidor acordando.
   if ('serviceWorker' in navigator) {
@@ -778,6 +962,6 @@
     });
   }
 </script>
-<script src="/suporte-painel.js?v=1"></script>
+<script src="/suporte-painel.js?v=2"></script>
 </body>
 </html>
