@@ -30,3 +30,5 @@ services:
         sync: false        # somente no servidor; não é enviado ao navegador
       - key: ROHELARI_SUPORTE_CHAVE
         sync: false        # chave de suporte, nunca publicar no frontend
+      - key: SUPORTE_UPLOAD_BASE_URL
+        sync: false        # opcional: domínio público para fotos no fallback em disco
