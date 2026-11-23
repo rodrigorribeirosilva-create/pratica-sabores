@@ -24,3 +24,9 @@ services:
         sync: false        # senha inicial da loja principal (solicitada no deploy)
       - key: MASTER_PASSWORD
         sync: false        # senha do painel /master — o SEU acesso de administrador
+      - key: ROHELARI_SUPABASE_URL
+        sync: false        # projeto Supabase usado pelos chamados de suporte
+      - key: ROHELARI_SUPABASE_ANON_KEY
+        sync: false        # somente no servidor; não é enviado ao navegador
+      - key: ROHELARI_SUPORTE_CHAVE
+        sync: false        # chave de suporte, nunca publicar no frontend
