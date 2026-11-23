@@ -711,12 +711,20 @@
             <input class="input" id="pOrder" type="number" value="0">
           </div>
           <div class="field">
-            <label for="pActive" id="pActiveLabel">Disponível no cardápio</label>
+            <label for="pActive" id="pActiveLabel">Visível no cardápio</label>
             <select class="select" id="pActive">
-              <option value="1">Sim, mostrar</option>
-              <option value="0">Não, ocultar</option>
+              <option value="1">Sim, deixar visível</option>
+              <option value="0">Não, ocultar do link</option>
             </select>
           </div>
+        </div>
+        <div class="field">
+          <label for="pStock">Estoque do produto</label>
+          <select class="select" id="pStock">
+            <option value="1">Em estoque — pode comprar</option>
+            <option value="0">Esgotado — continuar mostrando no link</option>
+          </select>
+          <div class="hint">Esgotado: o produto continua visível, mas não aceita pedidos. Quando repor, selecione “Em estoque”.</div>
         </div>
       </div>
       <div class="modal-foot">

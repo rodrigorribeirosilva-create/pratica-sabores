@@ -9,7 +9,7 @@
  * aquela tela preta de "CARREGANDO APLICATIVO", o site abre na hora com a
  * cópia guardada e se atualiza sozinho em seguida.
  */
-const CACHE = 'ps-shell-v4'; // v4: descarta as páginas velhas guardadas no celular
+const CACHE = 'ps-shell-v5'; // v5: atualiza o catálogo para exibir produtos esgotados corretamente
 const CACHE_META = 'ps-loja-meta'; // cor e nome de cada loja (para a tela "Abrindo…")
 const LIMITE_REDE = 4000; // ms que esperamos o servidor responder
 

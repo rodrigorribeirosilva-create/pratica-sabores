@@ -85,6 +85,7 @@
   }
 
   const moneyInput = (v) => (Number(v || 0) / 100).toFixed(2).replace('.', ',');
+  const isInStock = (product) => !product || product.in_stock == null || Number(product.in_stock) !== 0;
 
 
   /* ============================================================
@@ -102,7 +103,7 @@
       configSub: 'Dados do negócio, entrega, pagamentos e link do cardápio.',
       linkTitle: 'Seu link do cardápio',
       qr: 'Imprima e cole na embalagem ou no balcão. O cliente escaneia e cai direto no cardápio.',
-      pActive: 'Disponível no cardápio',
+      pActive: 'Visível no cardápio',
       namePlaceholder: 'Ex.: Marmita de frango',
       categoryPlaceholder: 'Marmitas',
       descPlaceholder: 'Ingredientes, acompanhamentos, tamanho…',
@@ -124,7 +125,7 @@
       configSub: 'Dados da loja, entrega, pagamentos e link do catálogo.',
       linkTitle: 'Seu link do catálogo',
       qr: 'Imprima e cole na embalagem, na sacola ou no balcão. O cliente escaneia e cai direto no catálogo.',
-      pActive: 'Disponível no catálogo',
+      pActive: 'Visível no catálogo',
       namePlaceholder: 'Ex.: Perfume Essence Noir 100ml',
       categoryPlaceholder: 'Perfumes',
       descPlaceholder: 'Notas do perfume, tamanho, embalagem, prazo de entrega…',
@@ -435,8 +436,9 @@
     }
 
     box.innerHTML = list
-      .map(
-        (p) => `<div class="p-row" data-id="${p.id}">
+      .map((p) => {
+        const emEstoque = isInStock(p);
+        return `<div class="p-row" data-id="${p.id}">
         <div class="p-thumb">${
           p.image_url
             ? `<img src="${esc(p.image_url)}" alt="" style="width:100%;height:100%;object-fit:cover">`
@@ -448,6 +450,7 @@
           <div class="p-meta">
             <span class="p-price">${brl.format(p.price_cents / 100)}</span>
             <span class="tag">${esc(p.category || 'Sem categoria')}</span>
+            <span class="tag ${emEstoque ? 'on' : 'stock-out'}">${emEstoque ? 'em estoque' : 'esgotado'}</span>
             ${
               p.opcoes && p.opcoes.ativo
                 ? `<span class="tag" style="background:#eef4ff;border-color:#cfe0ff;color:#1d4ed8">cliente escolhe · ${p.opcoes.unidades || 0} un.</span>`
@@ -456,8 +459,11 @@
           </div>
         </div>
         <div class="p-actions">
+          <button type="button" class="stock-action ${emEstoque ? 'mark-out' : 'restock'}" data-stock="${p.id}" aria-label="${emEstoque ? 'Marcar esgotado' : 'Repor estoque'}">
+            ${emEstoque ? 'Marcar esgotado' : 'Repor estoque'}
+          </button>
           <label class="switch" title="${p.active ? `Visível no ${SEG.word}` : 'Oculto'}">
-            <input type="checkbox" data-toggle="${p.id}" ${p.active ? 'checked' : ''}>
+            <input type="checkbox" data-toggle="${p.id}" aria-label="${p.active ? 'Ocultar produto' : `Mostrar produto no ${SEG.word}`}" ${p.active ? 'checked' : ''}>
             <span class="track"></span>
           </label>
           <button class="icon-btn" data-foto="${p.id}" title="Trocar a foto">
@@ -470,8 +476,8 @@
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></svg>
           </button>
         </div>
-      </div>`
-      )
+      </div>`;
+      })
       .join('');
 
     qsa('[data-foto]', box).forEach((b) =>
@@ -495,6 +501,27 @@
         } catch (err) {
           toast(err.message, 'err');
           chk.checked = !chk.checked;
+        }
+      })
+    );
+
+    qsa('[data-stock]', box).forEach((button) =>
+      button.addEventListener('click', async () => {
+        const p = state.products.find((x) => String(x.id) === button.dataset.stock);
+        if (!p) return;
+        const in_stock = !isInStock(p);
+        button.disabled = true;
+        try {
+          await api(`/api/admin/products/${button.dataset.stock}/stock`, {
+            method: 'PATCH',
+            body: JSON.stringify({ in_stock }),
+          });
+          p.in_stock = in_stock ? 1 : 0;
+          renderProducts();
+          toast(in_stock ? `${p.name} voltou para o estoque.` : `${p.name} marcado como esgotado.`, 'ok');
+        } catch (err) {
+          button.disabled = false;
+          toast(err.message, 'err');
         }
       })
     );
@@ -545,6 +572,7 @@
     el('pDesc').value = product ? product.description : '';
     el('pOrder').value = product ? product.sort_order : state.products.length + 1;
     el('pActive').value = product ? String(product.active) : '1';
+    el('pStock').value = product && !isInStock(product) ? '0' : '1';
     el('pImageUrl').value = product && product.image_url && !product.image_url.startsWith('/uploads') ? product.image_url : '';
     setPreview(product ? product.image_url : '');
 
@@ -839,6 +867,7 @@
       image_url: state.pendingImage,
       sort_order: Number(el('pOrder').value) || 0,
       active: el('pActive').value === '1',
+      in_stock: el('pStock').value === '1',
       opcoes: montagemDoFormulario(),
     };
     try {
