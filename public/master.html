@@ -172,6 +172,46 @@
   .vendas-resumo .vr-item { display: flex; flex-direction: column; gap: 3px; }
   .vendas-resumo .vr-item span { font-size: 11.5px; text-transform: uppercase; letter-spacing: .05em; color: #8a8272; font-weight: 700; }
   .vendas-resumo .vr-item strong { font-size: 18px; letter-spacing: -.02em; }
+
+  .support-header { display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:16px; }
+  .support-tab-badge { display:inline-grid;place-items:center;min-width:20px;height:20px;padding:0 5px;margin-left:4px;border-radius:99px;background:#f0a63c;color:#342305;font-size:11px;font-weight:800; }
+  .support-tab-badge[hidden] { display:none; }
+  .support-tools { display:flex;align-items:end;gap:10px;flex-wrap:wrap;margin-bottom:14px; }
+  .support-filter,.support-search { display:grid;gap:4px;font-size:11.5px;font-weight:700;color:var(--muted); }
+  .support-filter select,.support-search input { min-height:38px;border:1px solid var(--line);border-radius:9px;padding:7px 10px;background:#fff;min-width:180px; }
+  .support-search input { min-width:220px; }
+  .support-tools #suporteResumo { margin-left:auto;padding-bottom:8px; }
+  .support-layout { display:grid;grid-template-columns:minmax(230px,320px) minmax(0,1fr);gap:14px;align-items:start; }
+  .support-list { display:grid;gap:8px;max-height:720px;overflow:auto;align-content:start; }
+  .support-item { width:100%;text-align:left;border:1px solid var(--line);border-radius:12px;padding:12px;background:#fff;cursor:pointer;transition:border-color .15s,background .15s; }
+  .support-item:hover,.support-item.selected { border-color:#78a58d;background:#f4faf6; }
+  .support-item.selected { box-shadow:inset 3px 0 0 var(--green); }
+  .support-item-top { display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:5px; }
+  .support-item-store { font-size:12px;font-weight:750;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
+  .support-item-title { display:block;font-size:13px;font-weight:750;line-height:1.35; }
+  .support-item-meta { display:flex;justify-content:space-between;gap:8px;margin-top:7px;font-size:11px;color:var(--muted); }
+  .support-status { display:inline-flex;align-items:center;white-space:nowrap;font-size:10.5px;font-weight:750;padding:3px 7px;border-radius:99px;background:#fdf1dd;border:1px solid #ecd9b0;color:#8a6414; }
+  .support-status.em_analise { background:#e9f1fb;border-color:#c9d9ef;color:#28517b; }
+  .support-status.aguardando_cliente,.support-status.concluida { background:var(--green-soft);border-color:#bfe0cd;color:var(--green-dark); }
+  .support-status.cancelada { background:#fbe6e2;border-color:#f0cfc7;color:#8f2f17; }
+  .support-detail { min-width:0;border:1px solid var(--line);border-radius:14px;padding:16px;background:#fff; }
+  .support-detail-head { display:flex;align-items:flex-start;justify-content:space-between;gap:10px;flex-wrap:wrap; }
+  .support-detail h3 { margin:0;font-size:18px;line-height:1.35;overflow-wrap:anywhere; }
+  .support-detail-meta { margin:6px 0 14px;font-size:12px;color:var(--muted);overflow-wrap:anywhere; }
+  .support-description { white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.6;background:#fbf8f1;border:1px solid #ece3d2;border-radius:12px;padding:12px;font-size:13.5px; }
+  .support-photos { display:flex;gap:9px;flex-wrap:wrap;margin:12px 0 16px; }
+  .support-photos a { display:block;width:110px;height:92px;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:#f5f2ea; }
+  .support-photos img { width:100%;height:100%;object-fit:cover; }
+  .support-answer-form { display:grid;gap:8px;margin-top:14px; }
+  .support-answer-form label { font-size:12.5px;font-weight:750;color:var(--ink-soft); }
+  .support-answer-form textarea { width:100%;min-height:120px;resize:vertical;border:1px solid var(--line);border-radius:10px;padding:10px 12px;line-height:1.5; }
+  .support-answer-form textarea:focus,.support-filter select:focus,.support-search input:focus { outline:none;border-color:var(--green);box-shadow:0 0 0 3px var(--green-soft); }
+  .support-actions { display:flex;gap:8px;flex-wrap:wrap;margin-top:5px; }
+  .support-feedback { border-radius:10px;padding:10px 12px;margin:0 0 14px;background:#f3faf5;border:1px solid #cfe6d8;color:#24503a;font-size:13px; }
+  .support-feedback.error { background:#fff2ef;border-color:#f0cfc7;color:#8f2f17; }
+  .support-detail .empty,.support-list .empty { border:1px dashed var(--line);border-radius:12px;padding:24px 14px;text-align:center;color:var(--muted);font-size:13px; }
+  @media(max-width:760px) { .support-layout { grid-template-columns:1fr; }.support-list { max-height:300px; }.support-header { align-items:flex-start; }.support-tools #suporteResumo { margin-left:0; } }
+  @media(max-width:480px) { .support-header { flex-direction:column; }.support-filter,.support-filter select,.support-search,.support-search input { width:100%;min-width:0; }.support-detail { padding:12px; } }
 </style>
 </head>
 <body>
@@ -215,6 +255,7 @@
         <button class="tab" data-tab="new">Nova loja</button>
         <button class="tab" data-tab="contratos">Contratos</button>
         <button class="tab" data-tab="mensalidades">Mensalidades</button>
+        <button class="tab" data-tab="suporte">Suporte <span id="suporteBadge" class="support-tab-badge" hidden></span></button>
         <button class="tab" data-tab="trafego">Tráfego</button>
         <button class="tab" data-tab="security">Segurança</button>
       </div>
@@ -402,6 +443,41 @@
         <div class="panel-body" id="mensalidadesBox"><p class="muted-sm">Carregando…</p></div>
       </div>
 
+      <div class="panel" id="panel-suporte" hidden>
+        <div class="card">
+          <div class="support-header">
+            <div>
+              <h2 style="margin:0">Suporte das lojas</h2>
+              <p class="sub" style="margin:4px 0 0">Leia os chamados, responda pelo Master ou copie o contexto para pedir ajuda ao Arena.</p>
+            </div>
+            <button class="btn btn-sm" id="suporteAtualizar" type="button">Atualizar chamados</button>
+          </div>
+          <div class="support-tools">
+            <label class="support-filter" for="suporteFiltro">Situação
+              <select id="suporteFiltro">
+                <option value="">Todas</option>
+                <option value="aberta">Novos</option>
+                <option value="em_analise">Em análise</option>
+                <option value="aguardando_cliente">Aguardando cliente</option>
+                <option value="concluida">Concluídos</option>
+                <option value="cancelada">Cancelados</option>
+              </select>
+            </label>
+            <label class="support-search" for="suporteBusca">Buscar
+              <input id="suporteBusca" type="search" placeholder="Loja, assunto ou relato">
+            </label>
+            <span id="suporteResumo" class="hint" role="status"></span>
+          </div>
+          <div id="suporteFeedback" class="support-feedback" role="status" hidden></div>
+          <div class="support-layout">
+            <div id="suporteLista" class="support-list" aria-label="Lista de chamados"></div>
+            <div id="suporteDetalhe" class="support-detail" aria-live="polite">
+              <div class="empty">Selecione um chamado para ver os detalhes.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div class="panel" id="panel-security" hidden>
         <div class="split">
           <div class="card">
@@ -555,7 +631,143 @@
       await navigator.clipboard.writeText(text);
       toast(okMsg || 'Copiado!');
     } catch {
-      prompt('Copie o link:', text);
+      prompt('Copie o texto:', text);
+    }
+  }
+
+  /* --------------------------- caixa de suporte --------------------------- */
+  let chamadosSuporte = [];
+  let suporteSelecionado = '';
+  const statusSuporte = {
+    aberta: 'Novo',
+    em_analise: 'Em análise',
+    aguardando_cliente: 'Aguardando cliente',
+    concluida: 'Concluído',
+    cancelada: 'Cancelado',
+  };
+
+  function dataSuporte(value) {
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? 'Data não informada' : date.toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' });
+  }
+
+  function urlFotoSuporte(value) {
+    try {
+      const url = new URL(String(value));
+      return url.protocol === 'https:' ? url.href : '';
+    } catch {
+      return '';
+    }
+  }
+
+  function textoParaArena(chamado) {
+    const fotos = (Array.isArray(chamado.fotos) ? chamado.fotos : [])
+      .map(urlFotoSuporte)
+      .filter(Boolean)
+      .map((url, i) => `${i + 1}. ${url}`);
+    const loja = [chamado.empresa_nome, chamado.loja_slug ? `(${chamado.loja_slug})` : ''].filter(Boolean).join(' ');
+    return [
+      'Preciso de ajuda para diagnosticar e resolver este chamado de suporte.',
+      '',
+      `ID do chamado: ${chamado.id || 'não informado'}`,
+      `Loja: ${loja || 'não identificada'}`,
+      `Situação: ${statusSuporte[chamado.status] || 'Em atualização'}`,
+      `Enviado em: ${dataSuporte(chamado.criado_em)}`,
+      `Assunto: ${chamado.titulo || 'Sem título'}`,
+      '',
+      'Relato do cliente:',
+      chamado.descricao || 'O cliente não adicionou um relato.',
+      '',
+      fotos.length ? `Fotos anexadas:\n${fotos.join('\n')}` : 'Fotos anexadas: nenhuma.',
+      chamado.resposta_admin ? `\nResposta já registrada ao cliente:\n${chamado.resposta_admin}` : '',
+    ].filter(Boolean).join('\n');
+  }
+
+  function renderSuporte() {
+    const lista = el('suporteLista');
+    const detalhe = el('suporteDetalhe');
+    const filtro = el('suporteFiltro').value;
+    const busca = el('suporteBusca').value.trim().toLocaleLowerCase('pt-BR');
+    const pendentes = chamadosSuporte.filter((c) => !['concluida', 'cancelada'].includes(c.status)).length;
+    const badge = el('suporteBadge');
+    badge.textContent = pendentes > 99 ? '99+' : String(pendentes);
+    badge.hidden = pendentes === 0;
+    el('suporteResumo').textContent = `${chamadosSuporte.length} chamado(s) carregado(s) · ${pendentes} em aberto${chamadosSuporte.length >= 250 ? ' · mostrando os 250 mais recentes' : ''}`;
+
+    const filtrados = chamadosSuporte.filter((c) => {
+      if (filtro && c.status !== filtro) return false;
+      if (!busca) return true;
+      return [c.empresa_nome, c.loja_slug, c.titulo, c.descricao].some((v) => String(v || '').toLocaleLowerCase('pt-BR').includes(busca));
+    });
+    if (!filtrados.some((c) => String(c.id) === String(suporteSelecionado))) {
+      suporteSelecionado = filtrados.length ? String(filtrados[0].id) : '';
+    }
+
+    if (!filtrados.length) {
+      lista.innerHTML = '<div class="empty">Nenhum chamado encontrado.</div>';
+      detalhe.innerHTML = '<div class="empty">Os detalhes do chamado aparecerão aqui.</div>';
+      return;
+    }
+
+    lista.innerHTML = filtrados.map((c) => {
+      const status = Object.prototype.hasOwnProperty.call(statusSuporte, c.status) ? c.status : 'aberta';
+      return `<button type="button" class="support-item ${String(c.id) === suporteSelecionado ? 'selected' : ''}" data-suporte-id="${esc(c.id)}" aria-pressed="${String(c.id) === suporteSelecionado}">
+        <span class="support-item-top"><span class="support-item-store">${esc(c.empresa_nome || c.loja_slug || 'Loja')}</span><span class="support-status ${status}">${statusSuporte[status]}</span></span>
+        <span class="support-item-title">${esc(c.titulo || 'Sem título')}</span>
+        <span class="support-item-meta"><span>${esc(c.loja_slug ? `/l/${c.loja_slug}` : 'Loja')}</span><span>${esc(dataSuporte(c.criado_em))}</span></span>
+      </button>`;
+    }).join('');
+
+    const chamado = filtrados.find((c) => String(c.id) === suporteSelecionado);
+    if (!chamado) {
+      detalhe.innerHTML = '<div class="empty">Selecione um chamado para ver os detalhes.</div>';
+      return;
+    }
+
+    const status = Object.prototype.hasOwnProperty.call(statusSuporte, chamado.status) ? chamado.status : 'aberta';
+    const fotos = (Array.isArray(chamado.fotos) ? chamado.fotos : []).map(urlFotoSuporte).filter(Boolean).slice(0, 3);
+    const fotosHtml = fotos.length
+      ? `<div class="support-photos" aria-label="Fotos anexadas">${fotos.map((url, i) => `<a href="${esc(url)}" target="_blank" rel="noopener noreferrer"><img src="${esc(url)}" alt="Foto ${i + 1} do chamado" loading="lazy"></a>`).join('')}</div>`
+      : '';
+    detalhe.innerHTML = `<article>
+      <div class="support-detail-head"><h3>${esc(chamado.titulo || 'Chamado sem título')}</h3><span class="support-status ${status}">${statusSuporte[status]}</span></div>
+      <p class="support-detail-meta">${esc(chamado.empresa_nome || 'Loja')} · ${esc(chamado.loja_slug ? `/l/${chamado.loja_slug}` : 'slug não informado')} · enviado em ${esc(dataSuporte(chamado.criado_em))}<br>ID: ${esc(chamado.id)}</p>
+      <div class="support-description">${esc(chamado.descricao || 'O cliente não adicionou um relato.')}</div>
+      ${fotosHtml}
+      <form class="support-answer-form" id="suporteRespostaForm" data-suporte-id="${esc(chamado.id)}">
+        <label for="suporteResposta">Resposta que ficará visível no painel da loja</label>
+        <textarea id="suporteResposta" maxlength="4000" required placeholder="Escreva uma orientação ou resposta para o cliente…">${esc(chamado.resposta_admin || '')}</textarea>
+        <span class="hint">Ao salvar, a resposta aparece na área Suporte do cliente e a situação muda para “Aguardando cliente”.</span>
+        <div class="support-actions">
+          <button class="btn btn-primary" type="submit">Salvar resposta</button>
+          <button class="btn" type="button" data-copiar-suporte="${esc(chamado.id)}">Copiar contexto para o Arena</button>
+        </div>
+      </form>
+    </article>`;
+  }
+
+  async function carregarSuporte() {
+    const feedback = el('suporteFeedback');
+    feedback.className = 'support-feedback';
+    feedback.textContent = 'Carregando chamados…';
+    feedback.hidden = false;
+    el('suporteLista').innerHTML = '';
+    try {
+      const data = await api('/api/master/suporte');
+      if (!Array.isArray(data.chamados)) throw new Error('A lista de chamados veio em um formato inesperado.');
+      chamadosSuporte = data.chamados;
+      feedback.hidden = true;
+      renderSuporte();
+    } catch (err) {
+      chamadosSuporte = [];
+      suporteSelecionado = '';
+      el('suporteBadge').hidden = true;
+      el('suporteResumo').textContent = '';
+      el('suporteLista').innerHTML = '<div class="empty">Não foi possível carregar os chamados.</div>';
+      el('suporteDetalhe').innerHTML = '<div class="empty">Verifique a conexão e tente atualizar novamente.</div>';
+      feedback.className = 'support-feedback error';
+      feedback.textContent = err.message || 'Não foi possível carregar os chamados agora.';
+      feedback.hidden = false;
     }
   }
 
@@ -1050,12 +1262,63 @@
     });
   }
 
+  /* ---------------------------- ações de suporte -------------------------- */
+  el('suporteAtualizar').addEventListener('click', carregarSuporte);
+  el('suporteFiltro').addEventListener('change', renderSuporte);
+  el('suporteBusca').addEventListener('input', renderSuporte);
+  el('suporteLista').addEventListener('click', (event) => {
+    const item = event.target.closest('[data-suporte-id]');
+    if (!item) return;
+    suporteSelecionado = item.dataset.suporteId;
+    renderSuporte();
+  });
+  el('suporteDetalhe').addEventListener('click', async (event) => {
+    const button = event.target.closest('[data-copiar-suporte]');
+    if (!button) return;
+    const chamado = chamadosSuporte.find((c) => String(c.id) === button.dataset.copiarSuporte);
+    if (chamado) await copy(textoParaArena(chamado), 'Contexto copiado. Cole na conversa do Arena.');
+  });
+  el('suporteDetalhe').addEventListener('submit', async (event) => {
+    const form = event.target.closest('#suporteRespostaForm');
+    if (!form) return;
+    event.preventDefault();
+    const resposta = el('suporteResposta').value.trim();
+    if ([...resposta].length < 1 || [...resposta].length > 4000) {
+      toast('Escreva uma resposta de até 4000 caracteres.', 'error');
+      return;
+    }
+    const button = form.querySelector('button[type="submit"]');
+    button.disabled = true;
+    button.textContent = 'Salvando…';
+    try {
+      const data = await api(`/api/master/suporte/${encodeURIComponent(form.dataset.suporteId)}/responder`, {
+        method: 'POST',
+        body: JSON.stringify({ resposta }),
+      });
+      const chamado = chamadosSuporte.find((c) => String(c.id) === form.dataset.suporteId);
+      if (chamado) {
+        chamado.resposta_admin = data.resposta_admin || resposta;
+        chamado.status = data.status || 'aguardando_cliente';
+        chamado.atualizado_em = new Date().toISOString();
+        if (el('suporteFiltro').value && el('suporteFiltro').value !== chamado.status) el('suporteFiltro').value = '';
+        renderSuporte();
+      }
+      toast('Resposta salva. Ela ficará visível no painel da loja.');
+    } catch (err) {
+      toast(err.message || 'Não foi possível salvar a resposta.', 'error');
+    } finally {
+      button.disabled = false;
+      button.textContent = 'Salvar resposta';
+    }
+  });
+
   /* -------------------------------- abas -------------------------------- */
   document.querySelectorAll('.tab').forEach((tab) => {
     tab.addEventListener('click', () => {
       document.querySelectorAll('.tab').forEach((t) => t.classList.toggle('active', t === tab));
       document.querySelectorAll('.panel').forEach((p) => (p.hidden = p.id !== `panel-${tab.dataset.tab}`));
       if (tab.dataset.tab === 'mensalidades') carregarMensalidades();
+      if (tab.dataset.tab === 'suporte') carregarSuporte();
       if (tab.dataset.tab === 'contratos') carregarContratos();
       if (tab.dataset.tab === 'security') carregarSistema();
       if (tab.dataset.tab === 'trafego') carregarTrafego();

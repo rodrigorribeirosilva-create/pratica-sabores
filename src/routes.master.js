@@ -35,6 +35,9 @@ const { normalizeWhatsapp, formatDateTimeBR } = require('./helpers');
 
 const router = express.Router();
 
+/* Caixa de suporte dos clientes (protegida pela sessão do Master). */
+router.use('/suporte', require('./suporte-master'));
+
 /* --------------------------------- login --------------------------------- */
 const hits = new Map();
 router.post('/login', (req, res) => {
