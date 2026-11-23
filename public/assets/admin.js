@@ -1,5 +1,5 @@
 /* ============================================================
-   Painel administrativo — produtos, pedidos e configurações
+   Painel administrativo — produtos, pedidos, clientes e financeiro
    ============================================================ */
 (() => {
   'use strict';
@@ -346,6 +346,8 @@
     qsa('[data-view]').forEach((b) => b.classList.toggle('active', b.dataset.view === view));
     if (view === 'pedidos') loadOrders();
     if (view === 'vendas') loadVendas();
+    if (view === 'clientes') loadCustomers();
+    if (view === 'financeiro') loadStoreFinance();
     if (view === 'config') loadSettings();
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
@@ -981,6 +983,282 @@
       if (el('vendasCards')) el('vendasCards').innerHTML = `<div class="hint">Não foi possível carregar: ${esc(err.message)}</div>`;
     }
   }
+
+  /* ---------------- financeiro de pedidos e despesas da loja ---------------- */
+  let storeFinance = null;
+  let customers = [];
+  let customerFilter = 'todos';
+
+  const lojaHojeISO = () => new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'America/Sao_Paulo', year: 'numeric', month: '2-digit', day: '2-digit',
+  }).format(new Date());
+  const dataBR = (iso) => {
+    const match = String(iso || '').match(/^(\d{4})-(\d{2})-(\d{2})/);
+    return match ? `${match[3]}/${match[2]}/${match[1]}` : '—';
+  };
+  const nomeForma = (forma) => ({
+    dinheiro: 'Dinheiro', pix: 'Pix', debito: 'Cartão de débito', credito: 'Cartão de crédito', outro: 'Outro',
+  })[String(forma || '').toLowerCase()] || String(forma || 'Não informado');
+
+  function renderExpenses(lista) {
+    const box = el('expenseList');
+    if (!lista || !lista.length) {
+      box.innerHTML = '<div class="empty-state"><h3>Nenhuma despesa no período</h3><p>Use “Lançar despesa” para registrar um custo da loja.</p></div>';
+      return;
+    }
+    box.innerHTML = lista.map((d) => `
+      <article class="expense-row">
+        <div class="expense-date">${dataBR(d.data)}</div>
+        <div class="expense-description"><strong>${esc(d.categoria || 'Geral')}</strong><span>${esc(d.descricao || 'Sem descrição')}</span><small>Pago com ${esc(nomeForma(d.forma))}</small></div>
+        <strong class="expense-value">${brl.format(Number(d.valor_cents || 0) / 100)}</strong>
+        <div class="expense-actions"><button class="btn btn-ghost btn-sm" type="button" data-expense-edit="${Number(d.id)}">Editar</button><button class="btn btn-ghost btn-sm expense-delete" type="button" data-expense-delete="${Number(d.id)}">Excluir</button></div>
+      </article>`).join('');
+  }
+
+  function renderStoreFinance(data) {
+    storeFinance = data;
+    const de = el('financeFrom').value;
+    const ate = el('financeTo').value;
+    el('financePeriodLabel').textContent = `${dataBR(de)} a ${dataBR(ate)}`;
+    el('financeCards').innerHTML = `
+      <div class="stat"><div class="k">Receita de pedidos</div><div class="v">${brl.format(Number(data.vendas_cents || 0) / 100)}</div><div class="s">${Number(data.pedidos || 0)} pedidos não cancelados</div></div>
+      <div class="stat"><div class="k">Despesas</div><div class="v">${brl.format(Number(data.despesas_cents || 0) / 100)}</div><div class="s">No período selecionado</div></div>
+      <div class="stat"><div class="k">Saldo do período</div><div class="v">${brl.format(Number(data.liquido_cents || 0) / 100)}</div><div class="s">Receitas menos despesas lançadas</div></div>
+      <div class="stat"><div class="k">Pedidos considerados</div><div class="v">${Number(data.pedidos || 0)}</div><div class="s">Pedidos cancelados não entram</div></div>`;
+
+    const dias = Array.isArray(data.dias) ? data.dias : [];
+    el('financeDays').innerHTML = dias.length ? dias.map((d) => `
+      <tr><td>${dataBR(d.data)}</td><td>${Number(d.pedidos || 0)}</td><td>${brl.format(Number(d.vendas_cents || 0) / 100)}</td><td>${brl.format(Number(d.despesas_cents || 0) / 100)}</td><td><strong>${brl.format(Number(d.liquido_cents || 0) / 100)}</strong></td></tr>`).join('') : '<tr><td colspan="5" class="finance-empty">Nenhuma movimentação no período.</td></tr>';
+
+    const formas = Array.isArray(data.por_forma) ? data.por_forma : [];
+    el('financePayments').innerHTML = formas.length ? formas.map((p) => `
+      <div class="finance-payment"><span>${esc(nomeForma(p.forma))}</span><strong>${brl.format(Number(p.valor_cents || 0) / 100)}</strong></div>`).join('') : '<p class="hint">Ainda não há receita no período.</p>';
+
+    const hoje = lojaHojeISO();
+    const fechamento = data.fechamento_hoje;
+    el('cashDate').value = hoje;
+    el('cashDateLabel').textContent = dataBR(hoje);
+    el('cashExpected').textContent = brl.format(Number((data.caixa_hoje || {}).esperado_cents || 0) / 100);
+    if (el('cashDate').dataset.loaded !== hoje) {
+      el('cashCounted').value = fechamento ? moneyInput(fechamento.valor_informado_cents) : '';
+      el('cashObs').value = fechamento ? (fechamento.obs || '') : '';
+      el('cashDate').dataset.loaded = hoje;
+    }
+    if (fechamento) {
+      const diferenca = Number(fechamento.valor_informado_cents || 0) - Number(fechamento.valor_sistema_cents || 0);
+      el('cashCloseFeedback').textContent = `Último fechamento: ${brl.format(Number(fechamento.valor_informado_cents || 0) / 100)} · diferença ${brl.format(diferenca / 100)}.`;
+    }
+    renderExpenses(data.despesas || []);
+  }
+
+  async function loadStoreFinance() {
+    const deInput = el('financeFrom');
+    const ateInput = el('financeTo');
+    const hoje = lojaHojeISO();
+    if (!deInput.value) deInput.value = `${hoje.slice(0, 7)}-01`;
+    if (!ateInput.value) ateInput.value = hoje;
+    el('financeError').hidden = true;
+    try {
+      const params = new URLSearchParams({ de: deInput.value, ate: ateInput.value });
+      const data = await api(`/api/admin/store-finance?${params.toString()}`);
+      renderStoreFinance(data);
+    } catch (err) {
+      el('financeError').textContent = err.message || 'Não foi possível carregar o financeiro.';
+      el('financeError').hidden = false;
+    }
+  }
+
+  function openExpense(expense = null) {
+    el('expenseForm').reset();
+    el('expenseId').value = expense ? expense.id : '';
+    el('expenseModalTitle').textContent = expense ? 'Editar despesa' : 'Lançar despesa';
+    el('expenseDate').value = expense ? expense.data : lojaHojeISO();
+    el('expenseValue').value = expense ? moneyInput(expense.valor_cents) : '';
+    el('expenseCategory').value = expense ? (expense.categoria || 'Geral') : 'Geral';
+    el('expenseForma').value = expense ? (expense.forma || 'dinheiro') : 'dinheiro';
+    el('expenseDescription').value = expense ? (expense.descricao || '') : '';
+    openModal('expenseModal');
+  }
+
+  el('newExpenseBtn').addEventListener('click', () => openExpense());
+  el('expenseList').addEventListener('click', async (event) => {
+    const editar = event.target.closest('[data-expense-edit]');
+    if (editar) {
+      const expense = (storeFinance && storeFinance.despesas || []).find((d) => Number(d.id) === Number(editar.dataset.expenseEdit));
+      if (expense) openExpense(expense);
+      return;
+    }
+    const apagar = event.target.closest('[data-expense-delete]');
+    if (!apagar) return;
+    const expense = (storeFinance && storeFinance.despesas || []).find((d) => Number(d.id) === Number(apagar.dataset.expenseDelete));
+    if (!expense || !await showConfirm(`Excluir a despesa “${expense.descricao || expense.categoria || 'Geral'}”?`, 'Excluir despesa')) return;
+    try {
+      await api(`/api/admin/store-expenses/${Number(expense.id)}`, { method: 'DELETE' });
+      toast('Despesa excluída.', 'ok');
+      await loadStoreFinance();
+    } catch (err) { toast(err.message, 'err'); }
+  });
+
+  el('expenseForm').addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const button = el('expenseSaveBtn');
+    if (button.disabled) return;
+    const id = el('expenseId').value;
+    const body = {
+      data: el('expenseDate').value,
+      valor: el('expenseValue').value,
+      categoria: el('expenseCategory').value,
+      forma: el('expenseForma').value,
+      descricao: el('expenseDescription').value,
+    };
+    button.disabled = true;
+    try {
+      await api(id ? `/api/admin/store-expenses/${Number(id)}` : '/api/admin/store-expenses', {
+        method: id ? 'PUT' : 'POST', body: JSON.stringify(body),
+      });
+      closeModal('expenseModal');
+      toast(id ? 'Despesa atualizada.' : 'Despesa lançada.', 'ok');
+      await loadStoreFinance();
+    } catch (err) { toast(err.message, 'err'); }
+    finally { button.disabled = false; }
+  });
+
+  el('applyFinancePeriod').addEventListener('click', loadStoreFinance);
+  el('refreshFinance').addEventListener('click', loadStoreFinance);
+  el('closeCashForm').addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const button = el('cashCloseBtn');
+    if (button.disabled) return;
+    button.disabled = true;
+    el('cashCloseFeedback').textContent = 'Salvando fechamento…';
+    try {
+      const result = await api('/api/admin/store-finance/close', {
+        method: 'POST',
+        body: JSON.stringify({ data: el('cashDate').value, valor_informado: el('cashCounted').value, obs: el('cashObs').value }),
+      });
+      el('cashCloseFeedback').textContent = `Fechamento salvo. Diferença: ${brl.format(Number(result.diferenca_cents || 0) / 100)}.`;
+      el('cashDate').dataset.loaded = el('cashDate').value;
+      toast('Fechamento de caixa salvo.', 'ok');
+      await loadStoreFinance();
+    } catch (err) {
+      el('cashCloseFeedback').textContent = err.message;
+    } finally { button.disabled = false; }
+  });
+
+  /* ------------------------- cadastro de clientes ------------------------- */
+  function renderCustomers() {
+    const q = el('customerSearch').value.trim().toLocaleLowerCase('pt-BR');
+    const all = customers.map((customer, index) => ({ customer, index }))
+      .filter(({ customer }) => customerFilter !== 'recorrentes' || customer.recorrente);
+    const filtered = all.filter(({ customer: c }) => !q || [c.nome, c.telefone, c.email, c.endereco, c.bairro]
+      .some((v) => String(v || '').toLocaleLowerCase('pt-BR').includes(q)));
+    const recorrentes = customers.filter((c) => c.recorrente).length;
+    const pedidos = customers.reduce((n, c) => n + Number(c.pedido_count || 0), 0);
+    el('customerStats').innerHTML = `
+      <div class="stat"><div class="k">Clientes</div><div class="v">${customers.length}</div><div class="s">Inclui clientes identificados nos pedidos</div></div>
+      <div class="stat"><div class="k">Recorrentes</div><div class="v">${recorrentes}</div><div class="s">Mais de um pedido não cancelado</div></div>
+      <div class="stat"><div class="k">Pedidos identificados</div><div class="v">${pedidos}</div><div class="s">Agrupados pelo telefone</div></div>`;
+    el('customerCount').textContent = `${filtered.length} de ${customers.length} clientes`;
+    const box = el('customerList');
+    if (!filtered.length) {
+      box.innerHTML = `<div class="empty-state"><h3>${customers.length ? 'Nenhum cliente encontrado' : 'Ainda não há clientes'}</h3><p>${customers.length ? 'Tente outro nome ou telefone, ou altere o filtro.' : 'Os clientes aparecem aqui depois do primeiro pedido. Você também pode cadastrar um cliente manualmente.'}</p></div>`;
+      return;
+    }
+    box.innerHTML = filtered.map(({ customer: c, index }) => {
+      const ultimo = c.ultimo_pedido_br || 'Sem pedidos';
+      return `<article class="customer-card">
+        <div class="customer-card-main">
+          <div class="customer-name-row"><h3>${esc(c.nome || 'Cliente')}</h3>${c.recorrente ? '<span class="customer-badge recurring">Recorrente</span>' : ''}${c.origem === 'pedido' ? '<span class="customer-badge">Do pedido</span>' : ''}</div>
+          <div class="customer-contact">${esc(c.telefone || 'Sem telefone')}${c.email ? ` · ${esc(c.email)}` : ''}</div>
+          ${c.endereco || c.bairro ? `<div class="customer-address">${esc([c.endereco, c.bairro].filter(Boolean).join(' · '))}</div>` : ''}
+        </div>
+        <div class="customer-facts"><div><small>Pedidos</small><strong>${Number(c.pedido_count || 0)}</strong></div><div><small>Último pedido</small><strong>${esc(ultimo)}</strong>${c.ultimo_pedido_status_label ? `<em>${esc(c.ultimo_pedido_status_label)}</em>` : ''}</div><div><small>Total em pedidos</small><strong>${brl.format(Number(c.total_gasto_cents || 0) / 100)}</strong></div></div>
+        <div class="customer-actions"><button class="btn btn-ghost btn-sm" type="button" data-customer-history="${index}"${c.telefone ? '' : ' disabled title="Cliente sem telefone"'}>Histórico</button><button class="btn btn-ghost btn-sm" type="button" data-customer-edit="${index}">Editar</button></div>
+      </article>`;
+    }).join('');
+  }
+
+  async function loadCustomers() {
+    try {
+      customers = await api('/api/admin/customers');
+      renderCustomers();
+    } catch (err) {
+      el('customerList').innerHTML = `<div class="empty-state"><h3>Não foi possível carregar os clientes</h3><p>${esc(err.message)}</p></div>`;
+    }
+  }
+
+  function openCustomer(customer = null) {
+    el('customerForm').reset();
+    el('customerId').value = customer && customer.id ? customer.id : '';
+    el('customerModalTitle').textContent = customer && customer.id ? 'Editar cliente' : 'Cadastrar cliente';
+    el('customerSaveBtn').textContent = customer && customer.id ? 'Salvar alterações' : 'Salvar cliente';
+    el('customerName').value = customer ? (customer.nome || '') : '';
+    el('customerPhone').value = customer ? (customer.telefone || '') : '';
+    el('customerEmail').value = customer ? (customer.email || '') : '';
+    el('customerAddress').value = customer ? (customer.endereco || '') : '';
+    el('customerNeighborhood').value = customer ? (customer.bairro || '') : '';
+    el('customerObs').value = customer ? (customer.obs || '') : '';
+    openModal('customerModal');
+  }
+
+  el('newCustomerBtn').addEventListener('click', () => openCustomer());
+  el('customerSearch').addEventListener('input', renderCustomers);
+  qsa('#customerFilters [data-customer-filter]').forEach((button) => button.addEventListener('click', () => {
+    customerFilter = button.dataset.customerFilter;
+    qsa('#customerFilters [data-customer-filter]').forEach((item) => item.classList.toggle('active', item === button));
+    renderCustomers();
+  }));
+  el('customerList').addEventListener('click', async (event) => {
+    const edit = event.target.closest('[data-customer-edit]');
+    if (edit) {
+      const customer = customers[Number(edit.dataset.customerEdit)];
+      if (customer) openCustomer(customer);
+      return;
+    }
+    const history = event.target.closest('[data-customer-history]');
+    if (!history) return;
+    const customer = customers[Number(history.dataset.customerHistory)];
+    if (!customer) return;
+    el('customerHistoryTitle').textContent = `Pedidos de ${customer.nome || 'cliente'}`;
+    el('customerHistoryList').innerHTML = '<p class="hint">Carregando histórico…</p>';
+    openModal('customerHistoryModal');
+    try {
+      const params = new URLSearchParams({ telefone: customer.telefone || '' });
+      const result = await api(`/api/admin/customers/history?${params.toString()}`);
+      const pedidosCliente = result.pedidos || [];
+      el('customerHistoryList').innerHTML = pedidosCliente.length ? pedidosCliente.map((o) => {
+        const itens = (Array.isArray(o.items) ? o.items : []).map((item) => `${Number(item.qty || 0)}× ${esc(item.name || 'Item')}`).join(', ');
+        return `<article class="history-order"><div class="history-order-head"><strong>${esc(o.code || `Pedido #${o.id}`)}</strong><span>${esc(o.created_at_br || dataBR(o.created_at))}</span><span class="history-status">${esc(o.status_label || 'Pedido')}</span></div><p>${itens || 'Itens indisponíveis'}</p><div class="history-order-foot"><span>${esc(nomeForma(o.payment_method))}</span><strong>${brl.format(Number(o.total_cents || 0) / 100)}</strong></div></article>`;
+      }).join('') : '<div class="empty-state"><h3>Nenhum pedido encontrado</h3><p>Não há histórico associado a este telefone.</p></div>';
+    } catch (err) {
+      el('customerHistoryList').innerHTML = `<p class="finance-error">${esc(err.message)}</p>`;
+    }
+  });
+
+  el('customerForm').addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const button = el('customerSaveBtn');
+    if (button.disabled) return;
+    const id = el('customerId').value;
+    const body = {
+      nome: el('customerName').value,
+      telefone: el('customerPhone').value,
+      email: el('customerEmail').value,
+      endereco: el('customerAddress').value,
+      bairro: el('customerNeighborhood').value,
+      obs: el('customerObs').value,
+    };
+    button.disabled = true;
+    try {
+      await api(id ? `/api/admin/customers/${Number(id)}` : '/api/admin/customers', {
+        method: id ? 'PUT' : 'POST', body: JSON.stringify(body),
+      });
+      closeModal('customerModal');
+      toast(id ? 'Cliente atualizado.' : 'Cliente cadastrado.', 'ok');
+      await loadCustomers();
+    } catch (err) { toast(err.message, 'err'); }
+    finally { button.disabled = false; }
+  });
 
   qsa('#vendasPeriodo [data-periodo]').forEach((b) =>
     b.addEventListener('click', () => {
