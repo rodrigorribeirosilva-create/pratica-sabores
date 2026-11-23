@@ -1,6 +1,7 @@
 'use strict';
 const express = require('express');
 const { requireMaster } = require('./auth');
+const { obterConfiguracao } = require('./suporte-config');
 
 const router = express.Router();
 const RPC_TIMEOUT_MS = 15000;
@@ -10,33 +11,8 @@ router.use((req, res, next) => {
   next();
 });
 
-function configuracao() {
-  const raw = String(process.env.ROHELARI_SUPABASE_URL || '').trim().replace(/\/+$/, '');
-  const anon = String(process.env.ROHELARI_SUPABASE_ANON_KEY || '').trim();
-  const chave = String(process.env.ROHELARI_SUPORTE_CHAVE || '').trim();
-  let base;
-  try {
-    base = new URL(raw);
-  } catch {
-    return null;
-  }
-  if (
-    base.protocol !== 'https:' ||
-    base.username ||
-    base.password ||
-    base.search ||
-    base.hash ||
-    base.pathname !== '/' ||
-    !anon ||
-    !chave
-  ) {
-    return null;
-  }
-  return { origin: base.origin, anon, chave };
-}
-
 async function chamarRpc(nome, dados) {
-  const cfg = configuracao();
+  const cfg = obterConfiguracao();
   if (!cfg) {
     const err = new Error('O suporte da plataforma não está configurado neste servidor.');
     err.code = 'SUPORTE_CONFIG';

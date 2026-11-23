@@ -8,9 +8,10 @@ const sharp = require('sharp');
 const storage = require('./storage');
 const {resolveUploadDir, PERSISTENTE} = require('./paths');
 const {requireAuth, requireDono} = require('./auth');
+const {obterConfiguracao, obterBaseUpload} = require('./suporte-config');
 const router = express.Router();
 const upload = multer({storage: multer.memoryStorage(), limits: {files: 3, fileSize: 5 * 1024 * 1024, fields: 2, fieldSize: 8192}}).array('fotos', 3);
-const disponivel = () => Boolean((process.env.ROHELARI_SUPORTE_CHAVE || '').trim());
+const disponivel = () => Boolean(obterConfiguracao());
 function proteger(req, res, next) {
   if (!disponivel()) return res.status(404).json({error:'Suporte indisponível no momento.'});
   if (req.method === 'POST') {
@@ -23,15 +24,11 @@ function proteger(req, res, next) {
 router.get('/suporte/config', requireAuth, requireDono, (req, res) => res.json({disponivel: disponivel()}));
 router.use('/suporte', requireAuth, requireDono, proteger);
 async function chamar(nome, dados) {
-  const raw = (process.env.ROHELARI_SUPABASE_URL || '').trim().replace(/\/+$/, '');
-  const anon = (process.env.ROHELARI_SUPABASE_ANON_KEY || '').trim();
-  let base;
-  try {base = new URL(raw);} catch {throw new Error('O atendimento está temporariamente indisponível.');}
-  if (base.protocol !== 'https:' || base.username || base.password || base.search || base.hash || base.pathname !== '/' || !anon)
-    throw new Error('O atendimento está temporariamente indisponível.');
+  const cfg = obterConfiguracao();
+  if (!cfg) throw new Error('O atendimento está temporariamente indisponível.');
   const ctrl = new AbortController(); const timer = setTimeout(() => ctrl.abort(), 15000);
   try {
-    const r = await fetch(`${base.origin}/rest/v1/rpc/${nome}`, {method:'POST', headers:{apikey:anon, Authorization:`Bearer ${anon}`, 'Content-Type':'application/json'}, body:JSON.stringify({p_chave:process.env.ROHELARI_SUPORTE_CHAVE.trim(),...dados}),signal:ctrl.signal,redirect:'error'});
+    const r = await fetch(`${cfg.origin}/rest/v1/rpc/${nome}`, {method:'POST', headers:{apikey:cfg.anon, Authorization:`Bearer ${cfg.anon}`, 'Content-Type':'application/json'}, body:JSON.stringify({...dados,p_chave:cfg.chave}),signal:ctrl.signal,redirect:'error'});
     const j = await r.json().catch(() => null);
     if (!r.ok || (j && j.ok === false)) {
       const msg = j && typeof j.message === 'string' ? j.message.slice(0,500) : 'Não foi possível concluir o pedido agora.';
@@ -70,10 +67,10 @@ router.post('/suporte/pedidos', (req,res) => {
         if (storage.ATIVO) url = await storage.salvarImagem(image,name,req.store.slug,'image/jpeg');
         else {
           if (!PERSISTENTE) throw new Error('Não foi possível salvar as fotos de forma permanente. Tente sem fotos ou procure atendimento.');
-          let base; try {base = new URL((process.env.SUPORTE_UPLOAD_BASE_URL || '').trim());} catch {throw new Error('Não foi possível salvar as fotos de forma permanente. Tente sem fotos ou procure atendimento.');}
-          if (base.protocol !== 'https:' || base.pathname !== '/' || base.search || base.hash || base.username || base.password) throw new Error('Não foi possível salvar as fotos de forma permanente.');
+          const base = obterBaseUpload();
+          if (!base) throw new Error('Não foi possível salvar as fotos de forma permanente. Tente sem fotos ou procure atendimento.');
           const dir=path.join(resolveUploadDir(),req.store.slug); await fs.mkdir(dir,{recursive:true}); await fs.writeFile(path.join(dir,name),image,{flag:'wx'});
-          url=`${base.origin}/uploads/${encodeURIComponent(req.store.slug)}/${name}`;
+          url=`${base}/uploads/${encodeURIComponent(req.store.slug)}/${name}`;
         }
         if (!/^https:\/\//i.test(url)) throw new Error('Não foi possível preparar as fotos para envio.');
         fotos.push(url);
