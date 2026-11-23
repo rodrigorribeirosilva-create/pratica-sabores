@@ -348,7 +348,7 @@
   .hoje-atalhos .btn{padding:13px 10px;font-size:13.5px;justify-content:center}
   @media(max-width:360px){.hoje-atalhos{grid-template-columns:1fr}}
 </style>
-</head>
+<style>.suporte-nav[hidden]{display:none!important}.suporte-card{max-width:760px;border:1px solid #aaa5;border-radius:14px;padding:20px;background:var(--card,#fff);color:inherit}.suporte-card form{display:flex;flex-direction:column;gap:9px}.suporte-card label{font-weight:700;margin-top:8px}.suporte-card input:not([type=file]),.suporte-card textarea{font:inherit;padding:10px;border:1px solid #aaa;border-radius:8px;width:100%;background:var(--bg,#fff);color:inherit}.suporte-card button{align-self:flex-start;border:0;border-radius:8px;padding:11px 18px;font-weight:700;background:var(--green,var(--azul,#14386b));color:white;cursor:pointer}.suporte-card button:disabled{opacity:.6}.suporte-pedido{border-top:1px solid #aaa6;padding:12px 0;overflow-wrap:anywhere}.suporte-pedido p{white-space:pre-wrap;margin:6px 0}</style></head>
 <body>
 
 <!-- ======================= LOGIN ======================= -->
@@ -395,6 +395,18 @@
 
   <main>
     <!-- ---------------- HOJE ---------------- -->
+    <section id="tab-suporte" class="oculto"><div id="suporte-area"><header><h2>Pedir suporte ou manutenção</h2></header>
+<div class="suporte-card"><form id="suporte-form">
+<label for="suporte-titulo">O que precisa de manutenção?</label>
+<input id="suporte-titulo" name="titulo" required minlength="3" maxlength="120" autocomplete="off">
+<label for="suporte-descricao">Relate o problema</label>
+<textarea id="suporte-descricao" name="descricao" maxlength="2000" rows="5"></textarea>
+<label for="suporte-fotos">Fotos ou prints (até 3, máximo 5 MB cada)</label>
+<input id="suporte-fotos" type="file" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" multiple>
+<small>As imagens poderão ser acessadas por quem tiver seus links. Evite incluir dados sensíveis.</small>
+<button id="suporte-enviar" type="submit">Enviar pedido</button>
+<p id="suporte-feedback" role="status" aria-live="polite"></p>
+</form><h3>Seus pedidos</h3><div id="suporte-lista" aria-live="polite">Abra esta área para carregar seus pedidos.</div></div></div></section>
     <section id="tab-hoje">
       <div id="alertaTop"></div>
 
@@ -705,6 +717,7 @@
     <button data-tab="promocoes"><span class="ic">🎯</span>Promoções</button>
     <button data-tab="financeiro" class="oculto" id="navFinanceiro"><span class="ic">💰</span>Financeiro</button>
     <button data-tab="relatorios" class="oculto" id="navRelatorios"><span class="ic">📈</span>Relatórios</button>
+    <button type="button" class="suporte-nav" data-tab="suporte" hidden><span class="ic">🛠️</span>Pedir suporte ou manutenção</button>
     <button data-tab="empresa" class="oculto" id="navLoja"><span class="ic">🏪</span>Loja</button>
   </nav>
 </div>
@@ -842,7 +855,7 @@
   function irPara(alvo) {
       S.aba = alvo;
       Array.prototype.forEach.call(document.querySelectorAll('.nav button'), function (x) { x.classList.toggle('on', x.dataset.tab === alvo); });
-      ['hoje', 'agenda', 'clientes', 'equipamentos', 'equipe', 'servicos', 'promocoes', 'financeiro', 'relatorios', 'empresa'].forEach(function (t) {
+      ['hoje', 'agenda', 'clientes', 'equipamentos', 'equipe', 'servicos', 'promocoes', 'financeiro', 'relatorios', 'empresa', 'suporte'].forEach(function (t) {
         var sec = $('tab-' + t);
         if (sec) sec.classList.toggle('oculto', t !== alvo);
       });
@@ -3077,5 +3090,6 @@
     .catch(function () { mostrarLogin(); });
 })();
 </script>
+<script src="/suporte-painel.js?v=1"></script>
 </body>
 </html>

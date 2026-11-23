@@ -10,7 +10,7 @@
 <link rel="apple-touch-icon" href="/img/logo-256.png">
 <link rel="stylesheet" href="/assets/base.css">
 <link rel="stylesheet" href="/assets/admin.css">
-</head>
+<style>.suporte-nav[hidden]{display:none!important}.suporte-card{max-width:760px;border:1px solid #aaa5;border-radius:14px;padding:20px;background:var(--card,#fff);color:inherit}.suporte-card form{display:flex;flex-direction:column;gap:9px}.suporte-card label{font-weight:700;margin-top:8px}.suporte-card input:not([type=file]),.suporte-card textarea{font:inherit;padding:10px;border:1px solid #aaa;border-radius:8px;width:100%;background:var(--bg,#fff);color:inherit}.suporte-card button{align-self:flex-start;border:0;border-radius:8px;padding:11px 18px;font-weight:700;background:var(--green,var(--azul,#14386b));color:white;cursor:pointer}.suporte-card button:disabled{opacity:.6}.suporte-pedido{border-top:1px solid #aaa6;padding:12px 0;overflow-wrap:anywhere}.suporte-pedido p{white-space:pre-wrap;margin:6px 0}</style></head>
 <body class="admin-body">
 
 <!-- ============================ LOGIN ============================ -->
@@ -66,6 +66,7 @@
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06A1.7 1.7 0 0 0 15 19.4a1.7 1.7 0 0 0-1 1.55V21a2 2 0 1 1-4 0v-.09A1.7 1.7 0 0 0 9 19.4a1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.55-1H3a2 2 0 1 1 0-4h.09A1.7 1.7 0 0 0 4.6 9a1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 9 4.6 1.7 1.7 0 0 0 10 3.05V3a2 2 0 1 1 4 0v.09A1.7 1.7 0 0 0 15 4.6a1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 19.4 9v.09a1.7 1.7 0 0 0 1.55 1H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.51 1Z"/></svg>
         Configurações
       </button>
+      <button type="button" class="side-link suporte-nav" data-view="suporte" hidden>🛠️ Pedir suporte ou manutenção</button>
     </nav>
 
     <div class="side-foot">
@@ -108,6 +109,18 @@
       <button class="btn btn-sm btn-soft" id="bannerGoSecurity">Trocar agora</button>
     </div>
 
+    <section class="view" id="view-suporte" hidden><div id="suporte-area"><header><h2>Pedir suporte ou manutenção</h2></header>
+<div class="suporte-card"><form id="suporte-form">
+<label for="suporte-titulo">O que precisa de manutenção?</label>
+<input id="suporte-titulo" name="titulo" required minlength="3" maxlength="120" autocomplete="off">
+<label for="suporte-descricao">Relate o problema</label>
+<textarea id="suporte-descricao" name="descricao" maxlength="2000" rows="5"></textarea>
+<label for="suporte-fotos">Fotos ou prints (até 3, máximo 5 MB cada)</label>
+<input id="suporte-fotos" type="file" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" multiple>
+<small>As imagens poderão ser acessadas por quem tiver seus links. Evite incluir dados sensíveis.</small>
+<button id="suporte-enviar" type="submit">Enviar pedido</button>
+<p id="suporte-feedback" role="status" aria-live="polite"></p>
+</form><h3>Seus pedidos</h3><div id="suporte-lista" aria-live="polite">Abra esta área para carregar seus pedidos.</div></div></div></section>
     <!-- ------------------------- PRODUTOS ------------------------- -->
     <section class="view" id="view-produtos">
       <header class="view-head">
@@ -574,6 +587,7 @@
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06A1.7 1.7 0 0 0 15 19.4a1.7 1.7 0 0 0-1 1.55V21a2 2 0 1 1-4 0v-.09A1.7 1.7 0 0 0 9 19.4a1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.55-1H3a2 2 0 1 1 0-4h.09A1.7 1.7 0 0 0 4.6 9a1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 9 4.6 1.7 1.7 0 0 0 10 3.05V3a2 2 0 1 1 4 0v.09A1.7 1.7 0 0 0 15 4.6a1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 19.4 9v.09a1.7 1.7 0 0 0 1.55 1H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.51 1Z"/></svg>
         Config.
       </button>
+      <button type="button" class="side-link suporte-nav" data-view="suporte" hidden><span>🛠️</span> Pedir suporte ou manutenção</button>
     </nav>
   </main>
 </div>
@@ -697,12 +711,20 @@
             <input class="input" id="pOrder" type="number" value="0">
           </div>
           <div class="field">
-            <label for="pActive" id="pActiveLabel">Disponível no cardápio</label>
+            <label for="pActive" id="pActiveLabel">Visível no cardápio</label>
             <select class="select" id="pActive">
-              <option value="1">Sim, mostrar</option>
-              <option value="0">Não, ocultar</option>
+              <option value="1">Sim, deixar visível</option>
+              <option value="0">Não, ocultar do link</option>
             </select>
           </div>
+        </div>
+        <div class="field">
+          <label for="pStock">Estoque do produto</label>
+          <select class="select" id="pStock">
+            <option value="1">Em estoque — pode comprar</option>
+            <option value="0">Esgotado — continuar mostrando no link</option>
+          </select>
+          <div class="hint">Esgotado: o produto continua visível, mas não aceita pedidos. Quando repor, selecione “Em estoque”.</div>
         </div>
       </div>
       <div class="modal-foot">
@@ -756,5 +778,6 @@
     });
   }
 </script>
+<script src="/suporte-painel.js?v=1"></script>
 </body>
 </html>

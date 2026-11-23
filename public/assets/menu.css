@@ -253,6 +253,31 @@
 }
 .add-btn:hover { background: #d7e9de; }
 .add-btn:active { transform: scale(0.96); }
+.add-btn.stock-disabled,
+.add-btn.stock-disabled:hover {
+  background: #fbe6e2;
+  color: #a8371f;
+  border: 1px solid #f0cfc7;
+  cursor: not-allowed;
+  opacity: 1;
+}
+.stock-badge {
+  position: absolute;
+  z-index: 2;
+  top: 10px;
+  right: 10px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: #a8371f;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  box-shadow: 0 2px 8px rgba(38, 14, 8, .2);
+  pointer-events: none;
+}
+.card.esgotado .card-media img { filter: grayscale(.3); opacity: .82; }
 
 .stepper {
   display: inline-flex;
@@ -278,6 +303,7 @@
   transition: background 0.14s;
 }
 .stepper button:hover { background: rgba(255, 255, 255, 0.18); }
+.stepper button:disabled { opacity: .45; cursor: not-allowed; }
 .stepper .qty { min-width: 22px; text-align: center; font-weight: 800; font-size: 14px; }
 
 /* --------------------------- carrinho bar --------------------------- */
@@ -383,6 +409,8 @@
 .cart-item .ci-main { flex: 1; min-width: 0; }
 .cart-item .ci-name { font-weight: 700; font-size: 14.5px; }
 .cart-item .ci-price { font-size: 13px; color: var(--muted); font-weight: 600; }
+.cart-stock-note { color: #a8371f; font-size: 12px; font-weight: 750; margin-top: 3px; }
+.cart-stock-warning { margin-top: 14px; padding: 10px 12px; border-radius: 10px; border: 1px solid #f0cfc7; background: #fff2ef; color: #97331f; font-size: 13px; font-weight: 650; line-height: 1.45; }
 .cart-item .ci-right { display: flex; flex-direction: column; align-items: flex-end; justify-content: space-between; gap: 6px; }
 .ci-total { font-weight: 800; font-size: 14.5px; }
 .remove-x { border: 0; background: none; color: var(--muted); font-size: 12.5px; cursor: pointer; text-decoration: underline; padding: 0; }

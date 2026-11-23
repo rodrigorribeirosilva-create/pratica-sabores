@@ -163,7 +163,7 @@ function categoriaPadrao(storeId, store) {
   return store && require('./db').segmentoEfetivo(store) === 'catalogo' ? 'Perfumes' : 'Marmitas';
 }
 
-function productPayload(body, store) {
+function productPayload(body, store, existing = null) {
   const name = String(body.name || '').trim();
   if (name.length < 2) return { error: 'Informe o nome do produto.' };
   const price_cents = parseMoneyToCents(body.price_cents ?? body.price);
@@ -172,6 +172,14 @@ function productPayload(body, store) {
   if (price_cents > 5000000) {
     return { error: 'Preço muito alto (acima de R$ 50.000). Confira se digitou certo — ex.: 189,00.' };
   }
+  const in_stock =
+    body.in_stock === false || body.in_stock === 0 || body.in_stock === '0'
+      ? 0
+      : body.in_stock === true || body.in_stock === 1 || body.in_stock === '1'
+      ? 1
+      : existing && Number(existing.in_stock) === 0
+      ? 0
+      : 1;
   return {
     data: {
       name,
@@ -180,6 +188,7 @@ function productPayload(body, store) {
       image_url: String(body.image_url || '').trim(),
       category: String(body.category || '').trim() || categoriaPadrao(store && store.id, store),
       active: body.active === false || body.active === 0 || body.active === '0' ? 0 : 1,
+      in_stock,
       sort_order: Number.isFinite(Number(body.sort_order)) ? Number(body.sort_order) : 0,
       opcoes_json: montagemPayload(body.opcoes),
     },
@@ -191,8 +200,8 @@ router.post('/products', requireAuth, (req, res) => {
   if (error) return res.status(400).json({ error });
   const info = db
     .prepare(
-      `INSERT INTO products (store_id, name, description, price_cents, image_url, category, active, sort_order, opcoes_json)
-       VALUES (@store_id, @name, @description, @price_cents, @image_url, @category, @active, @sort_order, @opcoes_json)`
+      `INSERT INTO products (store_id, name, description, price_cents, image_url, category, active, in_stock, sort_order, opcoes_json)
+       VALUES (@store_id, @name, @description, @price_cents, @image_url, @category, @active, @in_stock, @sort_order, @opcoes_json)`
     )
     .run({ ...data, store_id: req.store.id });
   const criado = db.prepare('SELECT * FROM products WHERE id = ?').get(info.lastInsertRowid);
@@ -204,11 +213,11 @@ router.put('/products/:id', requireAuth, (req, res) => {
     .prepare('SELECT * FROM products WHERE id = ? AND store_id = ?')
     .get(req.params.id, req.store.id);
   if (!existing) return res.status(404).json({ error: 'Produto não encontrado.' });
-  const { data, error } = productPayload(req.body || {}, req.store);
+  const { data, error } = productPayload(req.body || {}, req.store, existing);
   if (error) return res.status(400).json({ error });
   db.prepare(
     `UPDATE products SET name=@name, description=@description, price_cents=@price_cents,
-       image_url=@image_url, category=@category, active=@active, sort_order=@sort_order,
+       image_url=@image_url, category=@category, active=@active, in_stock=@in_stock, sort_order=@sort_order,
        opcoes_json=@opcoes_json,
        updated_at=datetime('now') WHERE id=@id AND store_id=@store_id`
   ).run({ ...data, id: existing.id, store_id: req.store.id });
@@ -232,6 +241,19 @@ router.patch('/products/:id/active', requireAuth, (req, res) => {
     .run(active, req.params.id, req.store.id);
   if (!info.changes) return res.status(404).json({ error: 'Produto não encontrado.' });
   res.json({ ok: true, active });
+});
+
+router.patch('/products/:id/stock', requireAuth, (req, res) => {
+  const value = req.body && req.body.in_stock;
+  if (typeof value !== 'boolean' && ![0, 1, '0', '1'].includes(value)) {
+    return res.status(400).json({ error: 'Informe se o produto está em estoque.' });
+  }
+  const in_stock = value === true || value === 1 || value === '1' ? 1 : 0;
+  const info = db
+    .prepare("UPDATE products SET in_stock = ?, updated_at = datetime('now') WHERE id = ? AND store_id = ?")
+    .run(in_stock, req.params.id, req.store.id);
+  if (!info.changes) return res.status(404).json({ error: 'Produto não encontrado.' });
+  res.json({ ok: true, in_stock });
 });
 
 router.delete('/products/:id', requireAuth, (req, res) => {

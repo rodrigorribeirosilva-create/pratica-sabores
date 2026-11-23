@@ -331,6 +331,7 @@ CREATE TABLE IF NOT EXISTS products (
   image_url   TEXT    NOT NULL DEFAULT '',
   category    TEXT    NOT NULL DEFAULT 'Marmitas',
   active      INTEGER NOT NULL DEFAULT 1,
+  in_stock    INTEGER NOT NULL DEFAULT 1,
   sort_order  INTEGER NOT NULL DEFAULT 0,
   created_at  TEXT    NOT NULL DEFAULT (datetime('now')),
   updated_at  TEXT    NOT NULL DEFAULT (datetime('now'))
@@ -360,6 +361,8 @@ CREATE TABLE IF NOT EXISTS orders (
 
 // Bancos antigos (versão de uma loja só): acrescenta a coluna store_id e o segmento.
 if (!columnExists('products', 'store_id')) db.exec('ALTER TABLE products ADD COLUMN store_id INTEGER NOT NULL DEFAULT 1');
+// Estoque é independente da visibilidade: produtos esgotados continuam no catálogo.
+if (!columnExists('products', 'in_stock')) db.exec('ALTER TABLE products ADD COLUMN in_stock INTEGER NOT NULL DEFAULT 1');
 
 /* Montagem de caixa/combo: o cliente escolhe os sabores e as quantidades.
    Guardado como JSON em products.opcoes_json. Ex.:

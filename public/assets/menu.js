@@ -95,6 +95,7 @@
   const saveCart = () => localStorage.setItem(CART_KEY, JSON.stringify(state.cart));
 
   const productById = (id) => state.products.find((p) => String(p.id) === String(id));
+  const isInStock = (product) => !product || product.in_stock == null || Number(product.in_stock) !== 0;
 
   /** Chave do carrinho: id do produto + a montagem escolhida (sabores). */
   function chaveItem(produtoId, escolhas) {
@@ -378,8 +379,11 @@
     grid.innerHTML = list
       .map((p) => {
         const qty = qtdNoCarrinho(p.id);
+        const emEstoque = isInStock(p);
         const temMontagem = !!(p.opcoes && p.opcoes.ativo && (p.opcoes.sabores || []).length);
-        const action = temMontagem
+        const action = !emEstoque
+          ? `<button class="add-btn stock-disabled" type="button" disabled>Estoque esgotado</button>`
+          : temMontagem
           ? `<div class="montar-wrap">
                ${qty ? `<div class="montar-badge">${qty} no carrinho</div>` : ''}
                <button class="add-btn montar-btn" data-montar="${p.id}">
@@ -404,7 +408,7 @@
                Adicionar
              </button>`;
         const waBtn =
-          state.segment === 'catalogo' && state.business.whatsapp
+          emEstoque && state.segment === 'catalogo' && state.business.whatsapp
             ? `<a class="wa-item" href="https://wa.me/${esc(state.business.whatsapp)}?text=${encodeURIComponent(
                 `Olá! Tenho interesse neste item do catálogo: ${p.name} — ${brl.format(p.price_cents / 100)}`
               )}" target="_blank" rel="noopener">
@@ -412,10 +416,11 @@
                  Pedir este no WhatsApp
                </a>`
             : '';
-        return `<article class="card">
+        return `<article class="card${emEstoque ? '' : ' esgotado'}">
           <div class="card-media${p.image_url ? '' : ' sem-foto'}">
             ${p.image_url ? `<img src="${esc(p.image_url)}" alt="${esc(p.name)}" loading="lazy">` : `<div class="placeholder">${PLACEHOLDER}</div>`}
             ${p.category ? `<span class="card-tag">${esc(p.category)}</span>` : ''}
+            ${emEstoque ? '' : '<span class="stock-badge" role="status">Esgotado</span>'}
           </div>
           <div class="card-body">
             <h3>${esc(p.name)}</h3>
@@ -487,6 +492,7 @@
   function abrirMontagem(produtoId) {
     const p = productById(produtoId);
     if (!p || !p.opcoes) return;
+    if (!isInStock(p)) return toast(`${p.name} está esgotado no momento.`, 'err');
     state.montando = { produto_id: String(produtoId), qtd: {} };
     state.view = 'montar';
     openDrawer('montar');
@@ -614,6 +620,14 @@
     });
 
     el('montarAdd').addEventListener('click', () => {
+      const produtoAtual = productById(p.id);
+      if (!produtoAtual || !isInStock(produtoAtual)) {
+        state.view = 'cart';
+        state.montando = null;
+        renderDrawer();
+        toast(`${p.name} está esgotado no momento.`, 'err');
+        return;
+      }
       const escolhas = sabores
         .map((sb) => ({ nome: sb.nome, qtd: Number(state.montando.qtd[sb.nome]) || 0 }))
         .filter((e) => e.qtd > 0);
@@ -632,6 +646,12 @@
   }
 
   function changeQty(chave, delta) {
+    const idProduto = String(chave).split('#')[0];
+    const produto = productById(idProduto);
+    if (delta > 0 && produto && !isInStock(produto)) {
+      toast(`${produto.name} está esgotado no momento.`, 'err');
+      return;
+    }
     const valor = state.cart[chave];
     const atual = typeof valor === 'number' ? valor : Number(valor && valor.qty) || 0;
     const proximo = Math.max(0, Math.min(99, atual + delta));
@@ -701,6 +721,7 @@
       return bindFootClose();
     }
 
+    const temEsgotado = t.items.some((i) => !isInStock(i));
     body.innerHTML =
       t.items
         .map(
@@ -709,12 +730,13 @@
         <div class="ci-main">
           <div class="ci-name">${esc(i.name)}</div>
           ${i.escolhas ? `<div class="ci-sabores">${esc(resumoEscolhas(i.escolhas))}</div>` : ''}
+          ${isInStock(i) ? '' : '<div class="cart-stock-note">Esgotado — remova para continuar</div>'}
           <div class="ci-price">${brl.format(i.price_cents / 100)} cada</div>
           <div style="margin-top:6px">
             <div class="stepper">
               <button data-dec="${esc(i.chave)}" aria-label="Remover um">−</button>
               <span class="qty">${i.qty}</span>
-              <button data-inc="${esc(i.chave)}" aria-label="Adicionar um">+</button>
+              <button data-inc="${esc(i.chave)}" aria-label="Adicionar um" ${isInStock(i) ? '' : 'disabled'}>+</button>
             </div>
           </div>
         </div>
@@ -725,6 +747,7 @@
       </div>`
         )
         .join('') +
+      (temEsgotado ? '<div class="cart-stock-warning" role="alert">Um ou mais produtos estão esgotados. Remova-os para continuar com o pedido.</div>' : '') +
       `<div style="margin-top:16px">
         <div class="summary-line"><span>Subtotal</span><span>${brl.format(t.subtotal / 100)}</span></div>
         <div class="summary-line"><span>Entrega</span><span>${t.fee ? brl.format(t.fee / 100) : 'Grátis'}</span></div>
@@ -735,6 +758,8 @@
     foot.innerHTML = !state.accepting
       ? `<div class="closed-note">${esc(state.closedMessage || 'Estamos fechados para novos pedidos agora.')}</div>
          <button class="btn btn-ghost btn-block" disabled>Pedidos fechados</button>`
+      : temEsgotado
+      ? `<button class="btn btn-ghost btn-block" disabled>Remova os produtos esgotados</button>`
       : `<button class="btn btn-primary btn-block" data-go-checkout>
       Continuar · ${brl.format(t.total / 100)}
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
@@ -754,6 +779,12 @@
     );
     const goBtn = foot.querySelector('[data-go-checkout]');
     if (goBtn) goBtn.addEventListener('click', () => {
+      if (cartEntries().some((i) => !isInStock(i))) {
+        state.view = 'cart';
+        renderDrawer();
+        toast('Remova os produtos esgotados antes de continuar.', 'err');
+        return;
+      }
       state.view = 'checkout';
       renderDrawer();
     });
@@ -778,6 +809,13 @@
     if (!t.items.length) {
       state.view = 'cart';
       return renderDrawer();
+    }
+    const esgotado = t.items.find((i) => !isInStock(i));
+    if (esgotado) {
+      state.view = 'cart';
+      renderDrawer();
+      toast(`${esgotado.name} está esgotado. Remova-o para continuar.`, 'err');
+      return;
     }
     const d = state.delivery;
     const saved = JSON.parse(localStorage.getItem(CUSTOMER_KEY) || '{}');
@@ -1735,7 +1773,7 @@
   let assinaturaAtual = '';
   function assinatura(d) {
     return JSON.stringify([
-      (d.products || []).map((p) => [p.id, p.name, p.price_cents, p.active, p.image_url, p.category, p.description, p.sort_order]),
+      (d.products || []).map((p) => [p.id, p.name, p.price_cents, p.active, p.in_stock, p.image_url, p.category, p.description, p.sort_order]),
       d.business, d.delivery, d.payments, d.accepting_orders, d.closed_message, d.store && d.store.segment,
     ]);
   }
@@ -1768,6 +1806,19 @@
       renderCategories();
       renderProducts();
       renderCartBar();
+
+      if (el('drawer').classList.contains('open')) {
+        const produtoMontagem = state.montando && productById(state.montando.produto_id);
+        if (state.view === 'montar' && produtoMontagem && !isInStock(produtoMontagem)) {
+          state.view = 'cart';
+          state.montando = null;
+          renderDrawer();
+          toast(`${produtoMontagem.name} ficou esgotado e não pode ser adicionado.`, 'err');
+        } else if (cartEntries().some((i) => !isInStock(i)) && (state.view === 'cart' || state.view === 'checkout')) {
+          if (state.view === 'checkout') state.view = 'cart';
+          renderDrawer();
+        }
+      }
     } catch {
       /* sem internet agora: tenta no próximo ciclo */
     }

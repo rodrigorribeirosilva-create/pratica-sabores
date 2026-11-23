@@ -684,6 +684,7 @@ async function main() {
     next();
   }
 
+  app.use('/l/:slug/api/admin', resolveStoreFromParam, require('./src/suporte-externo'));
   app.use('/l/:slug/api/admin', resolveStoreFromParam, require('./src/routes.admin'));
   // Importação isolada de clientes da Império: não altera clientes existentes.
   app.use('/l/:slug/api/admin', resolveStoreFromParam, require('./src/imperio-importar-clientes').router);
@@ -1107,6 +1108,7 @@ async function main() {
     next();
   }
 
+  app.use('/api/admin', withDefaultStore, require('./src/suporte-externo'));
   app.use('/api/admin', withDefaultStore, require('./src/routes.admin'));
   app.use('/api', withDefaultStore, require('./src/routes.public'));
 

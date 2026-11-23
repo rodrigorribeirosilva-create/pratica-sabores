@@ -165,7 +165,7 @@ router.get('/menu', (req, res) => {
 
   const products = db
     .prepare(
-      `SELECT id, name, description, price_cents, image_url, category, sort_order, opcoes_json
+      `SELECT id, name, description, price_cents, image_url, category, sort_order, in_stock, opcoes_json
          FROM products WHERE store_id = ? AND active = 1 ORDER BY sort_order ASC, id ASC`
     )
     .all(store.id);
@@ -269,7 +269,7 @@ router.post(
 
       // Recalcula preços no servidor (nunca confia no navegador)
       const getProduct = db.prepare(
-        'SELECT id, name, price_cents, active, opcoes_json FROM products WHERE id = ? AND store_id = ?'
+        'SELECT id, name, price_cents, active, in_stock, opcoes_json FROM products WHERE id = ? AND store_id = ?'
       );
       const resolved = [];
       for (const raw of items) {
@@ -277,6 +277,9 @@ router.post(
         const qty = Math.max(1, Math.min(99, Number(raw.qty) || 1));
         const p = getProduct.get(id, store.id);
         if (!p || !p.active) continue;
+        if (Number(p.in_stock) === 0) {
+          return res.status(409).json({ error: `${p.name} está esgotado no momento. Remova o produto do carrinho para continuar.` });
+        }
 
         let montagem = null;
         try {
