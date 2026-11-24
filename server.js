@@ -640,6 +640,15 @@ async function main() {
       );
     }
 
+    // Visual clean/branco com detalhes mínimos rosa para Patroas Lanches.
+    if (!ehPainel && store.slug === 'comida-marmitas-lanches-doces') {
+      html = html.replace('<body', '<body class="patroas-visual"');
+      html = html.replace(
+        '</head>',
+        `<link rel="stylesheet" href="/assets/patroas-lanches-store.css?v=${stamp}"></head>`
+      );
+    }
+
     /* no-cache + must-revalidate: o navegador SEMPRE pergunta ao servidor antes
        de mostrar a página (F5 traz a versão que está no ar, nunca uma velha) e,
        ao mesmo tempo, o service worker continua podendo guardar a cópia que faz

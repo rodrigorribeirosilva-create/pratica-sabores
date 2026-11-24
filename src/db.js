@@ -973,6 +973,33 @@ function init() {
     console.warn('[db] seed Braseiro:', e.message);
   }
 
+  // Branding Patroas Lanches (loja existente em produção).
+  try {
+    const pl = db.prepare('SELECT id FROM stores WHERE slug = ?').get('comida-marmitas-lanches-doces');
+    if (pl) {
+      const b = getSetting(pl.id, 'business', {});
+      const patch = {
+        name: 'Patroas Lanches',
+        tagline: 'O verdadeiro sabor gaúcho',
+        logo_url: '/img/patroas-lanches/logo.png',
+        whatsapp: '5548999263717',
+        instagram: '@aspatroaslanches20',
+        email: 'lanchesaspatroas@gmail.com',
+        theme_color: '#1f1f1f',
+        accent_color: '#e84c8f',
+      };
+      // Aplica somente campos de branding/contato; não altera produtos.
+      const next = { ...b, ...patch };
+      setSetting(pl.id, 'business', next);
+      db.prepare('UPDATE stores SET name = ? WHERE id = ? AND name != ?').run('Patroas Lanches', pl.id, 'Patroas Lanches');
+      const wa = '5548999263717';
+      db.prepare('UPDATE stores SET whatsapp = ? WHERE id = ? AND (whatsapp IS NULL OR whatsapp = ? OR whatsapp = ?)').run(wa, pl.id, '', '5551999999999');
+      console.log(`[db] branding Patroas Lanches aplicado: ${pl.id}`);
+    }
+  } catch (e) {
+    console.warn('[db] branding Patroas Lanches:', e.message);
+  }
+
   return first;
 }
 
