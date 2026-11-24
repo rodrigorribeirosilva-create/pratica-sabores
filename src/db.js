@@ -924,6 +924,55 @@ function init() {
     console.warn('[db] senha do master sincronizada com MASTER_PASSWORD.');
   }
 
+  // Garante a loja Braseiro (catálogo digital + painel admin) se ainda não existir.
+  try {
+    const braseiroSlug = 'braseiro';
+    if (!db.prepare('SELECT 1 FROM stores WHERE slug = ?').get(braseiroSlug)) {
+      const br = createStore({
+        name: 'Braseiro',
+        slug: braseiroSlug,
+        segment: 'food',
+        whatsapp: '5551999999999',
+        password: 'braseiro123',
+        about: 'Hambúrguer artesanal na brasa, com sabor de verdade.',
+        tagline: 'Bacon Fire & burgers artesanais',
+        withSeedProducts: false,
+      });
+      setSetting(br.id, 'business', {
+        ...getSetting(br.id, 'business', {}),
+        name: 'Braseiro',
+        tagline: 'Bacon Fire & burgers artesanais',
+        about: 'Hambúrguer artesanal na brasa, com sabor de verdade.',
+        tipo: 'cardapio',
+        instagram: '_braseiro',
+        theme_color: '#1a1410',
+        accent_color: '#c97b2b',
+        logo_url: '/img/braseiro/logo.png',
+        cover_url: '/img/braseiro/bacon-fire-1.jpg',
+      });
+      setSetting(br.id, 'delivery', {
+        ...getSetting(br.id, 'delivery', {}),
+        fee_cents: 0,
+        free_above_cents: 0,
+        pickup_enabled: true,
+        delivery_enabled: true,
+        periods_note: '',
+      });
+      const produtos = [
+        { name: 'Bacon Fire', description: 'Hambúrguer artesanal na brasa com bacon crocante, queijo derretido e molho especial da casa.', price_cents: 3490, image_url: '/img/braseiro/bacon-fire-1.jpg', category: 'Burgers', sort_order: 1 },
+        { name: 'Bacon Fire Duplo', description: 'Duas carnes na brasa, dobro de bacon, queijo e nosso molho especial.', price_cents: 4290, image_url: '/img/braseiro/bacon-fire-2.jpg', category: 'Burgers', sort_order: 2 },
+        { name: 'Coal Fire', description: 'Burger defumado na brasa com queijo, salada fresca e molho da casa.', price_cents: 3290, image_url: '/img/braseiro/coal-fire.jpg', category: 'Burgers', sort_order: 3 },
+        { name: 'Chicken Fire', description: 'Frango crocante, queijo, alface e maionese especial no pão brioche.', price_cents: 3190, image_url: '/img/braseiro/chicken-fire.jpg', category: 'Burgers', sort_order: 4 },
+        { name: 'Bacon Explosion', description: 'Explosão de bacon com hambúrguer suculento, queijo cheddar e cebola caramelizada.', price_cents: 3690, image_url: '/img/braseiro/bacon-explosion.jpg', category: 'Burgers', sort_order: 5 },
+      ];
+      const ins = db.prepare('INSERT INTO products (store_id, name, description, price_cents, image_url, category, sort_order) VALUES (?, ?, ?, ?, ?, ?, ?)');
+      for (const p of produtos) ins.run(br.id, p.name, p.description, p.price_cents, p.image_url, p.category, p.sort_order);
+      console.log(`[db] loja Braseiro criada: ${br.slug}`);
+    }
+  } catch (e) {
+    console.warn('[db] seed Braseiro:', e.message);
+  }
+
   return first;
 }
 
