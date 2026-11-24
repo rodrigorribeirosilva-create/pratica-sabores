@@ -1390,6 +1390,7 @@
                   }</button>`
               )
               .join('')}
+            <a class="btn btn-sm btn-primary" href="${API_PREFIX}/comanda/${encodeURIComponent(o.code)}" target="_blank" rel="noopener" title="Abrir comanda para imprimir">Imprimir comanda</a>
             <button class="btn btn-sm btn-ghost" data-copy="${o.id}">Copiar resumo</button>
             <a class="btn btn-sm btn-ghost" href="${API_PREFIX}/comprovante/${encodeURIComponent(o.code)}" target="_blank" rel="noopener"
                title="Comprovante de pagamento deste pedido">🧾 Comprovante</a>
