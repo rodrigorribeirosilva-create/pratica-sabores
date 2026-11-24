@@ -1,0 +1,74 @@
+/* Patroas Lanches — visual slim branco com detalhes mínimos rosa */
+body.patroas-visual[data-store="comida-marmitas-lanches-doces"] {
+  --pl-pink: #e84c8f;
+  --pl-pink-soft: #fff1f7;
+  --pl-ink: #1f1f1f;
+  --pl-line: #ece7ea;
+  --green: #1f1f1f;
+  --green-dark: #171717;
+  --green-soft: #fff5f9;
+  --gold: #e84c8f;
+  background: #fff;
+  color: var(--pl-ink);
+}
+
+body.patroas-visual .site-header {
+  background: rgba(255,255,255,.96);
+  border-bottom: 1px solid var(--pl-line);
+  backdrop-filter: blur(10px);
+}
+body.patroas-visual .brand-name { color: var(--pl-ink); font-weight: 700; letter-spacing: .01em; }
+body.patroas-visual .brand-tagline { color: #6b6468; }
+body.patroas-visual .brand-logo { background: #fff; border: 1px solid var(--pl-line); box-shadow: none; }
+body.patroas-visual .header-btn { border-color: var(--pl-line); color: var(--pl-ink); }
+body.patroas-visual .header-btn:hover { border-color: #f2bfd6; color: var(--pl-pink); }
+body.patroas-visual .cart-count { background: var(--pl-pink); color: #fff; }
+
+body.patroas-visual .hero {
+  background: #fff;
+  color: var(--pl-ink);
+  padding: 34px 0 24px;
+  border-bottom: 1px solid var(--pl-line);
+}
+body.patroas-visual .hero::after { display: none; }
+body.patroas-visual .hero h1 { color: var(--pl-ink); font-size: clamp(1.7rem, 5vw, 2.6rem); line-height: 1.08; letter-spacing: -.02em; }
+body.patroas-visual .hero p { color: #5f585c; }
+body.patroas-visual .hero-badge { background: var(--pl-pink-soft); color: #a03a66; border: 1px solid #f4d3e2; }
+body.patroas-visual .hero-badge .dot { background: var(--pl-pink); box-shadow: 0 0 0 4px rgba(232,76,143,.12); }
+body.patroas-visual .chip { background: #fff; color: #444; border: 1px solid var(--pl-line); }
+body.patroas-visual .chip svg { color: var(--pl-pink); }
+
+body.patroas-visual .sec-head h2 { color: var(--pl-ink); }
+body.patroas-visual .cat { border-color: var(--pl-line); color: #444; }
+body.patroas-visual .cat.active, body.patroas-visual .cat:hover { background: var(--pl-ink); color: #fff; border-color: var(--pl-ink); }
+
+body.patroas-visual .p-card { border: 1px solid var(--pl-line); box-shadow: 0 4px 14px rgba(0,0,0,.03); }
+body.patroas-visual .p-card:hover { box-shadow: 0 10px 28px rgba(232,76,143,.08); border-color: #f0d7e2; }
+body.patroas-visual .p-name { color: var(--pl-ink); }
+body.patroas-visual .p-price { color: var(--pl-ink); }
+body.patroas-visual .p-cat { color: #a03a66; background: var(--pl-pink-soft); }
+
+body.patroas-visual .btn-primary { background: var(--pl-ink); border-color: var(--pl-ink); color: #fff; box-shadow: none; }
+body.patroas-visual .btn-primary:hover { background: #000; border-color: #000; }
+body.patroas-visual .btn-ghost { color: var(--pl-ink); border-color: var(--pl-line); }
+body.patroas-visual .btn-ghost:hover { border-color: #f2bfd6; color: var(--pl-pink); }
+body.patroas-visual .p-add { background: #fff; color: var(--pl-ink); border: 1px solid var(--pl-line); }
+body.patroas-visual .p-add:hover { border-color: var(--pl-pink); color: var(--pl-pink); background: var(--pl-pink-soft); }
+
+body.patroas-visual .drawer-head { border-bottom-color: var(--pl-line); }
+body.patroas-visual .cart-total .val { color: var(--pl-ink); }
+body.patroas-visual .qty-btn { border-color: var(--pl-line); }
+body.patroas-visual .qty-btn:hover { border-color: #f2bfd6; color: var(--pl-pink); }
+
+body.patroas-visual .footer { background: #fff; color: #555; border-top: 1px solid var(--pl-line); }
+body.patroas-visual .footer a { color: #555; }
+body.patroas-visual .footer a:hover { color: var(--pl-pink); }
+body.patroas-visual .footer-brand { color: var(--pl-ink); }
+
+body.patroas-visual .wa-float { background: #25d366; }
+body.patroas-visual .badge-status.aberto { background: #eafaf0; color: #1b7a42; }
+body.patroas-visual .filtro-btn.ativo { background: var(--pl-ink); border-color: var(--pl-ink); color: #fff; }
+body.patroas-visual input:focus, body.patroas-visual textarea:focus, body.patroas-visual select:focus {
+  border-color: #f2bfd6; box-shadow: 0 0 0 3px rgba(232,76,143,.10);
+}
+body.patroas-visual .checkout-step.active .step-n { background: var(--pl-pink); border-color: var(--pl-pink); }
