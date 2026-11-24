@@ -1045,13 +1045,18 @@ function init() {
       const hasMarmita = db.prepare("SELECT 1 FROM products WHERE store_id = ? AND (category LIKE '%Marmita%' OR name LIKE '%Marmita%' OR category LIKE '%marmita%' OR name LIKE '%marmita%') LIMIT 1").get(pl.id);
       const hasPatroasMenu = db.prepare("SELECT 1 FROM products WHERE store_id = ? AND name = 'Dog salsicha' LIMIT 1").get(pl.id);
       if (prodCount === 0 || hasMarmita || !hasPatroasMenu) {
-        const ins = db.prepare('INSERT INTO products (store_id, name, description, price_cents, image_url, category, sort_order) VALUES (?, ?, ?, ?, ?, ?, ?)');
-        const tx = db.transaction(() => {
-          db.prepare('DELETE FROM products WHERE store_id = ?').run(pl.id);
-          for (const p of produtos) ins.run(pl.id, p.name, p.description, p.price_cents, p.image_url || null, p.category, p.sort_order);
-        });
-        tx();
-        console.log(`[db] cardápio Patroas Lanches aplicado: ${produtos.length}`);
+        try {
+          const ins = db.prepare('INSERT INTO products (store_id, name, description, price_cents, image_url, category, sort_order) VALUES (?, ?, ?, ?, ?, ?, ?)');
+          const tx = db.transaction(() => {
+            db.prepare('DELETE FROM products WHERE store_id = ?').run(pl.id);
+            for (const p of produtos) ins.run(pl.id, p.name, p.description, p.price_cents, p.image_url || '', p.category, p.sort_order);
+          });
+          tx();
+          console.log(`[db] cardápio Patroas Lanches aplicado: ${produtos.length}`);
+        } catch (eProd) {
+          console.warn('[db] produtos Patroas Lanches:', eProd.message);
+          try { const b2=getSetting(pl.id,'business',{}); setSetting(pl.id,'business',{...b2,_debug_patroas_prod:String(eProd.message).slice(0,200)}); } catch {}
+        }
       } else {
         // Backfill de imagens ilustrativas para produtos sem foto.
         const imgByCat = {
@@ -1074,6 +1079,7 @@ function init() {
     }
   } catch (e) {
     console.warn('[db] branding Patroas Lanches:', e.message);
+    try { const pl=db.prepare("SELECT id FROM stores WHERE slug='comida-marmitas-lanches-doces'").get(); if(pl){ const b=getSetting(pl.id,'business',{}); setSetting(pl.id,'business',{...b,_debug_patroas:String(e.message).slice(0,200)}); } } catch {}
   }
 
   return first;
