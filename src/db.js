@@ -972,6 +972,15 @@ function init() {
   } catch (e) {
     console.warn('[db] seed Braseiro:', e.message);
   }
+  try {
+    const br = db.prepare('SELECT id FROM stores WHERE slug = ?').get('braseiro');
+    if (br) {
+      const b = getSetting(br.id, 'business', {});
+      if (b.logo_url !== '/img/braseiro/logo.png') {
+        setSetting(br.id, 'business', { ...b, logo_url: '/img/braseiro/logo.png' });
+      }
+    }
+  } catch {}
 
   return first;
 }
