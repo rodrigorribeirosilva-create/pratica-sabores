@@ -994,10 +994,8 @@ function init() {
       db.prepare('UPDATE stores SET name = ? WHERE id = ? AND name != ?').run('Patroas Lanches', pl.id, 'Patroas Lanches');
       const wa = '5548999263717';
       db.prepare('UPDATE stores SET whatsapp = ? WHERE id = ? AND (whatsapp IS NULL OR whatsapp = ? OR whatsapp = ?)').run(wa, pl.id, '', '5551999999999');
-      // Seed de produtos do cardápio (somente se a loja ainda não tem produtos).
-      const prodCount = db.prepare('SELECT COUNT(*) AS n FROM products WHERE store_id = ?').get(pl.id).n;
-      if (prodCount === 0) {
-        const produtos = [
+      // Cardápio Patroas Lanches: substitui marmitas antigas/padrão pelo menu enviado.
+      const produtos = [
           { name: 'Dog salsicha', description: 'Salsicha, milho, muçarela, ervilha, batata palha, mostarda, ketchup, maionese e maionese da casa.', price_cents: 1490, image_url: '/img/patroas-lanches/products/dog.jpg', category: 'Dogs', sort_order: 1 },
           { name: 'Dog salsicha duplo', description: 'Duas salsichas, molho, muçarela, milho, ervilha, batata palha, mostarda, ketchup, maionese e maionese da casa.', price_cents: 1690, image_url: '/img/patroas-lanches/products/dog.jpg', category: 'Dogs', sort_order: 2 },
           { name: 'Dog frango', description: 'Frango, muçarela, milho, ervilha, mostarda, ketchup, maionese e maionese da casa.', price_cents: 2290, image_url: '/img/patroas-lanches/products/dog.jpg', category: 'Dogs', sort_order: 3 },
@@ -1035,31 +1033,34 @@ function init() {
           { name: 'Maionese da casa pote P', description: 'Pote pequeno de maionese da casa.', price_cents: 300, image_url: '/img/patroas-lanches/products/porcao.jpg', category: 'Porções extras', sort_order: 35 },
           { name: 'Maionese da casa pote M', description: 'Pote médio de maionese da casa.', price_cents: 500, image_url: '/img/patroas-lanches/products/porcao.jpg', category: 'Porções extras', sort_order: 36 },
         ];
+      const prodCount = db.prepare('SELECT COUNT(*) AS n FROM products WHERE store_id = ?').get(pl.id).n;
+      const hasMarmita = db.prepare("SELECT 1 FROM products WHERE store_id = ? AND (category LIKE '%Marmita%' OR name LIKE '%Marmita%' OR category LIKE '%marmita%' OR name LIKE '%marmita%') LIMIT 1").get(pl.id);
+      const hasPatroasMenu = db.prepare("SELECT 1 FROM products WHERE store_id = ? AND name = 'Dog salsicha' LIMIT 1").get(pl.id);
+      if (prodCount === 0 || hasMarmita || !hasPatroasMenu) {
         const ins = db.prepare('INSERT INTO products (store_id, name, description, price_cents, image_url, category, sort_order) VALUES (?, ?, ?, ?, ?, ?, ?)');
         const tx = db.transaction(() => {
+          db.prepare('DELETE FROM products WHERE store_id = ?').run(pl.id);
           for (const p of produtos) ins.run(pl.id, p.name, p.description, p.price_cents, p.image_url || null, p.category, p.sort_order);
         });
         tx();
-        console.log(`[db] produtos Patroas Lanches seed: ${produtos.length}`);
-      }
-      // Backfill de imagens ilustrativas para produtos sem foto.
-      const imgByCat = {
-        'Dogs': '/img/patroas-lanches/products/dog.jpg',
-        'Xis': '/img/patroas-lanches/products/xis.jpg',
-        'Bebidas': '/img/patroas-lanches/products/bebida.jpg',
-        'Porções extras': '/img/patroas-lanches/products/porcao.jpg',
-      };
-      const semFoto = db.prepare("SELECT id, category FROM products WHERE store_id = ? AND (image_url IS NULL OR image_url = '')").all(pl.id);
-      if (semFoto.length) {
-        const updImg = db.prepare('UPDATE products SET image_url = ? WHERE id = ?');
-        const txImg = db.transaction(() => {
-          for (const p of semFoto) {
-            const url = imgByCat[p.category];
-            if (url) updImg.run(url, p.id);
-          }
-        });
-        txImg();
-        console.log(`[db] imagens Patroas Lanches aplicadas: ${semFoto.length}`);
+        console.log(`[db] cardápio Patroas Lanches aplicado: ${produtos.length}`);
+      } else {
+        // Backfill de imagens ilustrativas para produtos sem foto.
+        const imgByCat = {
+          'Dogs': '/img/patroas-lanches/products/dog.jpg',
+          'Xis': '/img/patroas-lanches/products/xis.jpg',
+          'Bebidas': '/img/patroas-lanches/products/bebida.jpg',
+          'Porções extras': '/img/patroas-lanches/products/porcao.jpg',
+        };
+        const semFoto = db.prepare("SELECT id, category FROM products WHERE store_id = ? AND (image_url IS NULL OR image_url = '')").all(pl.id);
+        if (semFoto.length) {
+          const updImg = db.prepare('UPDATE products SET image_url = ? WHERE id = ?');
+          const txImg = db.transaction(() => {
+            for (const p of semFoto) { const url = imgByCat[p.category]; if (url) updImg.run(url, p.id); }
+          });
+          txImg();
+          console.log(`[db] imagens Patroas Lanches aplicadas: ${semFoto.length}`);
+        }
       }
       console.log(`[db] branding Patroas Lanches aplicado: ${pl.id}`);
     }
