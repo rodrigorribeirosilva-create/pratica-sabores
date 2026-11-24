@@ -61,7 +61,10 @@ test('caixa de suporte do Master autentica, lista, responde e bloqueia pedidos i
 
   const listaResponse = await originalFetch(base, { headers: { Cookie: cookie } });
   assert.equal(listaResponse.status, 200);
-  assert.deepEqual((await listaResponse.json()).chamados, [{ id, titulo: 'Pedido de teste' }]);
+  // cada chamado volta com o campo de vínculo (loja do cardápio que abriu)
+  const lista = await listaResponse.json();
+  assert.deepEqual(lista.chamados, [{ id, titulo: 'Pedido de teste', vinculado: false }]);
+  assert.equal(lista.vinculado, true);
   assert.equal(upstreamCalls[0].payload.p_chave, 'test-support-secret');
 
   const origem = `http://127.0.0.1:${server.address().port}`;
@@ -95,7 +98,13 @@ test('caixa de suporte do Master autentica, lista, responde e bloqueia pedidos i
     body: JSON.stringify({ resposta: 'Orientação de teste.' }),
   });
   assert.equal(resposta.status, 200);
-  assert.deepEqual(await resposta.json(), { ok: true, id, status: 'aguardando_cliente', resposta_admin: 'Orientação de teste.' });
+  const corpo = await resposta.json();
+  assert.equal(corpo.ok, true);
+  assert.equal(corpo.id, id);
+  assert.equal(corpo.status, 'aguardando_cliente');
+  assert.equal(corpo.resposta_admin, 'Orientação de teste.');
+  // sem vínculo gravado para este chamado no banco de teste, vinculo vem nulo
+  assert.equal(corpo.vinculo, null);
   assert.equal(upstreamCalls[1].payload.p_id, id);
   assert.equal(upstreamCalls[1].payload.p_resposta, 'Orientação de teste.');
 });

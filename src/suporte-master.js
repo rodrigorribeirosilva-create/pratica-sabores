@@ -2,6 +2,7 @@
 const express = require('express');
 const { requireMaster } = require('./auth');
 const { obterConfiguracao } = require('./suporte-config');
+const vinculo = require('./suporte-vinculo');
 
 const router = express.Router();
 const RPC_TIMEOUT_MS = 15000;
@@ -78,14 +79,82 @@ function protegerOrigem(req, res, next) {
   return next();
 }
 
+/**
+ * GET /api/master/suporte/vinculos
+ *
+ * Lista o que está gravado nesta instalação: cada chamado com a loja que o
+ * abriu, a resposta já dada e se a loja já leu. Serve de base mesmo quando o
+ * Supabase está fora do ar — e é daqui que sai o selo de pendências.
+ */
+router.get('/vinculos', requireMaster, (req, res) => {
+  const linhas = require('./suporte-vinculo');
+  res.json({
+    pendentes: linhas.pendentesMaster(),
+    chamados: require('./db')
+      .db.prepare(
+        `SELECT v.chamado_id AS id, v.titulo, v.status, v.resposta_admin, v.resposta_em,
+                v.visto_loja_em, v.criado_em, v.atualizado_em,
+                s.id AS store_id, s.slug AS store_slug, s.name AS store_name
+           FROM suporte_chamados v
+           LEFT JOIN stores s ON s.id = v.store_id
+          ORDER BY v.atualizado_em DESC, v.id DESC
+          LIMIT 250`
+      )
+      .all(),
+  });
+});
+
 router.get('/', requireMaster, async (req, res) => {
   try {
     const chamados = await chamarRpc('suporte_externo_master_listar', {});
     if (!Array.isArray(chamados)) throw new Error('Formato inválido na lista de chamados.');
-    res.json({ chamados });
+    // Cada chamado vai para o Master já com a loja daqui (nome, slug e link do
+    // painel) — é a vinculação entre o cardápio e o Master.
+    const comVinculo = chamados.map((c) => vinculo.enriquecerChamado(c));
+    res.json({ chamados: comVinculo, pendentes: vinculo.pendentesMaster(), vinculado: true });
   } catch (err) {
     responderErro(res, err, 'Não foi possível carregar os chamados agora.');
   }
+});
+
+/**
+ * POST /api/master/suporte/:id/vincular
+ *
+ * Liga um chamado a uma loja daqui (útil para os chamados que chegaram antes
+ * desta ponte existir). A partir daí o Master sabe de qual cardápio é e a
+ * resposta aparece no painel daquela loja.
+ */
+router.post('/:id/vincular', requireMaster, protegerOrigem, (req, res) => {
+  const id = String(req.params.id || '');
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) {
+    return res.status(400).json({ error: 'Chamado inválido.' });
+  }
+  const storeId = Number((req.body || {}).store_id || 0);
+  if (!storeId) return res.status(400).json({ error: 'Escolha a loja.' });
+
+  const loja = require('./db').getStoreById(storeId);
+  if (!loja) return res.status(404).json({ error: 'Loja não encontrada.' });
+
+  const chamado = vinculo.vinculoDoChamado(id);
+  if (!chamado) {
+    // Primeiro vínculo: o chamado pode já existir no Supabase, então grava aqui.
+    vinculo.registrarChamado(storeId, id, { titulo: '', status: 'aberta' });
+  } else {
+    require('./db').db
+      .prepare("UPDATE suporte_chamados SET store_id = ?, atualizado_em = datetime('now') WHERE chamado_id = ?")
+      .run(storeId, id);
+  }
+  // Se já havia uma resposta gravada, a loja nova passa a vê-la como não lida.
+  require('./db').db
+    .prepare('UPDATE suporte_chamados SET visto_loja_em = NULL WHERE chamado_id = ?')
+    .run(id);
+
+  res.json({
+    ok: true,
+    chamado_id: id,
+    loja: { id: loja.id, slug: loja.slug, name: loja.name },
+    vinculo: vinculo.vinculoDoChamado(id),
+  });
 });
 
 router.post('/:id/responder', requireMaster, protegerOrigem, async (req, res) => {
@@ -103,7 +172,15 @@ router.post('/:id/responder', requireMaster, protegerOrigem, async (req, res) =>
   try {
     const data = await chamarRpc('suporte_externo_master_responder', { p_id: id, p_resposta: resposta });
     if (!data || data.ok !== true) throw new Error('Formato inválido ao salvar a resposta.');
-    res.json(data);
+    // A mesma resposta fica gravada aqui: o painel da loja mostra na hora,
+    // mesmo que o Supabase demore a refletir a mudança.
+    let vinculoAtualizado = null;
+    try {
+      vinculoAtualizado = vinculo.responderChamado(id, resposta, data.status || 'aguardando_cliente');
+    } catch (e) {
+      console.error('[master/suporte] vínculo:', e.message);
+    }
+    res.json({ ...data, vinculo: vinculoAtualizado ? { loja: vinculoAtualizado.store_id, status: vinculoAtualizado.status } : null });
   } catch (err) {
     responderErro(res, err, 'Não foi possível salvar a resposta agora.');
   }

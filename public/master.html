@@ -92,6 +92,9 @@
   .pill.bad{background:#fbe6e2;border-color:#f0cfc7;color:#8f2f17}
   .actions{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end;max-width:430px}
   .actions .main{background:var(--green);border-color:var(--green);color:#fff}
+  .actions .entrar{background:var(--ink);border-color:var(--ink);color:#fff;font-weight:750}
+  .actions .entrar:hover{background:var(--green-dark);border-color:var(--green-dark)}
+  .actions .entrar:disabled{opacity:.65;cursor:progress}
   .actions .danger{color:var(--red);border-color:#f0cfc7}
   .actions .muted{color:var(--ink-soft)}
   .sep{width:100%;height:1px;background:var(--line);margin:2px 0}
@@ -207,6 +210,12 @@
   .support-answer-form textarea { width:100%;min-height:120px;resize:vertical;border:1px solid var(--line);border-radius:10px;padding:10px 12px;line-height:1.5; }
   .support-answer-form textarea:focus,.support-filter select:focus,.support-search input:focus { outline:none;border-color:var(--green);box-shadow:0 0 0 3px var(--green-soft); }
   .support-actions { display:flex;gap:8px;flex-wrap:wrap;margin-top:5px; }
+  .support-vinculo { display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 14px;padding:10px 12px;border-radius:12px;background:#f3faf5;border:1px solid #cfe6d8;font-size:12.5px;color:#24503a; }
+  .support-vinculo.sem { background:#fdf1dd;border-color:#ecd9b0;color:#8a6414; }
+  .support-vinculo .sv-loja { font-weight:800; }
+  .support-vinculo .sv-acoes { display:flex;gap:6px;margin-left:auto;flex-wrap:wrap; }
+  .support-vinculo .sv-acoes a, .support-vinculo .sv-acoes button { border:1px solid #bfe0cd;background:#fff;color:#14503b;border-radius:8px;padding:4px 9px;font-size:11.5px;font-weight:700;cursor:pointer;text-decoration:none; }
+  .support-vinculo.sem .sv-acoes a { border-color:#ecd9b0;color:#8a6414; }
   .support-feedback { border-radius:10px;padding:10px 12px;margin:0 0 14px;background:#f3faf5;border:1px solid #cfe6d8;color:#24503a;font-size:13px; }
   .support-feedback.error { background:#fff2ef;border-color:#f0cfc7;color:#8f2f17; }
   .support-detail .empty,.support-list .empty { border:1px dashed var(--line);border-radius:12px;padding:24px 14px;text-align:center;color:var(--muted);font-size:13px; }
@@ -638,6 +647,8 @@
   /* --------------------------- caixa de suporte --------------------------- */
   let chamadosSuporte = [];
   let suporteSelecionado = '';
+  let suportePendentesVinculo = 0;
+  let suporteVinculos = [];
   const statusSuporte = {
     aberta: 'Novo',
     em_analise: 'Em análise',
@@ -683,6 +694,30 @@
     ].filter(Boolean).join('\n');
   }
 
+  /**
+   * Mostra a qual loja do cardápio este chamado pertence. A vinculação vem do
+   * banco daqui (store_id), então o Master fala com a loja certa mesmo quando
+   * o slug do Supabase está diferente.
+   */
+  function blocoVinculo(chamado) {
+    if (!chamado.vinculado) {
+      return `<div class="support-vinculo sem">
+        <span>⚠️ Chamado <b>sem loja vinculada</b> aqui no Master.</span>
+        <span class="sv-acoes"><button type="button" data-vincular="${esc(chamado.id)}" data-slug="${esc(chamado.loja_slug || '')}">Vincular a uma loja</button></span>
+      </div>`;
+    }
+    const loja = chamado.store_name || 'Loja';
+    const viu = chamado.visto_loja_em ? `lida pela loja em ${esc(dataSuporte(chamado.visto_loja_em))}` : chamado.resposta_em ? 'resposta ainda não aberta pela loja' : 'sem resposta enviada';
+    return `<div class="support-vinculo">
+      <span class="sv-loja">🔗 ${esc(loja)}</span>
+      <span>${esc(chamado.store_slug ? `/l/${chamado.store_slug}` : '')} · ${viu}</span>
+      <span class="sv-acoes">
+        <a href="${esc(chamado.store_admin_path)}" target="_blank" rel="noopener">Abrir painel da loja</a>
+        <a href="/l/${esc(chamado.store_slug)}" target="_blank" rel="noopener">Ver cardápio</a>
+      </span>
+    </div>`;
+  }
+
   function renderSuporte() {
     const lista = el('suporteLista');
     const detalhe = el('suporteDetalhe');
@@ -690,8 +725,9 @@
     const busca = el('suporteBusca').value.trim().toLocaleLowerCase('pt-BR');
     const pendentes = chamadosSuporte.filter((c) => !['concluida', 'cancelada'].includes(c.status)).length;
     const badge = el('suporteBadge');
-    badge.textContent = pendentes > 99 ? '99+' : String(pendentes);
-    badge.hidden = pendentes === 0;
+    const totalPendente = Math.max(pendentes, suportePendentesVinculo || 0);
+    badge.textContent = totalPendente > 99 ? '99+' : String(totalPendente);
+    badge.hidden = totalPendente === 0;
     el('suporteResumo').textContent = `${chamadosSuporte.length} chamado(s) carregado(s) · ${pendentes} em aberto${chamadosSuporte.length >= 250 ? ' · mostrando os 250 mais recentes' : ''}`;
 
     const filtrados = chamadosSuporte.filter((c) => {
@@ -732,6 +768,7 @@
     detalhe.innerHTML = `<article>
       <div class="support-detail-head"><h3>${esc(chamado.titulo || 'Chamado sem título')}</h3><span class="support-status ${status}">${statusSuporte[status]}</span></div>
       <p class="support-detail-meta">${esc(chamado.empresa_nome || 'Loja')} · ${esc(chamado.loja_slug ? `/l/${chamado.loja_slug}` : 'slug não informado')} · enviado em ${esc(dataSuporte(chamado.criado_em))}<br>ID: ${esc(chamado.id)}</p>
+      ${blocoVinculo(chamado)}
       <div class="support-description">${esc(chamado.descricao || 'O cliente não adicionou um relato.')}</div>
       ${fotosHtml}
       <form class="support-answer-form" id="suporteRespostaForm" data-suporte-id="${esc(chamado.id)}">
@@ -746,8 +783,61 @@
     </article>`;
   }
 
+  /** Ligações gravadas aqui (independem do Supabase). */
+  async function carregarVinculosSuporte() {
+    try {
+      const d = await api('/api/master/suporte/vinculos');
+      suporteVinculos = Array.isArray(d.chamados) ? d.chamados : [];
+      suportePendentesVinculo = Number(d.pendentes || 0);
+    } catch {
+      suporteVinculos = [];
+      suportePendentesVinculo = 0;
+    }
+  }
+
+  /**
+   * Chamado sem loja vinculada: o Master escolhe a loja e a ligação é gravada
+   * aqui. Serve para os chamados antigos, abertos antes desta ponte existir.
+   */
+  async function vincularChamadoAoSlug(chamadoId, slugPretendido) {
+    if (!window.__lojas) await loadStores();
+    const lojas = window.__lojas || [];
+    if (!lojas.length) {
+      toast('Nenhuma loja encontrada para vincular.', 'error');
+      return;
+    }
+    const sugerida = lojas.find((l) => String(l.slug).toLowerCase() === String(slugPretendido || '').toLowerCase());
+    const lista = lojas.map((l, i) => `${i + 1} - ${l.name} (/l/${l.slug})`).join('\n');
+    const resposta = prompt(
+      (sugerida ? `Loja sugerida pelo endereço: ${sugerida.name} (${sugerida.slug})\n\n` : '') +
+        `A qual loja este chamado pertence?\n\n${lista}\n\nDigite o número ou o endereço (slug):`
+    );
+    if (resposta === null) return;
+    const digitado = resposta.trim();
+    let loja = null;
+    if (/^\d+$/.test(digitado)) loja = lojas[Number(digitado) - 1] || null;
+    else loja = lojas.find((l) => String(l.slug).toLowerCase() === digitado.toLowerCase()) || null;
+    if (!loja && sugerida) loja = sugerida;
+    if (!loja) {
+      toast('Loja não encontrada. Nada foi alterado.', 'error');
+      return;
+    }
+    try {
+      await api(`/api/master/suporte/${encodeURIComponent(chamadoId)}/vincular`, {
+        method: 'POST',
+        body: JSON.stringify({ store_id: loja.id }),
+      });
+      toast(`Chamado vinculado à loja ${loja.name}.`);
+      await carregarVinculosSuporte();
+      await carregarSuporte();
+    } catch (e) {
+      toast(e.message || 'Não foi possível vincular agora.', 'error');
+    }
+  }
+
   async function carregarSuporte() {
     const feedback = el('suporteFeedback');
+    carregarVinculosSuporte();
     feedback.className = 'support-feedback';
     feedback.textContent = 'Carregando chamados…';
     feedback.hidden = false;
@@ -1112,6 +1202,8 @@
     const { stores } = await api('/api/master/stores');
     window.__lojas = stores;
     const box = el('storesList');
+    // a lista é redesenhada inteira: guarda a rolagem para a tela não pular
+    const rolagem = window.scrollY;
     if (!stores.length) {
       box.innerHTML = '<div class="empty">Nenhuma loja ainda. Crie a primeira na aba <strong>Nova loja</strong>.</div>';
       return;
@@ -1186,6 +1278,7 @@
           </div>
         </div>
         <div class="actions">
+          <button class="btn btn-sm entrar" data-act="entrar" title="Abrir o painel desta loja já logado, sem digitar a senha do cliente">Entrar no painel agora</button>
           <button class="btn btn-sm main" data-act="copy-menu">${ehServ ? 'Copiar link de agendamento' : `Copiar link do ${palavra}`}</button>
           <a class="btn btn-sm" href="${esc(s.menu_path)}" target="_blank" rel="noopener">${ehServ ? 'Ver página de agendamento' : `Ver ${palavra}`}</a>
           <a class="btn btn-sm" href="${esc(s.admin_path)}" target="_blank" rel="noopener">${ehServ ? 'Abrir painel de serviços' : 'Abrir painel'}</a>
@@ -1201,6 +1294,8 @@
       </div>`;
     }).join('');
 
+    if (rolagem) window.scrollTo(0, rolagem);
+
     box.querySelectorAll('[data-act]').forEach((btn) => {
       btn.addEventListener('click', async () => {
         const card = btn.closest('[data-store]');
@@ -1213,6 +1308,32 @@
           const val = box.querySelector('[data-pw]');
           const oculto = val.classList.toggle('hidden');
           btn.textContent = oculto ? 'mostrar' : 'ocultar';
+          return;
+        }
+        if (act === 'entrar') {
+          if (!store.active) {
+            toast('Essa loja está desativada. Ative para entrar no painel.', 'error');
+            return;
+          }
+          // A aba é aberta AGORA (dentro do clique): o navegador só libera o
+          // pop-up de forma síncrona — depois do await ele costuma bloquear.
+          const aba = window.open('', '_blank');
+          const antigo = btn.textContent;
+          btn.disabled = true;
+          btn.textContent = 'Abrindo…';
+          try {
+            const r = await api(`/api/master/stores/${id}/entrar`, { method: 'POST' });
+            if (aba) aba.location.replace(r.url);
+            else window.location.href = r.url;
+            toast('Painel aberto — você já está logado como dono desta loja.');
+            loadStores();
+          } catch (e) {
+            if (aba) aba.close();
+            toast(e.message || 'Não consegui abrir o painel.', 'error');
+          } finally {
+            btn.disabled = false;
+            btn.textContent = antigo;
+          }
           return;
         }
         if (act === 'copy-menu') {
@@ -1273,6 +1394,11 @@
     renderSuporte();
   });
   el('suporteDetalhe').addEventListener('click', async (event) => {
+    const vincular = event.target.closest('[data-vincular]');
+    if (vincular) {
+      await vincularChamadoAoSlug(vincular.dataset.vincular, vincular.dataset.slug);
+      return;
+    }
     const button = event.target.closest('[data-copiar-suporte]');
     if (!button) return;
     const chamado = chamadosSuporte.find((c) => String(c.id) === button.dataset.copiarSuporte);
@@ -1303,7 +1429,18 @@
         if (el('suporteFiltro').value && el('suporteFiltro').value !== chamado.status) el('suporteFiltro').value = '';
         renderSuporte();
       }
-      toast('Resposta salva. Ela ficará visível no painel da loja.');
+      if (chamado) {
+        chamado.visto_loja_em = null;
+        chamado.resposta_em = new Date().toISOString();
+        chamado.vinculado = true;
+      }
+      renderSuporte();
+      toast(
+        data.vinculo
+          ? 'Resposta salva e já enviada ao painel da loja.'
+          : 'Resposta salva. Ela ficará visível no painel da loja.'
+      );
+      carregarVinculosSuporte();
     } catch (err) {
       toast(err.message || 'Não foi possível salvar a resposta.', 'error');
     } finally {

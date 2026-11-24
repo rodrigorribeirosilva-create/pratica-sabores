@@ -322,6 +322,24 @@ CREATE TABLE IF NOT EXISTS app_settings (
   value TEXT NOT NULL
 );
 
+-- Ponte entre o chamado de suporte (que vive no Supabase) e a loja daqui.
+-- Guarda o id do chamado, a loja que abriu e a última resposta do Master.
+-- Assim o Master sabe a qual cardápio cada chamado pertence (mesmo que a loja
+-- mude de endereço) e o painel da loja mostra o retorno na hora.
+CREATE TABLE IF NOT EXISTS suporte_chamados (
+  id             INTEGER PRIMARY KEY AUTOINCREMENT,
+  store_id       INTEGER NOT NULL,
+  chamado_id     TEXT    NOT NULL UNIQUE,
+  titulo         TEXT    NOT NULL DEFAULT '',
+  status         TEXT    NOT NULL DEFAULT 'aberta',
+  resposta_admin TEXT    NOT NULL DEFAULT '',
+  resposta_em    TEXT,
+  visto_loja_em  TEXT,
+  criado_em      TEXT    NOT NULL DEFAULT (datetime('now')),
+  atualizado_em  TEXT    NOT NULL DEFAULT (datetime('now'))
+);
+CREATE INDEX IF NOT EXISTS idx_suporte_chamados_loja ON suporte_chamados (store_id, atualizado_em DESC);
+
 CREATE TABLE IF NOT EXISTS products (
   id          INTEGER PRIMARY KEY AUTOINCREMENT,
   store_id    INTEGER NOT NULL DEFAULT 1,

@@ -9,6 +9,7 @@ const storage = require('./storage');
 const {resolveUploadDir, PERSISTENTE} = require('./paths');
 const {requireAuth, requireDono} = require('./auth');
 const {obterConfiguracao, obterBaseUpload} = require('./suporte-config');
+const vinculo = require('./suporte-vinculo');
 const router = express.Router();
 const upload = multer({storage: multer.memoryStorage(), limits: {files: 3, fileSize: 5 * 1024 * 1024, fields: 2, fieldSize: 8192}}).array('fotos', 3);
 const disponivel = () => Boolean(obterConfiguracao());
@@ -41,6 +42,29 @@ function erro(res, e, envio) {
   const msg = e.name === 'AbortError' || e instanceof TypeError ? (envio ? 'Não foi possível confirmar o envio. Confira seus pedidos antes de tentar novamente.' : 'Não foi possível carregar seus pedidos agora.') : e.message;
   return res.status(502).json({error:msg || 'Não foi possível concluir agora.'});
 }
+/* ---------------------------------------------------------------------
+   VÍNCULO COM O MASTER
+   O chamado aberto aqui passa a ficar ligado a esta loja (store_id). O
+   Master enxerga de qual cardápio é o chamado e a resposta dele aparece
+   neste painel imediatamente.
+   --------------------------------------------------------------------- */
+router.get('/suporte/vinculo', (req, res) => {
+  res.set('Cache-Control', 'no-store');
+  const chamados = vinculo.chamadosDaLoja(req.store.id);
+  res.json({
+    loja: { id: req.store.id, slug: req.store.slug, name: req.store.name },
+    novas: vinculo.respostasNovas(req.store.id),
+    chamados,
+  });
+});
+
+router.post('/suporte/vinculo/:id/visto', (req, res) => {
+  const id = String(req.params.id || '');
+  if (!/^[0-9a-f-]{36}$/i.test(id)) return res.status(400).json({ error: 'Chamado inválido.' });
+  vinculo.marcarVisto(req.store.id, id);
+  res.json({ ok: true, novas: vinculo.respostasNovas(req.store.id) });
+});
+
 router.get('/suporte/pedidos', async (req,res) => {
   try {const data = await chamar('suporte_externo_listar',{p_loja:req.store.slug}); if (!Array.isArray(data)) throw new Error('Não foi possível carregar seus pedidos agora.'); res.json(data);}
   catch(e) {erro(res,e,false);}
@@ -77,6 +101,10 @@ router.post('/suporte/pedidos', (req,res) => {
       }
       const j=await chamar('suporte_externo_abrir',{p_loja:req.store.slug,p_titulo:title,p_descricao:desc,p_fotos:fotos});
       if (!j || j.ok !== true || !j.id) throw new Error('Não foi possível confirmar o envio. Confira seus pedidos antes de tentar novamente.');
+      // Liga o chamado a esta loja: é isso que permite o Master responder
+      // direto para o cardápio certo e a resposta aparecer aqui.
+      try { vinculo.registrarChamado(req.store.id, j.id, {titulo:title, status:'aberta'}); }
+      catch (e) { console.error('[suporte/vinculo]', e.message); }
       res.status(201).json({ok:true,id:j.id});
     } catch(e) {erro(res,e,true);}
   });

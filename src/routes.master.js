@@ -30,7 +30,14 @@ const {
   slugify,
   DB_FILE,
 } = require('./db');
-const { requireMaster, setMasterSession, clearMasterSession, parseCookies, verifyToken } = require('./auth');
+const {
+  requireMaster,
+  setMasterSession,
+  clearMasterSession,
+  setStoreSession,
+  parseCookies,
+  verifyToken,
+} = require('./auth');
 const { normalizeWhatsapp, formatDateTimeBR } = require('./helpers');
 
 const router = express.Router();
@@ -486,6 +493,26 @@ router.patch('/stores/:id', requireMaster, (req, res) => {
     require('./db').recordStorePassword(store.id, pw, { by: 'master' });
   }
   res.json({ ok: true, store: storeSummary(getStoreById(store.id)) });
+});
+
+/**
+ * POST /api/master/stores/:id/entrar
+ *
+ * "Entrar no painel agora": o master abre o painel do cliente JÁ LOGADO,
+ * sem precisar digitar (nem saber) a senha daquela loja.
+ *
+ * O que acontece: o servidor cria a sessão da LOJA (cookie ps_s_<id>) para
+ * este navegador e devolve o endereço do painel. O painel do cliente continua
+ * com a senha dele — nada é alterado no cadastro da loja.
+ */
+router.post('/stores/:id/entrar', requireMaster, (req, res) => {
+  const store = getStoreById(req.params.id);
+  if (!store) return res.status(404).json({ error: 'Loja não encontrada.' });
+  if (!store.active) {
+    return res.status(400).json({ error: 'Essa loja está desativada. Ative antes de entrar no painel.' });
+  }
+  setStoreSession(res, store.id);
+  res.json({ ok: true, url: `/l/${store.slug}/admin` });
 });
 
 router.delete('/stores/:id', requireMaster, (req, res) => {

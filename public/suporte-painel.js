@@ -17,6 +17,8 @@
   let verificando = null;
   let disponivel = false;
   let verificado = false;
+  let vinculos = [];
+  let novasRespostas = 0;
 
   const get = async (url, op = {}) => {
     const r = await fetch(base + url, { ...op, cache: 'no-store' });
@@ -26,6 +28,74 @@
   };
 
   const mostrarNavegacao = (mostrar) => btns.forEach((b) => { b.hidden = !mostrar; });
+
+  /**
+   * Selo vermelho com a quantidade de respostas do Master que a loja ainda
+   * não abriu. É o aviso de "tem resposta nova no suporte".
+   */
+  function atualizarSelo() {
+    btns.forEach((b) => {
+      let selo = b.querySelector('.suporte-selo');
+      if (!selo) {
+        selo = document.createElement('span');
+        selo.className = 'suporte-selo';
+        b.append(selo);
+      }
+      if (novasRespostas > 0) {
+        selo.textContent = novasRespostas > 9 ? '9+' : String(novasRespostas);
+        selo.hidden = false;
+        b.setAttribute('aria-label', `Suporte (${novasRespostas} resposta(s) nova(s))`);
+      } else {
+        selo.hidden = true;
+      }
+    });
+  }
+
+  /** Ligação com o Master: quem abriu, o que ele respondeu e se já foi lido. */
+  async function carregarVinculos() {
+    try {
+      const d = await get('/vinculo');
+      vinculos = Array.isArray(d.chamados) ? d.chamados : [];
+      novasRespostas = Number(d.novas || 0);
+      atualizarSelo();
+    } catch {
+      vinculos = [];
+    }
+  }
+
+  async function marcarRespostaVista(id) {
+    try {
+      const d = await get(`/vinculo/${encodeURIComponent(id)}/visto`, { method: 'POST' });
+      novasRespostas = Number(d.novas || 0);
+      atualizarSelo();
+    } catch {
+      /* silencioso: o aviso some na próxima visita */
+    }
+  }
+
+  /** Bloco "Resposta do suporte" que o Master escreveu, ligado a este pedido. */
+  function blocoRespostaMaster(pedido) {
+    const v = vinculos.find(
+      (c) => String(c.chamado_id) === String(pedido.id) || (c.titulo && String(c.titulo) === String(pedido.titulo || '')),
+    );
+    if (!v || !v.resposta_admin) return null;
+    const caixa = document.createElement('div');
+    caixa.className = 'suporte-resposta-master';
+    const titulo = document.createElement('strong');
+    titulo.textContent = 'Resposta do suporte';
+    caixa.append(titulo);
+    const texto = document.createElement('p');
+    texto.textContent = String(v.resposta_admin);
+    caixa.append(texto);
+    if (v.resposta_em) {
+      const quando = document.createElement('small');
+      const data = new Date(String(v.resposta_em).replace(' ', 'T') + 'Z');
+      quando.textContent = Number.isNaN(data.getTime()) ? '' : data.toLocaleString('pt-BR');
+      caixa.append(quando);
+    }
+    if (!v.visto_loja_em) marcarRespostaVista(v.chamado_id);
+    return caixa;
+  }
   function mostrarEstado(ativo, mensagem) {
     disponivel = ativo;
     if (carregando) carregando.hidden = true;
@@ -66,6 +136,7 @@
     if (!disponivel) return;
     lista.textContent = 'Carregando pedidos…';
     try {
+      await carregarVinculos();
       const pedidos = await get('/pedidos');
       lista.replaceChildren();
       if (!pedidos.length) {
@@ -95,6 +166,8 @@
           resposta.textContent = 'Resposta: ' + String(p.resposta_admin);
           item.append(resposta);
         }
+        const doMaster = blocoRespostaMaster(p);
+        if (doMaster) item.append(doMaster);
         lista.append(item);
       });
     } catch (e) {
