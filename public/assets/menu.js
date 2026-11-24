@@ -173,6 +173,7 @@
   /* ------------------------------- render menu ------------------------------ */
   function applyBusiness() {
     const b = state.business;
+    if (document.body.classList.contains('mdn-premium')) document.dispatchEvent(new CustomEvent('mdn:business', { detail: { cover_url: b.cover_url || '' } }));
     // Cores da marca (cada loja pode ter as suas, definidas no painel)
     if (b.theme_color) {
       document.documentElement.style.setProperty('--green', b.theme_color);

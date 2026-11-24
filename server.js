@@ -522,6 +522,13 @@ async function main() {
         '</head>',
       ].join(''));
 
+    // Visual exclusivo da MDN no catálogo público; sem alterar painel ou outras lojas.
+    if (store.slug === 'mdn-presents' && page !== 'admin' && !ehServicos) {
+      html = html.replace('<body>', '<body class="mdn-premium">')
+        .replace('</head>', `<link rel="stylesheet" href="/assets/mdn-premium.css?v=${stamp}"></head>`)
+        .replace('</body>', `<script src="/assets/mdn-premium.js?v=${stamp}"></script></body>`);
+    }
+
     // Nem o nome da outra loja pode sobrar no HTML: o código-fonte servido
     // para a MDN não pode conter "Prática Sabores" em lugar nenhum.
     html = html
