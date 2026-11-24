@@ -994,6 +994,54 @@ function init() {
       db.prepare('UPDATE stores SET name = ? WHERE id = ? AND name != ?').run('Patroas Lanches', pl.id, 'Patroas Lanches');
       const wa = '5548999263717';
       db.prepare('UPDATE stores SET whatsapp = ? WHERE id = ? AND (whatsapp IS NULL OR whatsapp = ? OR whatsapp = ?)').run(wa, pl.id, '', '5551999999999');
+      // Seed de produtos do cardápio (somente se a loja ainda não tem produtos).
+      const prodCount = db.prepare('SELECT COUNT(*) AS n FROM products WHERE store_id = ?').get(pl.id).n;
+      if (prodCount === 0) {
+        const produtos = [
+          { name: 'Dog salsicha', description: 'Salsicha, milho, muçarela, ervilha, batata palha, mostarda, ketchup, maionese e maionese da casa.', price_cents: 1490, category: 'Dogs', sort_order: 1 },
+          { name: 'Dog salsicha duplo', description: 'Duas salsichas, molho, muçarela, milho, ervilha, batata palha, mostarda, ketchup, maionese e maionese da casa.', price_cents: 1690, category: 'Dogs', sort_order: 2 },
+          { name: 'Dog frango', description: 'Frango, muçarela, milho, ervilha, mostarda, ketchup, maionese e maionese da casa.', price_cents: 2290, category: 'Dogs', sort_order: 3 },
+          { name: 'Dog calabresa', description: 'Calabresa, muçarela, milho, ervilha, batata palha, mostarda, ketchup, maionese e maionese da casa.', price_cents: 2390, category: 'Dogs', sort_order: 4 },
+          { name: 'Dog bacon', description: 'Bacon, muçarela, milho, ervilha, batata palha, mostarda, ketchup, maionese e maionese da casa.', price_cents: 2690, category: 'Dogs', sort_order: 5 },
+          { name: 'Dog frango bacon', description: 'Frango, bacon, muçarela, milho, ervilha, batata palha, mostarda, ketchup, maionese e maionese da casa.', price_cents: 2790, category: 'Dogs', sort_order: 6 },
+          { name: 'Dog calabresa bacon', description: 'Calabresa, bacon, muçarela, milho, ervilha, batata palha, mostarda, ketchup, maionese e maionese da casa.', price_cents: 2790, category: 'Dogs', sort_order: 7 },
+          { name: 'Dog coração', description: 'Coração, muçarela, milho, ervilha, batata palha, mostarda, ketchup, maionese e maionese da casa.', price_cents: 2690, category: 'Dogs', sort_order: 8 },
+          { name: 'Dog coração bacon', description: 'Coração, bacon, muçarela, milho, ervilha, batata palha, mostarda, ketchup, maionese e maionese da casa.', price_cents: 2790, category: 'Dogs', sort_order: 9 },
+          { name: 'X-Salada', description: 'Hambúrguer, ovo, presunto, muçarela, milho, ervilha, tomate, alface, mostarda, ketchup, maionese e maionese da casa.', price_cents: 2790, category: 'Xis', sort_order: 10 },
+          { name: 'X-Simples', description: 'Hambúrguer, ovo, presunto, muçarela, mostarda, ketchup, maionese e maionese da casa.', price_cents: 2490, category: 'Xis', sort_order: 11 },
+          { name: 'X-calabresa', description: 'Calabresa, ovo, presunto, muçarela, milho, ervilha, tomate, alface, mostarda, ketchup, maionese e maionese da casa.', price_cents: 3290, category: 'Xis', sort_order: 12 },
+          { name: 'X-Bacon', description: 'Hambúrguer, bacon, ovo, presunto, muçarela, milho, ervilha, tomate, alface, mostarda, ketchup, maionese e maionese da casa.', price_cents: 3590, category: 'Xis', sort_order: 13 },
+          { name: 'X-frango', description: 'Frango, ovo, presunto, muçarela, milho, ervilha, tomate, alface, mostarda, ketchup, maionese e maionese da casa.', price_cents: 2890, category: 'Xis', sort_order: 14 },
+          { name: 'X-coração', description: 'Coração, ovo, presunto, muçarela, milho, ervilha, tomate, alface, mostarda, ketchup, maionese e maionese da casa.', price_cents: 3590, category: 'Xis', sort_order: 15 },
+          { name: 'X-completo acebolado', description: 'Hambúrguer, ovo, presunto, muçarela, milho, ervilha, tomate, alface, cebola, mostarda, ketchup, maionese e maionese da casa.', price_cents: 3290, category: 'Xis', sort_order: 16 },
+          { name: 'X-turbo', description: 'Dois hambúrgueres, 2 ovos, presunto, muçarela, milho, ervilha, tomate, alface, mostarda, ketchup, maionese e maionese da casa.', price_cents: 3290, category: 'Xis', sort_order: 17 },
+          { name: 'X-da casa', description: 'Hambúrguer, calabresa, bacon, frango, coração, ovo, presunto, muçarela, milho, ervilha, tomate, alface, mostarda, ketchup, maionese e maionese da casa.', price_cents: 4290, category: 'Xis', sort_order: 18 },
+          { name: 'X-vegetariano', description: 'Hambúrguer de soja, ovo, muçarela, milho, ervilha, alface, tomate, cenoura, pepino, mostarda, ketchup, maionese e maionese da casa.', price_cents: 3690, category: 'Xis', sort_order: 19 },
+          { name: 'X-frango bacon', description: 'Frango, bacon, ovo, presunto, muçarela, milho, ervilha, tomate, alface, mostarda, ketchup, maionese e maionese da casa.', price_cents: 3790, category: 'Xis', sort_order: 20 },
+          { name: 'X-calabresa bacon', description: 'Calabresa, bacon, ovo, presunto, muçarela, milho, ervilha, tomate, alface, mostarda, ketchup, maionese e maionese da casa.', price_cents: 3890, category: 'Xis', sort_order: 21 },
+          { name: 'X-coração bacon', description: 'Coração, bacon, ovo, presunto, muçarela, milho, ervilha, tomate, alface, mostarda, ketchup, maionese e maionese da casa.', price_cents: 4190, category: 'Xis', sort_order: 22 },
+          { name: 'Coca-Cola lata', description: '350ml.', price_cents: 700, category: 'Bebidas', sort_order: 23 },
+          { name: 'Coca-Cola 600ml', description: 'Garrafa 600ml.', price_cents: 1000, category: 'Bebidas', sort_order: 24 },
+          { name: 'Coca-Cola 2,5L', description: 'Garrafa 2,5 litros.', price_cents: 1800, category: 'Bebidas', sort_order: 25 },
+          { name: 'Fanta lata', description: '350ml.', price_cents: 700, category: 'Bebidas', sort_order: 26 },
+          { name: 'Fanta 2L', description: 'Garrafa 2 litros.', price_cents: 1700, category: 'Bebidas', sort_order: 27 },
+          { name: 'Guaraná 2L', description: 'Garrafa 2 litros.', price_cents: 1600, category: 'Bebidas', sort_order: 28 },
+          { name: 'Bacon (porção extra)', description: 'Porção extra de bacon.', price_cents: 1200, category: 'Porções extras', sort_order: 29 },
+          { name: 'Coração (porção extra)', description: 'Porção extra de coração.', price_cents: 1500, category: 'Porções extras', sort_order: 30 },
+          { name: 'Calabresa (porção extra)', description: 'Porção extra de calabresa.', price_cents: 1000, category: 'Porções extras', sort_order: 31 },
+          { name: 'Ovo (porção extra)', description: 'Porção extra de ovo.', price_cents: 300, category: 'Porções extras', sort_order: 32 },
+          { name: 'Cebola (porção extra)', description: 'Porção extra de cebola.', price_cents: 400, category: 'Porções extras', sort_order: 33 },
+          { name: 'Cebola caramelizada (porção extra)', description: 'Porção extra de cebola caramelizada.', price_cents: 500, category: 'Porções extras', sort_order: 34 },
+          { name: 'Maionese da casa pote P', description: 'Pote pequeno de maionese da casa.', price_cents: 300, category: 'Porções extras', sort_order: 35 },
+          { name: 'Maionese da casa pote M', description: 'Pote médio de maionese da casa.', price_cents: 500, category: 'Porções extras', sort_order: 36 },
+        ];
+        const ins = db.prepare('INSERT INTO products (store_id, name, description, price_cents, image_url, category, sort_order) VALUES (?, ?, ?, ?, ?, ?, ?)');
+        const tx = db.transaction(() => {
+          for (const p of produtos) ins.run(pl.id, p.name, p.description, p.price_cents, p.image_url || null, p.category, p.sort_order);
+        });
+        tx();
+        console.log(`[db] produtos Patroas Lanches seed: ${produtos.length}`);
+      }
       console.log(`[db] branding Patroas Lanches aplicado: ${pl.id}`);
     }
   } catch (e) {
