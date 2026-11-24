@@ -226,7 +226,10 @@
           <h2>Clientes</h2>
           <p>Veja quem compra com frequência, o último pedido e o histórico por telefone.</p>
         </div>
-        <button class="btn btn-primary btn-sm" id="newCustomerBtn" type="button">+ Novo cliente</button>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-ghost btn-sm" id="broadcastCatalogBtn" type="button">Disparar catálogo</button>
+          <button class="btn btn-primary btn-sm" id="newCustomerBtn" type="button">+ Novo cliente</button>
+        </div>
       </header>
       <div class="stat-row" id="customerStats"></div>
       <div class="filters" id="customerFilters">
@@ -926,6 +929,33 @@
     <div class="modal-foot">
       <button class="btn btn-ghost" data-close-modal="confirmModal">Cancelar</button>
       <button class="btn" id="confirmYes" style="background:var(--red);color:#fff">Excluir</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="broadcastModal" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="broadcastTitle" style="max-width:720px">
+    <div class="modal-head">
+      <h3 id="broadcastTitle">Disparar catálogo no WhatsApp</h3>
+      <button class="close-x" data-close-modal="broadcastModal">✕</button>
+    </div>
+    <div class="modal-body">
+      <p class="hint" style="margin-top:0">A mensagem será enviada individualmente pelo WhatsApp (wa.me). O navegador não permite envio automático em massa; use os botões abaixo para abrir cada conversa com a mensagem pronta.</p>
+      <div class="field">
+        <label for="broadcastText">Mensagem</label>
+        <textarea class="textarea" id="broadcastText" rows="5"></textarea>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 14px">
+        <button class="btn btn-ghost btn-sm" id="broadcastCopy" type="button">Copiar mensagem</button>
+        <span class="muted-sm" id="broadcastCount"></span>
+      </div>
+      <div class="field">
+        <label>Clientes com telefone</label>
+        <div id="broadcastList" style="display:flex;flex-direction:column;gap:8px;max-height:340px;overflow:auto;padding-right:4px"></div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" data-close-modal="broadcastModal">Fechar</button>
     </div>
   </div>
 </div>

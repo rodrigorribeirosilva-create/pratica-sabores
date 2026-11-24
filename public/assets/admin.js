@@ -1207,6 +1207,44 @@
     }).join('');
   }
 
+  function broadcastCatalog() {
+    const negocio = ((state.settings.business || {}).name || state.settings.store?.name || 'nossa loja').trim();
+    const link = `${location.origin}${API_PREFIX}/`;
+    const msg = `Olá! Confira o catálogo da ${negocio}: ${link}`;
+    el('broadcastText').value = msg;
+    renderBroadcastList();
+    openModal('broadcastModal');
+  }
+
+  function renderBroadcastList() {
+    const msg = el('broadcastText').value || '';
+    const list = (customers || []).filter((c) => waNumber(c.telefone));
+    el('broadcastCount').textContent = `${list.length} cliente(s) com WhatsApp`;
+    const box = el('broadcastList');
+    if (!list.length) {
+      box.innerHTML = '<div class="empty-state"><h3>Nenhum cliente com telefone</h3><p>Cadastre clientes com telefone para enviar o catálogo.</p></div>';
+      return;
+    }
+    box.innerHTML = list.map((c) => {
+      const num = waNumber(c.telefone);
+      const nome = (c.nome || 'Cliente').split(' ')[0];
+      const text = msg.replace(/\{nome\}/gi, nome);
+      const href = `https://wa.me/55${num}?text=${encodeURIComponent(text)}`;
+      return `<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;border:1px solid var(--line,#e7ece8);border-radius:12px;background:#fff">
+        <div style="min-width:0"><strong style="display:block;font-size:14px">${esc(c.nome || 'Cliente')}</strong><span class="muted-sm">${esc(c.telefone || '')}</span></div>
+        <a class="btn btn-sm btn-ghost" href="${href}" target="_blank" rel="noopener">Enviar</a>
+      </div>`;
+    }).join('');
+  }
+
+  el('broadcastCatalogBtn').addEventListener('click', broadcastCatalog);
+  el('broadcastText').addEventListener('input', renderBroadcastList);
+  el('broadcastCopy').addEventListener('click', async () => {
+    const text = el('broadcastText').value || '';
+    try { await navigator.clipboard.writeText(text); toast('Mensagem copiada.', 'ok'); }
+    catch { toast('Não foi possível copiar.', 'err'); }
+  });
+
   async function loadCustomers() {
     try {
       customers = await api('/api/admin/customers');
