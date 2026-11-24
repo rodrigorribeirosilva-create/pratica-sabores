@@ -94,6 +94,13 @@ body.mdn-visual .hero-card{
 }
 body.mdn-visual .hero-card::after{display:none}
 body.mdn-visual .hero-watermark{display:none !important;}
+body.mdn-visual .hero-card{
+  background-color:#fbfaf8;
+  background-image:url('/img/mdn-logo-watermark.png');
+  background-repeat:no-repeat;
+  background-position:center 40%;
+  background-size:min(420px,72vw);
+}
 body.mdn-visual .hero-content{
   text-align:center;padding:64px 24px 56px;max-width:920px;margin:0 auto;
 }
