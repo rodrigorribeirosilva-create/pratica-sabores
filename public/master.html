@@ -173,6 +173,29 @@
   .vendas-resumo .vr-item span { font-size: 11.5px; text-transform: uppercase; letter-spacing: .05em; color: #8a8272; font-weight: 700; }
   .vendas-resumo .vr-item strong { font-size: 18px; letter-spacing: -.02em; }
 
+  /* -------- filtros da aba Lojas (cardápio x catálogo x agenda) -------- */
+  .filtros-lojas { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 14px; }
+  .filtros-lojas .filtro {
+    border: 1px solid var(--line); background: #fff; border-radius: 99px;
+    padding: 7px 13px; font-size: 13px; font-weight: 650; cursor: pointer;
+    display: inline-flex; align-items: center; gap: 7px; color: var(--ink);
+  }
+  .filtros-lojas .filtro:hover { border-color: var(--green); }
+  .filtros-lojas .filtro span {
+    background: var(--cream); border: 1px solid var(--line); color: var(--muted);
+    border-radius: 99px; padding: 1px 7px; font-size: 11.5px; font-weight: 800;
+  }
+  .filtros-lojas .filtro.active { background: var(--ink); border-color: var(--ink); color: #fff; }
+  .filtros-lojas .filtro.active span { background: rgba(255, 255, 255, .18); border-color: transparent; color: #fff; }
+  .tipo-row { display: flex; align-items: center; gap: 8px; margin-top: 9px; flex-wrap: wrap; }
+  .tipo-sel {
+    border: 1px solid var(--line); border-radius: 8px; background: #fff;
+    padding: 4px 8px; font-size: 12.5px; font-weight: 650; cursor: pointer;
+  }
+  .tipo-sel:hover { border-color: var(--green); }
+  .tipo-sel:disabled { opacity: .6; cursor: progress; }
+  .tipo-auto { font-size: 11px; color: var(--muted); background: var(--cream); border: 1px solid var(--line); border-radius: 99px; padding: 2px 8px; }
+
   .support-header { display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:16px; }
   .support-tab-badge { display:inline-grid;place-items:center;min-width:20px;height:20px;padding:0 5px;margin-left:4px;border-radius:99px;background:#f0a63c;color:#342305;font-size:11px;font-weight:800; }
   .support-tab-badge[hidden] { display:none; }
@@ -267,6 +290,7 @@
           <p class="sub">Cada loja tem cardápio, catálogo ou agenda de serviços — com painel, senha e pedidos próprios. Copie o link e envie no WhatsApp do cliente.</p>
           <div id="servidorInfo" class="servidor-info" hidden></div>
           <div id="vendasResumo" class="vendas-resumo" hidden></div>
+          <div id="filtrosLojas" class="filtros-lojas" hidden></div>
           <div id="storesList" class="stores"></div>
         </div>
       </div>
@@ -382,7 +406,16 @@
                   <option value="catalogo">Catálogo — perfumes, presentes, cosméticos</option>
                   <option value="servicos">Serviços — climatização, assistência técnica, agenda</option>
                 </select>
-                <span class="hint">Muda os produtos de exemplo e o jeito de pedir (catálogo ganha botão de WhatsApp em cada item).</span>
+                <span class="hint">Comida vira <strong>cardápio digital</strong>; catálogo vira <strong>catálogo digital</strong> (botão de WhatsApp em cada item). Dá para trocar depois na aba <strong>Lojas</strong>.</span>
+              </div>
+              <div class="field">
+                <label for="nTipo">Como essa loja aparece para o cliente</label>
+                <select id="nTipo" style="border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:#fff;width:100%">
+                  <option value="">Automático (segue o que ela vende)</option>
+                  <option value="cardapio">Cardápio digital</option>
+                  <option value="catalogo">Catálogo digital</option>
+                </select>
+                <span class="hint">Opcional. Só muda as palavras desta loja — as outras não são afetadas.</span>
               </div>
               <div class="field">
                 <label for="nPass">Senha do painel do cliente *</label>
@@ -1108,15 +1141,54 @@
     }
   }
 
+  /* Filtro da aba Lojas: todas · cardápios · catálogos · agenda
+     Fica no endereço (?tipo=catalogo), então recarregar mantém o filtro. */
+  let filtroLojas = (function () {
+    const f = new URLSearchParams(location.search).get('tipo');
+    return ['cardapio', 'catalogo', 'servicos'].includes(f) ? f : 'todas';
+  })();
+  const TIPO_LABEL = { cardapio: 'cardápio', catalogo: 'catálogo', servicos: 'agenda' };
+  const tipoDaLoja = (s) => (s.segment === 'servicos' ? 'servicos' : s.rotulo_link === 'catálogo' ? 'catalogo' : 'cardapio');
+  function guardarFiltroNaUrl(tipo) {
+    const url = new URL(location.href);
+    if (tipo === 'todas') url.searchParams.delete('tipo');
+    else url.searchParams.set('tipo', tipo);
+    history.replaceState(null, '', url.pathname + url.search + url.hash);
+  }
+  function pintarFiltros(lojas) {
+    const box = el('filtrosLojas');
+    if (!box) return;
+    const conta = (t) => lojas.filter((s) => tipoDaLoja(s) === t).length;
+    const botoes = [
+      ['todas', 'Todas as lojas', lojas.length],
+      ['cardapio', 'Cardápios', conta('cardapio')],
+      ['catalogo', 'Catálogos', conta('catalogo')],
+      ['servicos', 'Agenda de serviços', conta('servicos')],
+    ].filter(([tipo]) => tipo === 'todas' || conta(tipo) > 0);
+    box.hidden = false;
+    box.innerHTML = botoes
+      .map(([tipo, rotulo, n]) => `<button class="filtro ${filtroLojas === tipo ? 'active' : ''}" data-filtro="${tipo}">${rotulo} <span>${n}</span></button>`)
+      .join('');
+    box.querySelectorAll('[data-filtro]').forEach((b) => {
+      b.addEventListener('click', () => {
+        filtroLojas = b.dataset.filtro;
+        guardarFiltroNaUrl(filtroLojas);
+        loadStores();
+      });
+    });
+  }
+
   async function loadStores() {
     const { stores } = await api('/api/master/stores');
     window.__lojas = stores;
     const box = el('storesList');
     if (!stores.length) {
+      el('filtrosLojas').hidden = true;
       box.innerHTML = '<div class="empty">Nenhuma loja ainda. Crie a primeira na aba <strong>Nova loja</strong>.</div>';
       return;
     }
     mostrarServidor();
+    pintarFiltros(stores);
     const resumoBox = el('vendasResumo');
     if (resumoBox) {
       const mes = stores.reduce((a, s) => a + ((s.vendas && s.vendas.mes.total_cents) || 0), 0);
@@ -1131,7 +1203,17 @@
         <div class="vr-item"><span>Itens vendidos no mês</span><strong>${mesItens}</strong></div>
         <div class="vr-item"><span>Hoje</span><strong>${brl(hoje)} · ${hojeItens} itens</strong></div>`;
     }
-    box.innerHTML = stores.map((s) => {
+    const visiveis = filtroLojas === 'todas' ? stores : stores.filter((s) => tipoDaLoja(s) === filtroLojas);
+    if (!visiveis.length) {
+      box.innerHTML = `<div class="empty">Nenhuma loja com esse tipo agora. <button class="btn btn-sm" data-filtro-todas>Ver todas as lojas</button></div>`;
+      box.querySelector('[data-filtro-todas]').addEventListener('click', () => {
+        filtroLojas = 'todas';
+        guardarFiltroNaUrl('todas');
+        loadStores();
+      });
+      return;
+    }
+    box.innerHTML = visiveis.map((s) => {
       const ehServ = s.segment === 'servicos';
       // usa o rótulo que o servidor já calculou com a escolha da própria loja
       const palavra = (s.rotulo_link || (ehServ ? 'agendamento' : s.segment === 'catalogo' ? 'catálogo' : 'cardápio')).toLowerCase();
@@ -1184,6 +1266,16 @@
             <button class="pw-eye" data-act="toggle-pw">mostrar</button>
             ${s.password_changed_at ? `<span class="pw-hist">trocada em ${esc(new Date(s.password_changed_at).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' }))}${s.password_changed_by === 'master' ? ' (por você)' : ' (pelo cliente)'}</span>` : ''}
           </div>
+          ${ehServ
+            ? `<div class="tipo-row"><span class="pw-label">Aparece como</span><span class="pill">agenda de serviços</span></div>`
+            : `<div class="tipo-row">
+                <span class="pw-label">Aparece como</span>
+                <select class="tipo-sel" data-act="trocar-tipo" aria-label="Como esta loja aparece"${s.categorias && s.categorias.length ? ` title="Categorias desta loja: ${esc(s.categorias.join(', '))}"` : ''}>
+                  <option value="cardapio" ${s.tipo === 'cardapio' || (!s.tipo && palavra === 'cardápio') ? 'selected' : ''}>cardápio digital</option>
+                  <option value="catalogo" ${s.tipo === 'catalogo' || (!s.tipo && palavra === 'catálogo') ? 'selected' : ''}>catálogo digital</option>
+                </select>
+                ${s.tipo ? '' : '<span class="tipo-auto">automático</span>'}
+              </div>`}
         </div>
         <div class="actions">
           <button class="btn btn-sm main" data-act="copy-menu">${ehServ ? 'Copiar link de agendamento' : `Copiar link do ${palavra}`}</button>
@@ -1202,12 +1294,32 @@
     }).join('');
 
     box.querySelectorAll('[data-act]').forEach((btn) => {
-      btn.addEventListener('click', async () => {
+      btn.addEventListener(btn.dataset.act === 'trocar-tipo' ? 'change' : 'click', async () => {
         const card = btn.closest('[data-store]');
         const id = card.dataset.store;
         const store = (window.__lojas || []).find((s) => String(s.id) === id);
         const act = btn.dataset.act;
 
+        if (act === 'trocar-tipo') {
+          const escolha = btn.value;
+          const antes = tipoDaLoja(store);
+          const automatico = !store.tipo;
+          if (escolha === antes && !automatico) return;
+          btn.disabled = true;
+          try {
+            await api(`/api/master/stores/${id}`, { method: 'PATCH', body: JSON.stringify({ tipo: escolha }) });
+            toast(
+              escolha === 'catalogo'
+                ? `Pronto: “${store.name}” agora aparece como catálogo digital.`
+                : `Pronto: “${store.name}” agora aparece como cardápio digital.`
+            );
+          } catch (e) {
+            toast(e.message || 'Não foi possível trocar agora.', 'err');
+            btn.disabled = false;
+            return;
+          }
+          return loadStores();
+        }
         if (act === 'toggle-pw') {
           const box = btn.closest('[data-pwbox]');
           const val = box.querySelector('[data-pw]');
@@ -1352,6 +1464,7 @@
   el('newStoreForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     try {
+      const tipoEscolhido = el('nTipo') ? el('nTipo').value : '';
       const payload = {
         name: el('nName').value,
         slug: el('nSlug').value || undefined,
@@ -1359,6 +1472,7 @@
         password: el('nPass').value,
         about: el('nAbout').value,
         segment: el('nSegment').value,
+        tipo: tipoEscolhido || undefined,
         withSeedProducts: el('nSeed').checked,
       };
       const { store } = await api('/api/master/stores', { method: 'POST', body: JSON.stringify(payload) });
