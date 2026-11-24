@@ -9,6 +9,7 @@
     const m = location.pathname.match(/^\/l\/([a-z0-9-]+)/i);
     return m ? m[1].toLowerCase() : 'principal';
   })();
+  const IS_MDN = STORE_SLUG === 'mdn-presents';
   const CART_KEY = `ps_cart_v2_${STORE_SLUG}`;
   const CUSTOMER_KEY = `ps_customer_v2_${STORE_SLUG}`;
 
@@ -186,8 +187,13 @@
     const isCatalog = state.segment === 'catalogo';
     const doces = (b.ramo || '') === 'doces'; // confeitaria fala diferente de marmita
     el('brandSub').textContent = b.tagline || (isCatalog ? 'Catálogo digital' : doces ? 'Cardápio digital' : 'Marmitas caseiras');
-    el('heroTitle').textContent = b.name || 'Cardápio';
-    el('heroTagline').textContent = b.tagline || '';
+    if (IS_MDN) {
+      el('heroTitle').innerHTML = 'Sua essência, <em class="mdn-accent">seu encanto.</em>';
+      el('heroTagline').textContent = b.about || b.tagline || 'Fragrâncias especiais para despertar sentidos, criar memórias e celebrar quem você é.';
+    } else {
+      el('heroTitle').textContent = b.name || 'Cardápio';
+      el('heroTagline').textContent = b.tagline || '';
+    }
     // Textos neutros para catálogos (perfumes, presentes…)
     const listTitle = el('menuTitle');
     if (listTitle) listTitle.textContent = isCatalog ? 'Nosso catálogo' : 'Cardápio de hoje';
@@ -263,6 +269,43 @@
     el('heroNote').innerHTML = note
       ? `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg> ${esc(note)}`
       : '';
+
+    if (IS_MDN && !document.body.dataset.mdnHeader) {
+      document.body.dataset.mdnHeader = '1';
+      const bar = document.querySelector('.site-header .bar');
+      const actions = document.querySelector('.header-actions');
+      if (bar && actions) {
+        const menuBtn = document.createElement('button');
+        menuBtn.className = 'mdn-icon-btn mdn-menu-btn';
+        menuBtn.type = 'button';
+        menuBtn.setAttribute('aria-label', 'Menu');
+        menuBtn.innerHTML = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16M4 12h16M4 17h16"/></svg>';
+        menuBtn.addEventListener('click', () => { const c = el('cats'); if (c) { c.scrollIntoView({behavior:'smooth', block:'start'}); } });
+        bar.insertBefore(menuBtn, bar.firstChild);
+        const searchBtn = document.createElement('button');
+        searchBtn.className = 'mdn-icon-btn';
+        searchBtn.type = 'button';
+        searchBtn.setAttribute('aria-label', 'Buscar');
+        searchBtn.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>';
+        searchBtn.addEventListener('click', () => {
+          const q = prompt('Buscar produto:');
+          if (q == null) return;
+          const term = q.trim().toLowerCase();
+          if (!term) { renderProducts(); return; }
+          const grid = el('grid');
+          const list = state.products.filter(p => (p.name||'').toLowerCase().includes(term) || (p.description||'').toLowerCase().includes(term) || (p.category||'').toLowerCase().includes(term));
+          el('countLabel').textContent = list.length ? `${list.length} ${list.length===1?'item':'itens'}` : '0 itens';
+          if (!list.length) { grid.innerHTML = '<div class="empty" style="grid-column:1/-1"><p>Nenhum produto encontrado.</p></div>'; return; }
+          state.category = 'TODOS';
+          // render filtered subset by temporarily swapping
+          const orig = state.products;
+          state.products = list;
+          renderProducts();
+          state.products = orig;
+        });
+        actions.insertBefore(searchBtn, actions.firstChild);
+      }
+    }
   }
 
   function renderCategories() {
@@ -273,7 +316,7 @@
       .map(
         (c) =>
           `<button class="cat ${state.category === c ? 'active' : ''}" data-cat="${esc(c)}">${
-            c === 'TODOS' ? 'Ver tudo' : esc(c)
+            c === 'TODOS' ? (IS_MDN ? 'Todos' : 'Ver tudo') : esc(c)
           }</button>`
       )
       .join('');
@@ -366,7 +409,7 @@
     const list =
       state.category === 'TODOS' ? state.products : state.products.filter((p) => p.category === state.category);
 
-    el('countLabel').textContent = list.length ? `${list.length} ${list.length === 1 ? 'item' : 'itens'}` : '';
+    el('countLabel').textContent = list.length ? `${list.length} ${list.length === 1 ? (IS_MDN ? 'produto' : 'item') : (IS_MDN ? 'produtos' : 'itens')}` : '';
 
     if (!list.length) {
       grid.innerHTML = `<div class="empty" style="grid-column:1/-1">
@@ -377,7 +420,7 @@
     }
 
     grid.innerHTML = list
-      .map((p) => {
+      .map((p, idx) => {
         const qty = qtdNoCarrinho(p.id);
         const emEstoque = isInStock(p);
         const temMontagem = !!(p.opcoes && p.opcoes.ativo && (p.opcoes.sabores || []).length);
@@ -405,7 +448,7 @@
              </div>`
           : `<button class="add-btn" data-inc="${p.id}">
                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
-               Adicionar
+               ${IS_MDN ? '+ ADICIONAR' : 'Adicionar'}
              </button>`;
         const waBtn =
           emEstoque && state.segment === 'catalogo' && state.business.whatsapp
@@ -416,13 +459,18 @@
                  Pedir este no WhatsApp
                </a>`
             : '';
+        const mdnBadge = IS_MDN ? `<span class="mdn-badge">${idx < 2 ? 'DESTAQUE' : 'ESCOLHA MDN'}</span>` : '';
+        const mdnFav = IS_MDN ? `<button type="button" class="mdn-fav" aria-label="Favoritar" onclick="event.stopPropagation()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20.8 8.6c0 1.5-.6 2.9-1.6 3.9L12 19.7l-7.2-7.2A5.5 5.5 0 1 1 12 4.7a5.5 5.5 0 0 1 8.8 3.9Z"/></svg></button>` : '';
+        const mdnBrand = IS_MDN ? `<div class="mdn-brand">${esc(p.category || 'MDN PRESENTS')}</div>` : '';
         return `<article class="card${emEstoque ? '' : ' esgotado'}">
           <div class="card-media${p.image_url ? '' : ' sem-foto'}">
             ${p.image_url ? `<img src="${esc(p.image_url)}" alt="${esc(p.name)}" loading="lazy">` : `<div class="placeholder">${PLACEHOLDER}</div>`}
-            ${p.category ? `<span class="card-tag">${esc(p.category)}</span>` : ''}
+            ${IS_MDN ? mdnBadge : (p.category ? `<span class="card-tag">${esc(p.category)}</span>` : '')}
+            ${mdnFav}
             ${emEstoque ? '' : '<span class="stock-badge" role="status">Esgotado</span>'}
           </div>
           <div class="card-body">
+            ${mdnBrand}
             <h3>${esc(p.name)}</h3>
             <p class="desc">${esc(p.description || '')}</p>
             <div class="card-foot">

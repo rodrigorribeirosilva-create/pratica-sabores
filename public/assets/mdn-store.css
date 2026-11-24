@@ -1,0 +1,276 @@
+/* MDN Presents - visual profissional exclusivo da vitrine pública */
+body.mdn-visual[data-store="mdn-presents"]{
+  --mdn-bg:#ffffff;
+  --mdn-surface:#fbfaf8;
+  --mdn-ink:#1e1a17;
+  --mdn-soft:#6f685f;
+  --mdn-line:#ece7df;
+  --mdn-gold:#a8895e;
+  --mdn-gold-dark:#8f7148;
+  --mdn-dark:#1f1b18;
+  --cream:var(--mdn-bg);
+  --cream-2:#f7f4ef;
+  --ink:var(--mdn-ink);
+  --ink-soft:#4d463f;
+  --muted:var(--mdn-soft);
+  --green:var(--mdn-dark);
+  --green-dark:#000;
+  --green-soft:#f3ede3;
+  --gold:var(--mdn-gold);
+  --line:var(--mdn-line);
+  --card:#fff;
+  --shadow-sm:0 2px 10px rgba(30,26,23,.04);
+  --shadow-md:0 12px 30px rgba(30,26,23,.08);
+  --r-lg:4px;
+  --r-md:4px;
+  font-family:"Montserrat",system-ui,-apple-system,sans-serif;
+  background:var(--mdn-bg);
+  color:var(--mdn-ink);
+}
+body.mdn-visual .wrap{max-width:1240px;padding:0 24px}
+@media(max-width:640px){body.mdn-visual .wrap{padding:0 16px}}
+
+/* Announcement */
+.mdn-announcement{
+  background:#1f1b18;color:#fff;text-align:center;
+  font-size:11px;font-weight:600;letter-spacing:.18em;
+  padding:10px 12px;text-transform:uppercase;
+}
+
+/* Header */
+body.mdn-visual .site-header{
+  position:sticky;top:0;z-index:60;
+  background:rgba(255,255,255,.96);
+  backdrop-filter:blur(10px);
+  border-bottom:1px solid #eeeae3;
+}
+body.mdn-visual .site-header .bar{height:76px;gap:16px;display:grid;grid-template-columns:42px 1fr auto;align-items:center}
+body.mdn-visual .brand{gap:12px;min-width:0;justify-content:center}
+body.mdn-visual .brand-logo{width:52px;height:52px;border:none;box-shadow:none;background:transparent}
+body.mdn-visual .brand-logo.has-img{border:none;box-shadow:none}
+body.mdn-visual .brand-logo img{transform:none;object-fit:contain}
+body.mdn-visual .brand-name{
+  font-family:"Cormorant Garamond",Georgia,serif;
+  font-size:34px;font-weight:600;letter-spacing:.08em;line-height:1;
+  text-transform:uppercase;color:#1e1a17;
+}
+body.mdn-visual .brand-sub{
+  font-size:10px;letter-spacing:.28em;text-transform:uppercase;
+  color:#7a7268;margin-top:2px;font-weight:500;
+}
+body.mdn-visual .header-actions{margin-left:0;gap:6px}
+body.mdn-visual .header-actions .btn,
+body.mdn-visual .header-actions .cart-btn{
+  background:transparent;border:none;box-shadow:none;color:#1e1a17;
+  padding:10px;border-radius:999px;
+}
+body.mdn-visual .header-actions .btn:hover{background:#f5f1ea}
+body.mdn-visual .cart-label{display:none}
+body.mdn-visual .cart-count{
+  background:#1e1a17;color:#fff;border:none;top:-2px;right:-2px;
+  min-width:18px;height:18px;font-size:10px;
+}
+body.mdn-visual .mdn-icon-btn{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:42px;height:42px;border:none;background:transparent;color:#1e1a17;
+  border-radius:999px;cursor:pointer;
+}
+body.mdn-visual .mdn-icon-btn:hover{background:#f5f1ea}
+body.mdn-visual .mdn-menu-btn{margin-right:auto}
+@media(max-width:700px){
+  body.mdn-visual .site-header .bar{height:68px}
+  body.mdn-visual .brand-name{font-size:26px;letter-spacing:.06em}
+  body.mdn-visual .brand-sub{font-size:9px;letter-spacing:.2em}
+  body.mdn-visual .brand-logo{width:42px;height:42px}
+}
+
+/* Hero */
+body.mdn-visual .hero{padding:0 0 24px}
+body.mdn-visual .hero-card{
+  background:linear-gradient(180deg,#fbfaf8 0%,#ffffff 100%);
+  color:var(--mdn-ink);box-shadow:none;border-radius:0;
+  min-height:360px;align-items:center;justify-content:center;
+  border-bottom:1px solid #efeae2;
+}
+body.mdn-visual .hero-card::after{display:none}
+body.mdn-visual .hero-watermark{display:none !important;}
+body.mdn-visual .hero-content{
+  text-align:center;padding:64px 24px 56px;max-width:920px;margin:0 auto;
+}
+body.mdn-visual .hero-badge{display:none !important}
+body.mdn-visual .mdn-eyebrow{
+  font-size:12px;font-weight:600;letter-spacing:.28em;color:#7a7268;
+  margin-bottom:22px;text-transform:uppercase;
+}
+body.mdn-visual .hero-content h1{
+  font-family:"Cormorant Garamond",Georgia,serif;
+  font-size:clamp(44px,7vw,78px);line-height:.95;font-weight:500;
+  letter-spacing:-.02em;color:#1e1a17;margin:0 auto 18px;max-width:900px;
+}
+body.mdn-visual .hero-content h1 em,
+body.mdn-visual .hero-content h1 .mdn-accent{color:var(--mdn-gold);font-style:italic}
+body.mdn-visual .hero-tagline{
+  font-size:15px;line-height:1.8;color:#6f685f;max-width:640px;
+  margin:0 auto 28px;
+}
+body.mdn-visual .mdn-hero-cta{
+  display:inline-flex;align-items:center;gap:10px;
+  background:#1f1b18;color:#fff;text-decoration:none;
+  padding:16px 28px;font-size:12px;font-weight:600;letter-spacing:.14em;
+  text-transform:uppercase;transition:background .2s,transform .2s;
+}
+body.mdn-visual .mdn-hero-cta:hover{background:#000;transform:translateY(-1px)}
+body.mdn-visual .mdn-hero-sub{
+  margin-top:34px;font-size:11px;letter-spacing:.24em;color:#8a8278;
+  text-transform:uppercase;font-weight:600;
+}
+body.mdn-visual .hero-chips{display:none}
+body.mdn-visual .hero-note{display:none !important}
+@media(max-width:640px){
+  body.mdn-visual .hero-card{min-height:300px}
+  body.mdn-visual .hero-content{padding:52px 16px 44px}
+  body.mdn-visual .hero-tagline{font-size:14px}
+}
+
+/* Closed banner */
+body.mdn-visual .closed-banner{
+  border-radius:0;background:#faf6ef;border:1px solid #efe1c9;color:#6d5329;
+}
+
+/* Categories */
+body.mdn-visual .cats{
+  top:76px;background:rgba(255,255,255,.96);
+  backdrop-filter:blur(10px);padding:14px 0;border-bottom:1px solid #efeae2;
+  margin-bottom:0;
+}
+@media(max-width:700px){body.mdn-visual .cats{top:68px}}
+body.mdn-visual .cats-scroll{gap:10px;padding:0 2px}
+body.mdn-visual .cat{
+  border:none;background:transparent;color:#6f685f;
+  border-radius:0;padding:10px 14px;font-size:13px;font-weight:500;
+  letter-spacing:.01em;position:relative;
+}
+body.mdn-visual .cat:hover{color:#1e1a17;background:transparent}
+body.mdn-visual .cat.active{
+  background:#1f1b18;color:#fff;border-radius:0;padding:10px 18px;
+}
+
+/* Section head */
+body.mdn-visual .section-head{margin:28px 0 22px;align-items:center}
+body.mdn-visual .section-head h2{
+  font-family:"Cormorant Garamond",Georgia,serif;
+  font-size:42px;font-weight:500;color:#1e1a17;letter-spacing:-.01em;
+}
+body.mdn-visual .section-head span{font-size:13px;color:#7a7268;font-weight:500}
+@media(max-width:640px){body.mdn-visual .section-head h2{font-size:34px}}
+
+/* Grid */
+body.mdn-visual .grid{
+  grid-template-columns:repeat(2,minmax(0,1fr));gap:28px 20px;padding-bottom:120px;
+}
+@media(min-width:760px){body.mdn-visual .grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:34px 24px}}
+@media(min-width:1060px){body.mdn-visual .grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
+
+/* Card */
+body.mdn-visual .card{
+  border:none;box-shadow:none;border-radius:0;background:transparent;overflow:visible;
+}
+body.mdn-visual .card:hover{transform:none;box-shadow:none}
+body.mdn-visual .card-media{
+  aspect-ratio:3/4;background:#f7f4ef;border-radius:0;overflow:hidden;position:relative;
+}
+body.mdn-visual .card-media img{transition:transform .55s ease}
+body.mdn-visual .card:hover .card-media img{transform:scale(1.03)}
+body.mdn-visual .card-tag{
+  top:12px;left:12px;background:rgba(255,255,255,.94);color:#6e6254;
+  font-size:10px;font-weight:700;letter-spacing:.08em;padding:7px 10px;border-radius:0;
+  backdrop-filter:none;
+}
+body.mdn-visual .mdn-badge{
+  position:absolute;top:12px;left:12px;z-index:2;
+  background:#fff;color:#3f382f;font-size:10px;font-weight:700;
+  letter-spacing:.08em;padding:7px 10px;text-transform:uppercase;
+}
+body.mdn-visual .mdn-fav{
+  position:absolute;top:10px;right:10px;z-index:2;
+  width:34px;height:34px;border:none;border-radius:999px;
+  background:rgba(255,255,255,.88);color:#3f382f;display:grid;place-items:center;
+}
+body.mdn-visual .card-body{padding:14px 0 0;gap:4px}
+body.mdn-visual .mdn-brand{
+  font-size:10px;font-weight:700;letter-spacing:.14em;color:#8a8278;
+  text-transform:uppercase;margin-bottom:2px;
+}
+body.mdn-visual .card-body h3{
+  font-family:"Cormorant Garamond",Georgia,serif;
+  font-size:32px;line-height:.95;font-weight:500;color:#1e1a17;
+  margin:0 0 4px;letter-spacing:-.01em;
+}
+@media(max-width:640px){body.mdn-visual .card-body h3{font-size:28px}}
+body.mdn-visual .card-body .desc{
+  font-size:12px;color:#7a7268;line-height:1.5;min-height:0;
+  -webkit-line-clamp:2;display:-webkit-box;-webkit-box-orient:vertical;overflow:hidden;
+  margin-bottom:8px;
+}
+body.mdn-visual .card-foot{margin-top:6px;align-items:center;gap:12px}
+body.mdn-visual .price{
+  font-family:"Montserrat",sans-serif;font-size:22px;font-weight:500;
+  color:#1e1a17;letter-spacing:-.01em;
+}
+body.mdn-visual .add-btn{
+  background:transparent;color:#1e1a17;border:none;border-bottom:1px solid #1e1a17;
+  border-radius:0;padding:4px 0;font-size:11px;font-weight:700;letter-spacing:.1em;
+  text-transform:uppercase;gap:6px;
+}
+body.mdn-visual .add-btn:hover{background:transparent;color:var(--mdn-gold);border-color:var(--mdn-gold)}
+body.mdn-visual .add-btn svg{display:none}
+body.mdn-visual .add-btn.stock-disabled,
+body.mdn-visual .add-btn.stock-disabled:hover{
+  background:transparent;color:#a39a90;border:0;border-bottom:1px solid #d8d1c7;
+}
+body.mdn-visual .stepper{
+  background:#1f1b18;border-radius:0;padding:2px;
+}
+body.mdn-visual .stepper button{border-radius:0}
+body.mdn-visual .montar-wrap .add-btn{border-bottom:1px solid #1e1a17}
+body.mdn-visual .wa-item{
+  margin-top:10px;padding:0;border:none;background:transparent;color:#7a7268;
+  font-size:11px;font-weight:600;letter-spacing:.02em;border-radius:0;text-decoration:underline;
+}
+body.mdn-visual .wa-item:hover{background:transparent;color:#1e1a17;transform:none}
+body.mdn-visual .stock-badge{
+  top:12px;right:12px;border-radius:0;background:#1f1b18;font-size:10px;letter-spacing:.08em;
+}
+
+/* Cart bar */
+body.mdn-visual .cart-bar-inner{background:#1f1b18;border-radius:2px}
+body.mdn-visual .cart-bar-inner .btn-gold,
+body.mdn-visual .btn-gold{background:#fff;color:#1f1b18;box-shadow:none}
+body.mdn-visual .btn-primary{background:#1f1b18;box-shadow:none;border-radius:0}
+body.mdn-visual .btn-primary:hover:not(:disabled){background:#000}
+body.mdn-visual .btn-ghost{border-radius:0}
+
+/* Drawer */
+body.mdn-visual .drawer-head{background:#fff}
+body.mdn-visual .drawer-foot .btn{border-radius:0}
+
+/* Footer */
+body.mdn-visual .site-footer{
+  border-top:1px solid #ece7df;padding:38px 0 120px;color:#7a7268;
+}
+body.mdn-visual .site-footer strong{
+  font-family:"Cormorant Garamond",Georgia,serif;font-size:28px;font-weight:500;
+  color:#1e1a17;display:block;margin-bottom:4px;
+}
+body.mdn-visual .admin-link{display:none}
+
+/* WhatsApp float is added by menu.js in some versions? no, keep default behavior */
+/* Toast */
+body.mdn-visual .toast{border-radius:2px}
+body.mdn-visual .toast.ok{background:#1f1b18}
+
+/* Lightbox */
+body.mdn-visual .foto-lb{background:rgba(255,255,255,.97)}
+body.mdn-visual .foto-lb .lb-nome,body.mdn-visual .foto-lb .lb-x,body.mdn-visual .foto-lb .lb-dica{color:#1e1a17;text-shadow:none}
+body.mdn-visual .foto-lb .lb-x{background:#efeae2}
+body.mdn-visual .foto-lb img{box-shadow:0 20px 60px rgba(0,0,0,.12)}

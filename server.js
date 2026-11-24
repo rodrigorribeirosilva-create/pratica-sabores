@@ -615,6 +615,32 @@ async function main() {
       // sobras escritas em JavaScript (não aparecem em barbearia, mas ficam prontas)
       html = html.replace(/: 'Climatização'/, ": 'Agendamentos'");
     }
+    // Identidade da loja no HTML (útil para estilos/ajustes por loja, sem afetar outras).
+    html = html.replace(/<body([^>]*)>/, `<body$1 data-store="${esc(store.slug)}">`);
+
+    // Visual profissional exclusivo da vitrine pública da MDN Presents.
+    // Não toca outras lojas nem painéis administrativos.
+    if (!ehPainel && store.slug === 'mdn-presents') {
+      html = html.replace('<body', '<body class="mdn-visual"');
+      html = html.replace(
+        '</head>',
+        `<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,500;1,600&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet"><link rel="stylesheet" href="/assets/mdn-store.css?v=${stamp}"></head>`
+      );
+      // Barra de anúncio e hero com aparência de loja virtual.
+      html = html.replace(
+        '<header class="site-header">',
+        `<div class="mdn-announcement" id="mdnAnnouncement">ENTREGA GRÁTIS • PAGAMENTO NA ENTREGA</div>\n<header class="site-header">`
+      );
+      html = html.replace(
+        '<div class="hero-badge"><span class="dot"></span> <span id="heroBadge">Aberto hoje</span></div>',
+        '<div class="hero-badge" id="heroBadgeWrap"><span class="dot"></span> <span id="heroBadge">Aberto hoje</span></div><div class="mdn-eyebrow">A ARTE DE PERFUMAR</div>'
+      );
+      html = html.replace(
+        '<p id="heroTagline">Marmitas caseiras, feitas no dia</p>',
+        '<p id="heroTagline" class="hero-tagline">Marmitas caseiras, feitas no dia</p><a href="#menuTitle" class="mdn-hero-cta" id="mdnHeroCta">ENCONTRE SUA FRAGRÂNCIA <span aria-hidden="true">→</span></a><div class="mdn-hero-sub">✦ ESCOLHIDOS PARA ENCANTAR ✦</div>'
+      );
+    }
+
     /* no-cache + must-revalidate: o navegador SEMPRE pergunta ao servidor antes
        de mostrar a página (F5 traz a versão que está no ar, nunca uma velha) e,
        ao mesmo tempo, o service worker continua podendo guardar a cópia que faz
