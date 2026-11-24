@@ -272,6 +272,22 @@ function storeSummary(store) {
   const delivery = getSetting(store.id, 'delivery', {});
   const admin = getSetting(store.id, 'admin', {});
   const senha = require('./db').revealStorePassword(admin);
+  const tipoEscolhido = String(business.tipo || '').toLowerCase() === 'catalogo'
+    ? 'catalogo'
+    : String(business.tipo || '').toLowerCase() === 'cardapio'
+      ? 'cardapio'
+      : '';
+  // categorias reais da loja: ajudam a saber se é cardápio (comida) ou catálogo
+  const categorias = ehServicos
+    ? []
+    : db
+        .prepare(
+          `SELECT category AS nome, COUNT(*) AS n FROM products
+            WHERE store_id = ? AND active = 1 AND TRIM(COALESCE(category, '')) <> ''
+            GROUP BY category ORDER BY n DESC LIMIT 6`
+        )
+        .all(store.id)
+        .map((c) => c.nome);
 
   // Cartão de crédito online (Mercado Pago) — o master precisa saber quem já está pronto
   const mp = getSetting(store.id, 'mercadopago', {}) || {};
@@ -310,6 +326,10 @@ function storeSummary(store) {
     rotulo_item: ehServicos ? 'serviço' : segLoja === 'catalogo' ? 'produto' : 'item',
     rotulo_itens: ehServicos ? 'serviços' : 'produtos',
     rotulo_pedidos: ehServicos ? 'agendamentos' : 'pedidos',
+    // "como a loja aparece" escolhido pela loja (vazio = automático)
+    tipo: tipoEscolhido,
+    tipo_efetivo: segLoja,
+    categorias,
     created_at: formatDateTimeBR(store.created_at),
     // números de venda: a mesma conta da aba "Vendas" do painel da loja
     vendas: (vendasPorLoja()[store.id] || {
@@ -353,7 +373,13 @@ router.post('/stores', requireMaster, (req, res) => {
       segment: ['catalogo', 'servicos'].includes(b.segment) ? b.segment : 'food',
       withSeedProducts: b.withSeedProducts === true,
     });
-    res.status(201).json({ ok: true, store: storeSummary(store) });
+    // "aparece como" já na criação (opcional): cardápio digital x catálogo digital
+    const tipoBruto = String(b.tipo || '').toLowerCase();
+    if (store.segment !== 'servicos' && (tipoBruto === 'cardapio' || tipoBruto === 'catalogo')) {
+      const business = getSetting(store.id, 'business', {}) || {};
+      setSetting(store.id, 'business', { ...business, tipo: tipoBruto });
+    }
+    res.status(201).json({ ok: true, store: storeSummary(getStoreById(store.id) || store) });
   } catch (err) {
     console.error('[master/create]', err);
     res.status(400).json({ error: err.message || 'Não foi possível criar a loja.' });
@@ -482,6 +508,22 @@ router.patch('/stores/:id', requireMaster, (req, res) => {
   if (b.segment !== undefined) {
     const seg = ['catalogo', 'servicos'].includes(b.segment) ? b.segment : 'food';
     db.prepare('UPDATE stores SET segment = ? WHERE id = ?').run(seg, store.id);
+  }
+  /**
+   * "Como a loja aparece": cardápio digital x catálogo digital.
+   * Vale só para esta loja (ficou em business.tipo, igual ao painel do
+   * cliente), então o Master consegue trocar sem entrar no painel dela.
+   * Vazio = automático (segue o tipo em que a loja foi criada).
+   */
+  if (b.tipo !== undefined) {
+    const segEfetivo = require('./db').segmentoEfetivo(store);
+    if (segEfetivo === 'servicos') {
+      return res.status(400).json({ error: 'Loja de agenda de serviços não entra nessa escolha.' });
+    }
+    const bruto = String(b.tipo || '').toLowerCase();
+    const tipo = bruto === 'catalogo' ? 'catalogo' : bruto === 'cardapio' ? 'cardapio' : '';
+    const business = getSetting(store.id, 'business', {}) || {};
+    setSetting(store.id, 'business', { ...business, tipo });
   }
   if (b.active !== undefined) {
     db.prepare('UPDATE stores SET active = ? WHERE id = ?').run(b.active ? 1 : 0, store.id);
