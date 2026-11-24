@@ -452,12 +452,11 @@ async function main() {
     const origem = `${req_proto(res)}://${res.req.get('host')}`;
     const imagem = imagemRel.startsWith('http') ? imagemRel : origem + imagemRel;
     const origemBase = origem;
-    /* Link do PAINEL: a prévia mostra SÓ o logotipo da loja — sem cartão
-       montado, sem nome da plataforma, sem nenhum outro desenho. */
-    const previaSoLogo = ehPainel && ehBarbeariaLoja && !!business.logo_url;
-    // (função: o cartão com o logo é montado depois, mais abaixo no arquivo)
+    /* Prévia de compartilhamento: quando a loja tem logotipo, envia SÓ o logotipo
+       (sem cartão postal, sem alterar cor). Sem logo, usa o cartão og-card. */
+    const previaSoLogo = !!business.logo_url;
     const imagemPrevia = () =>
-      previaSoLogo && business.logo_url
+      business.logo_url
         ? business.logo_url.startsWith('http')
           ? business.logo_url
           : origem + business.logo_url
