@@ -1008,6 +1008,181 @@ async function main() {
   });
 
   /**
+   * Comanda para impressão (pública pelo código do pedido).
+   * /l/<loja>/comanda/<codigo>
+   * Layout compacto para impressora térmica 58/80mm; também funciona no print do celular.
+   */
+  app.get('/l/:slug/comanda/:code', resolveStoreFromParam, (req, res) => {
+    try {
+      const db = require('./src/db');
+      const business = db.getSetting(req.store.id, 'business', {}) || {};
+      const order = db.db
+        .prepare('SELECT * FROM orders WHERE code = ? AND store_id = ?')
+        .get(String(req.params.code).toUpperCase(), req.store.id);
+      if (!order) return res.status(404).type('html').send('<h1>Comanda não encontrada</h1>');
+      const itens = JSON.parse(order.items_json || '[]');
+      const brl = (c) => 'R$ ' + (Number(c || 0) / 100).toFixed(2).replace('.', ',');
+      const data = order.created_at_br || new Date(order.created_at + 'Z').toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' });
+      const nome = business.name || req.store.name;
+      const detalheEscolhas = (e) => {
+        if (!e) return '';
+        if (typeof e === 'string') return e;
+        const lista = Array.isArray(e) ? e : Object.entries(e).map(([nome, qtd]) => ({ nome, qtd }));
+        return lista.filter((x) => x && x.nome).map((x) => `${Number(x.qtd) || 1}x ${x.nome}`).join(', ');
+      };
+      const linhas = itens.map((i) => {
+        const qtd = Number(i.qty || 1);
+        const total = i.total_cents ?? (i.price_cents || 0) * qtd;
+        const opcoes = detalheEscolhas(i.escolhas);
+        return `<div class="item"><div class="item-l"><span class="qtd">${qtd}x</span><div><div class="iname">${esc(i.name || '')}</div>${opcoes ? `<div class="iopt">${esc(opcoes)}</div>` : ''}${i.obs ? `<div class="iopt">Obs: ${esc(i.obs)}</div>` : ''}</div></div><div class="iprice">${brl(total)}</div></div>`;
+      }).join('');
+      const endereco = order.fulfillment === 'delivery'
+        ? [order.address, order.neighborhood, order.complement].filter(Boolean).join(', ')
+        : 'Retirada no local';
+      const pag = order.payment_method || '—';
+      const statusPag = order.payment_status ? ` (${order.payment_status})` : '';
+      const html = `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Comanda ${esc(order.code)} · ${esc(nome)}</title>
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;background:#f3efe6;font-family:Arial,Helvetica,sans-serif;color:#111;padding:16px}
+  .sheet{max-width:360px;margin:0 auto;background:#fff;padding:14px 12px;border-radius:10px;box-shadow:0 8px 30px rgba(0,0,0,.08)}
+  .center{text-align:center}
+  h1{font-size:20px;margin:0 0 2px;letter-spacing:.02em}
+  .sub{font-size:12px;color:#444;margin:2px 0}
+  .code{font-size:22px;font-weight:800;margin:8px 0 2px}
+  hr{border:0;border-top:1px dashed #777;margin:10px 0}
+  .row{display:flex;justify-content:space-between;gap:10px;font-size:13px;margin:3px 0}
+  .label{color:#444}.val{font-weight:600;text-align:right;word-break:break-word}
+  .item{display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px dashed #ddd;font-size:14px}
+  .item-l{display:flex;gap:8px;min-width:0}
+  .qtd{font-weight:800;min-width:28px}
+  .iname{font-weight:700;line-height:1.25}
+  .iopt{font-size:12px;color:#444;margin-top:2px;line-height:1.25}
+  .iprice{font-weight:700;white-space:nowrap}
+  .total{display:flex;justify-content:space-between;font-size:18px;font-weight:800;margin-top:10px}
+  .notes{font-size:13px;background:#f7f7f7;padding:8px;border-radius:6px;margin-top:8px;white-space:pre-wrap}
+  .actions{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
+  button{flex:1;min-width:140px;border:1px solid #111;background:#111;color:#fff;border-radius:8px;padding:11px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit}
+  button.ghost{background:#fff;color:#111}
+  .hint{font-size:11px;color:#666;margin-top:10px;line-height:1.4;text-align:center}
+  @media print{
+    body{background:#fff;padding:0}
+    .sheet{max-width:none;width:80mm;margin:0;padding:0;box-shadow:none;border-radius:0}
+    .actions,.hint{display:none !important}
+    @page{size:80mm auto;margin:3mm}
+  }
+</style></head><body>
+<div class="sheet">
+  <div class="center">
+    <h1>${esc(nome)}</h1>
+    ${business.whatsapp ? `<div class="sub">WhatsApp ${esc(business.whatsapp)}</div>` : ''}
+    <div class="sub">COMANDA</div>
+    <div class="code">${esc(order.code)}</div>
+    <div class="sub">${esc(data)}</div>
+  </div>
+  <hr>
+  <div class="row"><span class="label">Cliente</span><span class="val">${esc(order.customer_name || '—')}</span></div>
+  <div class="row"><span class="label">Telefone</span><span class="val">${esc(order.phone || '—')}</span></div>
+  <div class="row"><span class="label">Tipo</span><span class="val">${order.fulfillment === 'delivery' ? 'Entrega' : 'Retirada'}</span></div>
+  <div class="row"><span class="label">Endereço</span><span class="val">${esc(endereco)}</span></div>
+  <div class="row"><span class="label">Horário</span><span class="val">${esc(order.period || '—')}</span></div>
+  <div class="row"><span class="label">Pagamento</span><span class="val">${esc(pag + statusPag)}</span></div>
+  <hr>
+  <div>${linhas || '<div class="sub">Sem itens</div>'}</div>
+  <hr>
+  <div class="row"><span class="label">Subtotal</span><span class="val">${brl(order.subtotal_cents)}</span></div>
+  <div class="row"><span class="label">Entrega</span><span class="val">${order.fee_cents ? brl(order.fee_cents) : 'Grátis'}</span></div>
+  <div class="total"><span>TOTAL</span><span>${brl(order.total_cents)}</span></div>
+  ${order.notes ? `<div class="notes"><strong>Obs:</strong> ${esc(order.notes)}</div>` : ''}
+  <div class="actions">
+    <button onclick="window.print()">Imprimir</button>
+    <button class="ghost" id="btnBt" type="button">Imprimir via Bluetooth</button>
+  </div>
+  <div class="hint" id="btHint">"Imprimir" usa a impressora do celular/sistema (inclui Bluetooth pareada). "Imprimir via Bluetooth" tenta conexão direta com impressoras térmicas BLE compatíveis (Chrome/Android).</div>
+</div>
+<script>
+(function(){
+  const btn = document.getElementById('btnBt');
+  const hint = document.getElementById('btHint');
+  if (!navigator.bluetooth) { btn.disabled = true; btn.title = 'Bluetooth não suportado neste navegador'; return; }
+  const enc = new TextEncoder();
+  function line(s=''){ return s + '\\n'; }
+  function padR(s,n){ s=String(s); return s.length>=n?s.slice(0,n):s+' '.repeat(n-s.length); }
+  function padL(s,n){ s=String(s); return s.length>=n?s.slice(0,n):' '.repeat(n-s.length)+s; }
+  const items = ${JSON.stringify(itens.map(i => ({q:Number(i.qty||1),n:String(i.name||''),t:Number(i.total_cents ?? (i.price_cents||0)*(i.qty||1)),o:detalheEscolhas(i.escolhas)})))};
+  function build(){
+    const ESC = String.fromCharCode(27), GS = String.fromCharCode(29);
+    let out = ESC + '@';
+    out += ESC + 'a' + String.fromCharCode(1);
+    out += GS + '!' + String.fromCharCode(17) + line(${JSON.stringify(String(nome).slice(0,32))}) + GS + '!' + String.fromCharCode(0);
+    out += line('COMANDA ' + ${JSON.stringify(String(order.code))});
+    out += line(${JSON.stringify(String(data))});
+    out += ESC + 'a' + String.fromCharCode(0);
+    out += line('--------------------------------');
+    out += line('Cliente: ' + ${JSON.stringify(String(order.customer_name||'-').slice(0,40))});
+    out += line('Tel: ' + ${JSON.stringify(String(order.phone||'-').slice(0,20))});
+    out += line(${JSON.stringify((order.fulfillment==='delivery'?'Entrega: ':'Retirada: ')+String(endereco).slice(0,64))});
+    out += line('Pagto: ' + ${JSON.stringify(String(pag+statusPag).slice(0,28))});
+    out += line('--------------------------------');
+    items.forEach(it => {
+      const left = (it.q+'x '+it.n).slice(0,22);
+      const right = ('R$ '+(it.t/100).toFixed(2).replace('.',','));
+      out += line(padR(left,22) + padL(right,10));
+      if (it.o) out += line('  '+String(it.o).slice(0,30));
+    });
+    out += line('--------------------------------');
+    out += line(padR('Subtotal',22)+padL(${JSON.stringify(brl(order.subtotal_cents))},10));
+    out += line(padR('Entrega',22)+padL(${JSON.stringify(order.fee_cents ? brl(order.fee_cents) : 'Gratis')},10));
+    out += GS + '!' + String.fromCharCode(1) + line(padR('TOTAL',16)+padL(${JSON.stringify(brl(order.total_cents))},16)) + GS + '!' + String.fromCharCode(0);
+    ${order.notes ? `out += line('Obs: '+${JSON.stringify(String(order.notes).slice(0,120))});` : ''}
+    out += '\n\n\n\n';
+    return enc.encode(out);
+  }
+  async function printBt(){
+    btn.disabled = true; hint.textContent = 'Procurando impressora Bluetooth...';
+    try {
+      const device = await navigator.bluetooth.requestDevice({
+        acceptAllDevices: true,
+        optionalServices: ['000018f0-0000-1000-8000-00805f9b34fb','e7810a71-73ae-499d-8c15-faa9aef0c3f2','0000ff00-0000-1000-8000-00805f9b34fb','0000fee7-0000-1000-8000-00805f9b34fb','49535343-fe7d-4ae5-8fa9-9fafd205e455']
+      });
+      const server = await device.gatt.connect();
+      let char = null;
+      const services = await server.getPrimaryServices();
+      for (const svc of services) {
+        const chars = await svc.getCharacteristics();
+        for (const c of chars) {
+          const p = c.properties || {};
+          if (p.write || p.writeWithoutResponse) { char = c; break; }
+        }
+        if (char) break;
+      }
+      if (!char) throw new Error('Característica de escrita não encontrada na impressora.');
+      const data = build();
+      const size = 20;
+      for (let i=0; i<data.length; i+=size) {
+        const chunk = data.slice(i, i+size);
+        if (char.properties.writeWithoutResponse) await char.writeValueWithoutResponse(chunk);
+        else await char.writeValue(chunk);
+      }
+      hint.textContent = 'Comanda enviada para a impressora.';
+    } catch (e) {
+      hint.textContent = 'Não foi possível imprimir via Bluetooth: ' + (e && e.message ? e.message : e) + '. Use o botão Imprimir e selecione a impressora pareada.';
+    } finally { btn.disabled = false; }
+  }
+  btn.addEventListener('click', printBt);
+})();
+</script>
+</body></html>`;
+      res.type('html').send(html);
+    } catch (e) {
+      console.error('[comanda]', e.message);
+      res.status(500).send('Não foi possível gerar a comanda.');
+    }
+  });
+
+  /**
    * Comprovante de pagamento (público, protegido pelo código do pedido).
    * /l/<loja>/comprovante/<codigo>
    * Serve para o cliente guardar e para a loja conferir — o mesmo link vai no WhatsApp.
