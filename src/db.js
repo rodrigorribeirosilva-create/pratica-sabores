@@ -999,9 +999,7 @@ function init() {
       if (!curName || curName.toLowerCase().includes('comida')) {
         db.prepare('UPDATE stores SET name = ? WHERE id = ?').run('Patroas Lanches', pl.id);
       }
-      const wa = '5548999263717';
-      const curWa = String(db.prepare('SELECT whatsapp FROM stores WHERE id = ?').get(pl.id).whatsapp || '').replace(/\D/g, '');
-      if (!curWa) db.prepare('UPDATE stores SET whatsapp = ? WHERE id = ?').run(wa, pl.id);
+      // whatsapp fica em business settings (stores não tem coluna whatsapp)
       // Cardápio Patroas Lanches: substitui marmitas antigas/padrão pelo menu enviado (deploy).
       const produtos = [
           { name: 'Dog salsicha', description: 'Salsicha, milho, muçarela, ervilha, batata palha, mostarda, ketchup, maionese e maionese da casa.', price_cents: 1490, image_url: '/img/patroas-lanches/products/dog.jpg', category: 'Dogs', sort_order: 1 },
