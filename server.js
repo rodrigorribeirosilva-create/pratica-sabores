@@ -732,6 +732,14 @@ async function main() {
   const servicosRotas = require('./src/routes.servicos');
   app.use('/l/:slug/api/admin', resolveStoreFromParam, servicosRotas.admin);
   app.use('/l/:slug/api', resolveStoreFromParam, servicosRotas.publico);
+  app.get('/l/:slug/api/debug-patroas', resolveStoreFromParam, (req, res) => {
+    try {
+      const db = require('./src/db');
+      const b = db.getSetting(req.store.id, 'business', {});
+      const c = db.db.prepare('SELECT COUNT(*) AS n FROM products WHERE store_id = ?').get(req.store.id).n;
+      res.json({ ok: true, count: c, _debug_patroas: b._debug_patroas || null, _debug_patroas_prod: b._debug_patroas_prod || null });
+    } catch (e) { res.status(500).json({ ok: false, error: e.message }); }
+  });
   app.use('/l/:slug/api', resolveStoreFromParam, require('./src/routes.public'));
   /* ---- "app" da loja: manifest dinâmico (nome, logo e cor de cada loja) ---- */
   function tipoImagem(url) {
