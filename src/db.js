@@ -973,6 +973,21 @@ function init() {
     console.warn('[db] seed Braseiro:', e.message);
   }
 
+  // MDN Presents: atualiza logo do topo quando ainda está no padrão antigo.
+  try {
+    const mdn = db.prepare('SELECT id FROM stores WHERE slug = ?').get('mdn-presents');
+    if (mdn) {
+      const b = getSetting(mdn.id, 'business', {});
+      const cur = String(b.logo_url || '').trim();
+      const antigos = ['', '/img/mdn-logo.jpg', '/img/mdn-logo-watermark.png', '/img/mdn-logo-topo.jpg'];
+      if (antigos.includes(cur)) {
+        setSetting(mdn.id, 'business', { ...b, logo_url: '/img/mdn-logo-topo.jpg' });
+      }
+    }
+  } catch (e) {
+    console.warn('[db] mdn logo:', e.message);
+  }
+
   // Branding Patroas Lanches (loja existente em produção).
   try {
     const pl = db.prepare('SELECT id FROM stores WHERE slug = ?').get('comida-marmitas-lanches-doces');

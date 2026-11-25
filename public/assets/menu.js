@@ -199,8 +199,9 @@
     if (listTitle) listTitle.textContent = isCatalog ? 'Nosso catálogo' : 'Cardápio de hoje';
     el('footerName').textContent = b.name || '';
     el('footerAddr').textContent = b.address || '';
-    if (b.logo_url) {
-      el('brandLogo').innerHTML = `<img src="${esc(b.logo_url)}" alt="">`;
+    const brandLogoSrc = IS_MDN ? '/img/mdn-logo-topo.jpg' : b.logo_url;
+    if (brandLogoSrc) {
+      el('brandLogo').innerHTML = `<img src="${esc(brandLogoSrc)}" alt="">`;
       el('brandLogo').classList.add('has-img');
     }
     // O topo do cardápio/catálogo NÃO usa foto de capa: fica só o logotipo
@@ -224,8 +225,9 @@
     // No lugar da foto de capa, aparece o logotipo da loja
     const heroLogo = el('heroLogo');
     if (heroLogo) {
-      if (b.logo_url) {
-        heroLogo.src = b.logo_url;
+      const logoSrc = IS_MDN ? '/img/mdn-logo-topo.jpg' : b.logo_url;
+      if (logoSrc) {
+        heroLogo.src = logoSrc;
         heroLogo.hidden = false;
       } else {
         heroLogo.hidden = true;
