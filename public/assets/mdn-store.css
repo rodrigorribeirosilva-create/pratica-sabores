@@ -51,12 +51,13 @@ body.mdn-visual .brand-logo.has-img{border:none;box-shadow:none}
 body.mdn-visual .brand-logo img{transform:none;object-fit:contain}
 body.mdn-visual .brand-name{
   font-family:"Cormorant Garamond",Georgia,serif;
-  font-size:34px;font-weight:600;letter-spacing:.08em;line-height:1;
+  font-size:38px;font-weight:700;letter-spacing:.1em;line-height:1;
   text-transform:uppercase;color:#1e1a17;
+  text-shadow:0 1px 0 rgba(168,137,94,.18);
 }
 body.mdn-visual .brand-sub{
   font-size:10px;letter-spacing:.28em;text-transform:uppercase;
-  color:#7a7268;margin-top:2px;font-weight:500;
+  color:#8f7148;margin-top:2px;font-weight:600;
 }
 body.mdn-visual .header-actions{margin-left:0;gap:6px}
 body.mdn-visual .header-actions .btn,
@@ -95,11 +96,15 @@ body.mdn-visual .hero-card{
 body.mdn-visual .hero-card::after{display:none}
 body.mdn-visual .hero-watermark{display:none !important;}
 body.mdn-visual .hero-card{
-  background-color:#fbfaf8;
-  background-image:url('/img/mdn-logo-watermark.png');
-  background-repeat:no-repeat;
-  background-position:center 40%;
-  background-size:min(420px,72vw);
+  background:linear-gradient(180deg,#fbfaf8 0%,#ffffff 100%);
+}
+body.mdn-visual .hero-logo{
+  display:block !important;
+  width:min(340px,72vw);
+  height:auto;
+  margin:0 auto 18px;
+  border-radius:24px;
+  box-shadow:0 18px 40px rgba(30,26,23,.12);
 }
 body.mdn-visual .hero-content{
   text-align:center;padding:64px 24px 56px;max-width:920px;margin:0 auto;
@@ -110,9 +115,8 @@ body.mdn-visual .mdn-eyebrow{
   margin-bottom:22px;text-transform:uppercase;
 }
 body.mdn-visual .hero-content h1{
-  font-family:"Cormorant Garamond",Georgia,serif;
-  font-size:clamp(44px,7vw,78px);line-height:.95;font-weight:500;
-  letter-spacing:-.02em;color:#1e1a17;margin:0 auto 18px;max-width:900px;
+  position:absolute !important;width:1px;height:1px;padding:0;margin:-1px;
+  overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;
 }
 body.mdn-visual .hero-content h1 em,
 body.mdn-visual .hero-content h1 .mdn-accent{color:var(--mdn-gold);font-style:italic}
