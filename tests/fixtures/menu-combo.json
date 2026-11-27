@@ -159,6 +159,76 @@
           }
         ]
       }
+    },
+    {
+      "id": 203,
+      "name": "Caixa de 9 docinhos",
+      "description": "Escolha 1 sabor — vêm 9 dele",
+      "price_cents": 2900,
+      "image_url": "",
+      "category": "Doces",
+      "sort_order": 3,
+      "in_stock": 1,
+      "opcoes": {
+        "ativo": true,
+        "modo": "unico",
+        "titulo": "Escolha o sabor",
+        "unidades": 9,
+        "minimo": 1,
+        "barras": 1,
+        "sabores": [
+          {
+            "nome": "Brigadeiro",
+            "extra_cents": 0,
+            "ativo": true
+          },
+          {
+            "nome": "Morango",
+            "extra_cents": 100,
+            "ativo": true
+          },
+          {
+            "nome": "Ninho",
+            "extra_cents": 0,
+            "ativo": true
+          },
+          {
+            "nome": "Beijinho",
+            "extra_cents": 0,
+            "ativo": true
+          }
+        ],
+        "grupos": [
+          {
+            "titulo": "Escolha o sabor",
+            "modo": "unico",
+            "unidades": 9,
+            "minimo": 1,
+            "sabores": [
+              {
+                "nome": "Brigadeiro",
+                "extra_cents": 0,
+                "ativo": true
+              },
+              {
+                "nome": "Morango",
+                "extra_cents": 100,
+                "ativo": true
+              },
+              {
+                "nome": "Ninho",
+                "extra_cents": 0,
+                "ativo": true
+              },
+              {
+                "nome": "Beijinho",
+                "extra_cents": 0,
+                "ativo": true
+              }
+            ]
+          }
+        ]
+      }
     }
   ],
   "categories": [

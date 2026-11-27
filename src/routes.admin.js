@@ -125,11 +125,14 @@ function sanitizarSaboresMontagem(lista) {
     .slice(0, 30);
 }
 
+const MODOS_MONTAGEM = new Set(['partes', 'sabores', 'unico']);
+
 function sanitizarGrupoMontagem(bruto, i) {
   const g = bruto && typeof bruto === 'object' ? bruto : {};
   const sabores = sanitizarSaboresMontagem(g.sabores);
   const unidades = Math.max(1, Math.min(200, Math.round(Number(g.unidades) || 0)));
-  const modo = String(g.modo || 'partes') === 'sabores' ? 'sabores' : 'partes';
+  const modoBruto = String(g.modo || 'partes');
+  const modo = MODOS_MONTAGEM.has(modoBruto) ? modoBruto : 'partes';
   return {
     titulo:
       String(g.titulo || '').trim().slice(0, 60) ||
@@ -138,9 +141,13 @@ function sanitizarGrupoMontagem(bruto, i) {
     modo,
     // quantas barras vêm no item (1 barra grande, 8 mini barras…)
     barras: Math.max(1, Math.min(99, Math.round(Number(g.barras) || 1))),
-    // barra: pode escolher de 1 até "unidades" sabores; caixa: precisa fechar o total
+    // barra: pode escolher de 1 até "unidades" sabores
+    // um sabor só: sempre 1 escolha (o sabor vale para todas as unidades)
+    // caixa (partes): precisa fechar o total
     minimo:
-      modo === 'sabores'
+      modo === 'unico'
+        ? 1
+        : modo === 'sabores'
         ? Math.max(1, Math.min(unidades, Math.round(Number(g.minimo) || Math.min(2, unidades))))
         : Math.max(1, Math.min(unidades, Math.round(Number(g.minimo) || unidades))),
     sabores,

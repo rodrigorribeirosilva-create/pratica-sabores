@@ -108,18 +108,21 @@
     return lista
       .map((g, i) => {
         const unidades = Math.max(1, Math.round(Number(g.unidades) || 1));
-        const modo = g.modo === 'sabores' ? 'sabores' : 'partes';
+        const modo = ['sabores', 'unico'].includes(g.modo) ? g.modo : 'partes';
         return {
           titulo: String(g.titulo || (i === 0 ? 'Escolha os sabores' : `Grupo ${i + 1}`)),
           unidades,
           modo,
-          minimo: Math.max(
-            1,
-            Math.min(
-              unidades,
-              Math.round(Number(g.minimo) || (modo === 'sabores' ? Math.min(2, unidades) : unidades))
-            )
-          ),
+          minimo:
+            modo === 'unico'
+              ? 1
+              : Math.max(
+                  1,
+                  Math.min(
+                    unidades,
+                    Math.round(Number(g.minimo) || (modo === 'sabores' ? Math.min(2, unidades) : unidades))
+                  )
+                ),
           barras: Math.max(1, Math.round(Number(g.barras) || 1)),
           sabores: (g.sabores || []).filter((s) => s && s.nome && s.ativo !== false),
         };
@@ -154,11 +157,15 @@
     }
     return [...porGrupo.entries()]
       .map(([g, lista]) => {
+        // filtra qtd=0 que sobra de grupos onde a escolha vale para todas as unidades
+        const itens = lista.filter((e) => Number(e.qtd) > 0);
+        if (!itens.length) return '';
         // barra (1 de cada sabor) fica mais limpo só com os nomes
-        const umaDeCada = lista.every((e) => Number(e.qtd) === 1);
-        const txt = lista.map((e) => (umaDeCada ? e.nome : `${e.qtd} ${e.nome}`)).join(', ');
+        const umaDeCada = itens.every((e) => Number(e.qtd) === 1);
+        const txt = itens.map((e) => (umaDeCada ? e.nome : `${e.qtd} ${e.nome}`)).join(', ');
         return g ? `${g}: ${txt}` : txt;
       })
+      .filter(Boolean)
       .join(' · ');
   };
 
@@ -172,13 +179,22 @@
         const g = grupos.find((x) => x.titulo === e.grupo);
         sabor = g && g.sabores.find((s) => s.nome === e.nome);
       }
+      let grupoDoSabor = null;
       if (!sabor) {
         for (const g of grupos) {
           sabor = g.sabores.find((s) => s.nome === e.nome);
-          if (sabor) break;
+          if (sabor) {
+            grupoDoSabor = g;
+            break;
+          }
         }
+      } else {
+        grupoDoSabor = grupos.find((x) => x.titulo === e.grupo) || null;
       }
-      if (sabor) extra += Number(sabor.extra_cents || 0) * Number(e.qtd || 0);
+      if (sabor) {
+        // no modo "um sabor só" a escolha já guarda a quantidade de unidades
+        extra += Number(sabor.extra_cents || 0) * Number(e.qtd || 0);
+      }
     }
     return Number(produto.price_cents || 0) + extra;
   }
@@ -497,6 +513,8 @@
                        ? gruposMontagem[0].unidades === 1
                          ? 'Escolher 1 sabor'
                          : `Escolher sabores (até ${gruposMontagem[0].unidades})`
+                       : gruposMontagem[0].modo === 'unico'
+                       ? `Escolher 1 sabor (${gruposMontagem[0].unidades} un.)`
                        : 'Escolher sabores'}
                </button>
              </div>`
@@ -624,34 +642,49 @@
     // estado de cada grupo (barra: conta sabores diferentes; caixa: soma as unidades)
     const estado = grupos.map((g, gi) => {
       const porSabores = g.modo === 'sabores';
-      const escolhidas = porSabores
+      // um sabor só: ou nada, ou 1 sabor que vale para todas as unidades
+      const unico = g.modo === 'unico';
+      const escolhidas = porSabores || unico
         ? g.sabores.filter((sb) => qtdDe(gi, sb.nome) > 0).length
         : g.sabores.reduce((s, sb) => s + qtdDe(gi, sb.nome), 0);
-      const minimo = porSabores ? Math.min(Math.max(1, g.minimo || 2), g.unidades) : g.unidades;
-      const falta = porSabores
-        ? Math.max(0, minimo - escolhidas)
-        : Math.max(0, g.unidades - escolhidas);
+      const minimo = porSabores ? Math.min(Math.max(1, g.minimo || 2), g.unidades) : unico ? 1 : g.unidades;
+      const falta = Math.max(0, minimo - escolhidas);
       const sobrando = porSabores ? Math.max(0, g.unidades - escolhidas) : 0;
-      return { g, gi, porSabores, escolhidas, falta, sobrando };
+      return { g, gi, porSabores, unico, escolhidas, falta, sobrando };
     });
-    const extras = grupos.reduce(
-      (s, g, gi) =>
-        s + g.sabores.reduce((acc, sb) => acc + qtdDe(gi, sb.nome) * Number(sb.extra_cents || 0), 0),
-      0
-    );
+    const extras = grupos.reduce((s, g, gi) => {
+      // "um sabor só": o acréscimo é por unidade e vale para todas as unidades
+      const multiplicador = g.modo === 'unico' ? g.unidades : 1;
+      return (
+        s +
+        g.sabores.reduce(
+          (acc, sb) => acc + qtdDe(gi, sb.nome) * Number(sb.extra_cents || 0) * multiplicador,
+          0
+        )
+      );
+    }, 0);
     const preco = Number(p.price_cents || 0) + extras;
     const tudoCerto = estado.every((e) => e.falta === 0);
 
     const subGrupo = (e) =>
-      e.porSabores
+      e.unico
+        ? `${e.g.unidades} ${e.g.unidades === 1 ? 'unidade' : 'unidades'} · um sabor só`
+        : e.porSabores
         ? `${e.g.barras > 1 ? `${e.g.barras} barras · ` : ''}${
             e.g.unidades === 1 ? 'escolha 1 sabor' : `escolha até ${e.g.unidades} sabores`
           }`
         : `${e.g.unidades} ${e.g.unidades === 1 ? 'unidade' : 'unidades'}`;
 
-    const contadorGrupo = (e) =>
-      `<div class="montar-contador ${e.falta ? '' : 'ok'}">${
-        e.porSabores
+    const contadorGrupo = (e) => {
+      const nomeEscolhido = e.unico
+        ? (e.g.sabores.find((sb) => qtdDe(e.gi, sb.nome) > 0) || {}).nome || ''
+        : '';
+      return `<div class="montar-contador ${e.falta ? '' : 'ok'}">${
+        e.unico
+          ? e.falta
+            ? `Escolha <strong>1 sabor</strong> — ele vale para ${e.g.unidades === 1 ? 'a unidade' : `as ${e.g.unidades} unidades`}`
+            : `Tudo certo: <strong>${e.g.unidades} ${e.g.unidades === 1 ? 'unidade' : 'unidades'} de ${esc(nomeEscolhido)}</strong>`
+          : e.porSabores
           ? e.falta
             ? `Escolha mais <strong>${e.falta}</strong> ${e.falta === 1 ? 'sabor' : 'sabores'} · ${e.escolhidas} de até ${e.g.unidades}`
             : `Tudo certo: <strong>${e.escolhidas} ${e.escolhidas === 1 ? 'sabor escolhido' : 'sabores escolhidos'}</strong>${e.sobrando ? ` · pode escolher mais ${e.sobrando}` : ''}`
@@ -659,6 +692,7 @@
           ? `Escolha mais <strong>${e.falta}</strong> ${e.falta === 1 ? 'unidade' : 'unidades'} · ${e.escolhidas} de ${e.g.unidades}`
           : `Tudo certo: <strong>${e.g.unidades} ${e.g.unidades === 1 ? 'unidade escolhida' : 'unidades escolhidas'}</strong>`
       }</div>`;
+    };
 
     body.innerHTML = `
       ${p.image_url ? `<img class="montar-img" src="${esc(p.image_url)}" alt="">` : ''}
@@ -685,17 +719,17 @@
               const n = qtdDe(e.gi, sb.nome);
               const extra = Number(sb.extra_cents || 0);
               const chave = `${e.gi}::${sb.nome}`;
-              if (e.porSabores) {
+              if (e.porSabores || e.unico) {
                 return `<div class="montar-item ${n ? 'on' : ''}">
                   <div class="mi-txt">
                     <span class="mi-nome">${esc(sb.nome)}</span>
-                    ${extra ? `<span class="mi-extra">+ ${brl.format(extra / 100)}</span>` : ''}
+                    ${extra ? `<span class="mi-extra">+ ${brl.format(extra / 100)}${e.unico ? ' por unidade' : ''}</span>` : ''}
                   </div>
                   <div class="mi-acao">
                     ${
                       n
                         ? `<button class="mi-chip on" data-montar-dec="${esc(chave)}" aria-label="Tirar este sabor">✓ escolhido</button>`
-                        : `<button class="mi-chip" data-montar-inc="${esc(chave)}" aria-label="Escolher este sabor" ${e.escolhidas >= e.g.unidades ? 'disabled' : ''}>escolher</button>`
+                        : `<button class="mi-chip" data-montar-inc="${esc(chave)}" aria-label="Escolher este sabor" ${e.porSabores && e.escolhidas >= e.g.unidades ? 'disabled' : ''}>escolher</button>`
                     }
                   </div>
                 </div>`;
@@ -732,7 +766,13 @@
         const e = estado[gi];
         if (!e) return;
         const atual = qtdDe(gi, nome);
-        if (e.porSabores) {
+        if (e.unico) {
+          // um sabor só: marcá-lo desmarca o anterior (vale para todas as unidades)
+          e.g.sabores.forEach((sb) => {
+            state.montando.qtd[`${gi}::${sb.nome}`] = 0;
+          });
+          state.montando.qtd[`${gi}::${nome}`] = 1;
+        } else if (e.porSabores) {
           if (e.escolhidas >= e.g.unidades) {
             return toast(
               e.g.unidades === 1
@@ -778,12 +818,15 @@
       grupos.forEach((g, gi) => {
         g.sabores.forEach((sb) => {
           const qtd = qtdDe(gi, sb.nome);
-          if (qtd > 0)
+          if (qtd > 0) {
+            // "um sabor só": a escolha representa todas as unidades do grupo
+            const quantidade = g.modo === 'unico' ? g.unidades : qtd;
             escolhas.push(
               variosGrupos
-                ? { grupo: g.titulo, nome: sb.nome, qtd }
-                : { nome: sb.nome, qtd }
+                ? { grupo: g.titulo, nome: sb.nome, qtd: quantidade }
+                : { nome: sb.nome, qtd: quantidade }
             );
+          }
         });
       });
       const chave = chaveItem(p.id, escolhas);
@@ -857,7 +900,9 @@
             const op = (state.montando && (productById(state.montando.produto_id) || {}).opcoes) || {};
             const gs = gruposDaMontagem(op);
             if (gs.length > 1) return 'Monte seu combo';
-            return gs[0] && gs[0].modo === 'sabores' ? 'Escolha os sabores' : 'Monte sua caixa';
+            if (gs[0] && gs[0].modo === 'sabores') return 'Escolha os sabores';
+            if (gs[0] && gs[0].modo === 'unico') return 'Escolha o sabor';
+            return 'Monte sua caixa';
           })()
         : 'Seu carrinho';
 

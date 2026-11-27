@@ -261,6 +261,59 @@ async function esperarServidor(tentativas = 60) {
       ok(Number(itemCombo.price_cents) === 3900 + 300, 'preço somou o acréscimo do panito (R$ 3,00)', String(itemCombo.price_cents));
     }
 
+
+    // ---- 3) CAIXA DE 9: um sabor só para todas as unidades ----
+    r = await loja.chamar(`/l/${SLUG}/api/admin/products`, {
+      method: 'POST',
+      body: JSON.stringify({
+        name: 'Caixa de 9 docinhos',
+        price_cents: 29,
+        category: 'Doces',
+        active: true,
+        in_stock: true,
+        opcoes: {
+          ativo: true,
+          modo: 'unico',
+          titulo: 'Escolha o sabor',
+          unidades: 9,
+          minimo: 1,
+          sabores: [
+            { nome: 'Brigadeiro', extra_cents: 0 },
+            { nome: 'Morango', extra_cents: 100 },
+            { nome: 'Ninho', extra_cents: 0 },
+            { nome: 'Beijinho', extra_cents: 0 },
+          ],
+        },
+      }),
+    });
+    ok(r.status < 400, 'salvou caixa de 9 no modo "um sabor só"', `HTTP ${r.status} ${r.texto.slice(0, 160)}`);
+    const caixa9 = r.json;
+
+    const menu9 = await (await fetch(`${BASE}/l/${SLUG}/api/menu`)).json();
+    const p9 = menu9.products.find((p) => p.id === caixa9.id);
+    ok(p9 && p9.opcoes.modo === 'unico' && Number(p9.opcoes.unidades) === 9, 'catálogo preserva modo unico e 9 unidades');
+    ok(p9 && Number(p9.opcoes.minimo) === 1, 'mínimo 1 sabor');
+
+    // 1 sabor, qtd 1 => vale pelos 9
+    resp = await pedido([{ id: caixa9.id, qty: 1, escolhas: [{ nome: 'Morango', qtd: 1 }] }]);
+    corpo = await resp.json().catch(() => ({}));
+    ok(resp.status < 400, 'pedido: escolher morango leva a caixa inteira', `HTTP ${resp.status} ${JSON.stringify(corpo).slice(0, 200)}`);
+    const o9 = corpo.order || {};
+    ok(Number(o9.total_cents) === 2900 + 9 * 100, 'total = 29 + 9×R$1,00 (morango) = R$ 38,00', String(o9.total_cents));
+    const lista9 = await (await loja.chamar(`/l/${SLUG}/api/admin/orders`)).json;
+    const p9salvo = (Array.isArray(lista9) ? lista9 : []).find((o) => o.code === o9.code) || {};
+    const it9 = (p9salvo.items || [])[0] || {};
+    ok(/Caixa de 9 docinhos \(Morango\)/.test(it9.name || ''), 'comanda: "Caixa de 9 docinhos (Morango)"', it9.name);
+    ok((it9.escolhas || [])[0] && Number(it9.escolhas[0].qtd) === 9, 'comanda guarda 9 unidades do sabor', JSON.stringify(it9.escolhas));
+
+    // recusas do modo unico
+    resp = await pedido([{ id: caixa9.id, qty: 1, escolhas: [] }]);
+    ok(resp.status === 400, 'caixa de 9 sem escolher sabor é recusada', `HTTP ${resp.status}`);
+    resp = await pedido([
+      { id: caixa9.id, qty: 1, escolhas: [{ nome: 'Morango', qtd: 1 }, { nome: 'Ninho', qtd: 1 }] },
+    ]);
+    ok(resp.status === 400, 'caixa de 9 com 2 sabores é recusada (é 1 só)', `HTTP ${resp.status}`);
+
     // ---- recusas que DEVEM continuar acontecendo ----
     resp = await pedido([
       {

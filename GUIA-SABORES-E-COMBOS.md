@@ -30,6 +30,30 @@ o outro fica travado; não fecha o pedido sem escolher. No carrinho aparece
 
 ---
 
+## 1.1) Caixa de **9 unidades** com **1 sabor só** (sem 3 de cada)
+
+Exemplo: caixa de 9 docinhos com 4 sabores à mostra, mas o cliente escolhe **um** e
+a caixa vem inteira dele (9 brigadeiros, por exemplo).
+
+1. Painel → **Cardápio** → novo produto (ou editar a caixa).
+2. Marque **Cliente escolhe os sabores**.
+3. No **Grupo 1**:
+   - **Título do grupo**: `Escolha o sabor`
+   - **Como o cliente escolhe?** → **Um sabor só, para todas as unidades**
+   - **Quantas unidades vêm com esse sabor?** → `9`
+   - Sabores: `Brigadeiro, Morango, Ninho, Beijinho`
+4. **Salvar**.
+
+**O que o cliente vê:** no card, **“Escolher 1 sabor (9 un.)”**; na tela aparecem os 4
+sabores, ele toca em um (se tocar em outro, troca — não soma) e o contador confirma
+**“Tudo certo: 9 unidades de Brigadeiro”**. No carrinho/na comanda: `Caixa de 9 docinhos (9 Brigadeiro)`.
+
+> Diferença dos outros modos: **Quantidade de cada sabor** = ele distribui as 9
+> (3 de cada, 5+4…); **Sabores da barra** = escolhe até N sabores diferentes, 1 de cada;
+> **Um sabor só** = escolhe 1 e leva as 9 dele.
+
+---
+
 ## 2) Combo: **2 rosquinhas + 8 panitos**, cada parte com seus sabores
 
 Exemplo: combo de Natal com **2 rosquinhas** e **8 panitos**, o cliente escolhe
@@ -59,6 +83,9 @@ Combo de Natal — Rosquinhas: Rosquinha de coco, Rosquinha de chocolate ·
 Panitos: 5 Panito de queijo, 3 Panito de doce de leite
 ```
 
+> Cada grupo pode usar um modo diferente: por exemplo **Rosquinhas** em “quantidade de
+> cada sabor” (1 de cada) e **Panitos** em “um sabor só para as 8”.
+
 ---
 
 ## 3) Regras simples (para não travar na hora de salvar)
@@ -68,6 +95,7 @@ Panitos: 5 Panito de queijo, 3 Panito de doce de leite
 | **Título do grupo** | Nome que aparece na tela do cliente (`Rosquinhas`, `Panitos`, `Escolha o recheio`) |
 | **Modo “Quantidade de cada sabor”** | O cliente distribui as unidades entre os sabores e o total precisa fechar. Ex.: caixa de 12 → 10 de um + 2 de outro; grupo de 2 → 1 de cada |
 | **Modo “Sabores da barra”** | O cliente escolhe **até N sabores diferentes**, um de cada (barra). N = “Quantos sabores o cliente pode escolher?” |
+| **Modo “Um sabor só, para todas as unidades”** | O cliente escolhe **1 sabor** e todas as unidades vêm dele (caixa de 9 → 9 brigadeiros). Serve também para caixa de 12, 6, 24… |
 | **Quantas unidades / sabores** | Aceita **1**. Em barra de 1 unidade, “1” = escolhe um sabor só; em caixa, é o total que precisa fechar |
 | **Quantas barras vêm** | Só aparece no modo barra. Ex.: `1` barra grande ou `8` mini barras |
 | **Acréscimo (R$)** | Valor extra **por unidade** daquele sabor. Deixe `0` se todos custam o mesmo |
