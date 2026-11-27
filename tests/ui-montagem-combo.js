@@ -143,6 +143,38 @@ const clicar = async (window, sel) => {
   ok(/Panitos: 5 Panito de queijo, 3 Panito de doce de leite/.test(carrinho), 'carrinho: panitos agrupados');
   ok(/R\$ 42,00/.test(carrinho), 'carrinho com o preço certo');
 
+
+  /* ---------- 3) CAIXA DE 9: escolhe 1 sabor, vêm 9 dele ---------- */
+  console.log('\n— CAIXA DE 9 (um sabor só, sem 3 de cada) —');
+  w = await montar();
+  const cardCaixa = w.document.querySelector('[data-montar="203"]');
+  ok(/Escolher 1 sabor \(9 un\.\)/.test(txt(cardCaixa)), 'botão diz "Escolher 1 sabor (9 un.)"', txt(cardCaixa));
+
+  await clicar(w, '[data-montar="203"]');
+  ok(/Escolha o sabor/.test(txt(w.document.getElementById('drawerTitle'))), 'título "Escolha o sabor"', txt(w.document.getElementById('drawerTitle')));
+  ok(/9 unidades · um sabor só/.test(txt(w.document.querySelector('.montar-sub'))), 'subtítulo explica: 9 unidades, um sabor só', txt(w.document.querySelector('.montar-sub')));
+  ok(w.document.querySelectorAll('.montar-item').length === 4, 'mostra os 4 sabores');
+  ok(/Escolha 1 sabor — ele vale para as 9 unidades/.test(txt(w.document.querySelector('.montar-contador'))), 'contador pede 1 sabor para as 9', txt(w.document.querySelector('.montar-contador')));
+  ok(w.document.getElementById('montarAdd').disabled, 'bloqueado sem escolher');
+
+  await clicar(w, '[data-montar-inc="0::Brigadeiro"]');
+  ok(/Tudo certo: 9 unidades de Brigadeiro/.test(txt(w.document.querySelector('.montar-contador'))), 'confirma 9 unidades de brigadeiro', txt(w.document.querySelector('.montar-contador')));
+  ok(!w.document.getElementById('montarAdd').disabled, 'liberou adicionar');
+
+  // troca para morango: deve desmarcar o brigadeiro (não soma)
+  await clicar(w, '[data-montar-inc="0::Morango"]');
+  const contadorMorango = txt(w.document.querySelector('.montar-contador'));
+  ok(/9 unidades de Morango/.test(contadorMorango), 'trocar o sabor não soma (continua 9)', contadorMorango);
+  ok(!/Brigadeiro/.test(contadorMorango), 'o brigadeiro foi desmarcado');
+  const marcados = [...w.document.querySelectorAll('.montar-item.on')].map((n) => txt(n.querySelector('.mi-nome')));
+  ok(marcados.length === 1 && marcados[0] === 'Morango', 'só 1 sabor marcado', JSON.stringify(marcados));
+  ok(/R\$ 38,00/.test(txt(w.document.getElementById('montarAdd'))), 'preço: 29 + 9×R$1,00 (morango) = R$ 38,00', txt(w.document.getElementById('montarAdd')));
+
+  await clicar(w, '#montarAdd');
+  const carrinho9 = txt(w.document.getElementById('drawerBody'));
+  ok(/9 Morango/.test(carrinho9), 'carrinho mostra "9 Morango"', carrinho9.slice(0, 150));
+  ok(/R\$ 38,00/.test(carrinho9), 'carrinho com o preço certo (R$ 38,00)');
+
   console.log(`\n${falhas ? `❌ ${falhas} falha(s)` : '✅ tudo certo'}`);
   // a vitrine tem setInterval (atualização): encerra na mão
   process.exit(falhas ? 1 : 0);

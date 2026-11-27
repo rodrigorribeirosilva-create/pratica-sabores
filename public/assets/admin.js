@@ -665,7 +665,7 @@
     return lista.map((g, i) => ({
       titulo: String(g.titulo || (i === 0 ? 'Escolha os sabores' : '')),
       unidades: Number(g.unidades) || 12,
-      modo: g.modo === 'sabores' ? 'sabores' : 'partes',
+      modo: ['sabores', 'unico'].includes(g.modo) ? g.modo : 'partes',
       barras: Number(g.barras) || 1,
       sabores: (g.sabores || []).map((sb) => ({ ...sb })),
     }));
@@ -688,14 +688,14 @@
               <input class="input" data-grupo-titulo="${gi}" value="${esc(g.titulo || '')}" placeholder="${gi === 0 ? 'Ex.: Escolha os sabores' : 'Ex.: Rosquinhas'}">
             </div>
             <div class="field">
-              <label data-grupo-unidades-label="${gi}">${g.modo === 'sabores' ? 'Quantos sabores o cliente pode escolher?' : 'Quantas unidades vêm neste grupo?'}</label>
+              <label data-grupo-unidades-label="${gi}">${g.modo === 'sabores' ? 'Quantos sabores o cliente pode escolher?' : g.modo === 'unico' ? 'Quantas unidades vêm com esse sabor?' : 'Quantas unidades vêm neste grupo?'}</label>
               <input class="input" data-grupo-unidades="${gi}" type="number" min="1" max="200" value="${g.unidades}">
             </div>
           </div>
           <div class="field" style="margin-bottom:8px">
             <label>Como o cliente escolhe?</label>
             <label style="display:flex;gap:9px;align-items:flex-start;cursor:pointer;font-weight:600;margin-top:6px">
-              <input type="radio" name="pMontagemModo-${gi}" value="partes" ${g.modo !== 'sabores' ? 'checked' : ''} style="margin-top:3px">
+              <input type="radio" name="pMontagemModo-${gi}" value="partes" ${g.modo === 'partes' || !g.modo ? 'checked' : ''} style="margin-top:3px">
               <span>Quantidade de cada sabor <span class="hint" style="display:block;margin:0">
                 Ele distribui as unidades entre os sabores (ex.: <strong>1 de cada</strong>).</span></span>
             </label>
@@ -703,6 +703,12 @@
               <input type="radio" name="pMontagemModo-${gi}" value="sabores" ${g.modo === 'sabores' ? 'checked' : ''} style="margin-top:3px">
               <span>Sabores da barra / do tablete <span class="hint" style="display:block;margin:0">
                 Ele escolhe <strong>até N sabores diferentes</strong> (ex.: barra de <strong>1</strong> sabor: branco <strong>ou</strong> ao leite).</span></span>
+            </label>
+            <label style="display:flex;gap:9px;align-items:flex-start;cursor:pointer;font-weight:600;margin-top:8px">
+              <input type="radio" name="pMontagemModo-${gi}" value="unico" ${g.modo === 'unico' ? 'checked' : ''} style="margin-top:3px">
+              <span>Um sabor só, para todas as unidades <span class="hint" style="display:block;margin:0">
+                Ele escolhe <strong>1 sabor</strong> e a caixa vem inteira dele (ex.: caixa de <strong>9</strong>
+                → escolhe brigadeiro e vêm 9 brigadeiros). Não precisa fazer 3 de cada.</span></span>
             </label>
           </div>
           <div class="field" data-grupo-barras-wrap="${gi}" ${g.modo === 'sabores' ? '' : 'hidden'}>
@@ -862,7 +868,7 @@
     const grupos = (state.gruposEdit || []).map((g, i) => ({
       titulo: String(g.titulo || (i === 0 ? 'Escolha os sabores' : `Grupo ${i + 1}`)).trim(),
       unidades: Math.max(0, Number(g.unidades) || 0),
-      modo: g.modo === 'sabores' ? 'sabores' : 'partes',
+      modo: ['sabores', 'unico'].includes(g.modo) ? g.modo : 'partes',
       barras: Math.max(1, Number(g.barras) || 1),
       sabores: (g.sabores || []).map((sb) => String(sb.nome || '').trim()).filter(Boolean),
     }));
@@ -873,6 +879,7 @@
     box.innerHTML = grupos
       .map((g) => {
         const exemplo = (() => {
+          if (g.modo === 'unico') return `${g.unidades} ${g.sabores[0]}`;
           if (g.modo === 'sabores') {
             const quantos = Math.min(g.unidades, g.sabores.length);
             return g.sabores.slice(0, quantos).join(' + ') || g.sabores[0];
@@ -882,7 +889,9 @@
           return `${primeiro} ${g.sabores[0]} + ${g.unidades - primeiro} ${g.sabores[1]}`;
         })();
         const legenda =
-          g.modo === 'sabores'
+          g.modo === 'unico'
+            ? `${g.unidades} unidade${g.unidades > 1 ? 's' : ''} · 1 sabor só`
+            : g.modo === 'sabores'
             ? `${g.barras} ${g.barras === 1 ? 'barra' : 'barras'} · até ${g.unidades} sabores`
             : `${g.unidades} unidade${g.unidades > 1 ? 's' : ''}`;
         return `<div style="margin-bottom:8px">
@@ -890,7 +899,7 @@
           <div style="display:flex;flex-wrap:wrap;gap:5px;margin:6px 0">
             ${g.sabores.map((n) => `<span style="background:#f3eee2;border:1px solid #e2dac6;border-radius:999px;padding:2px 9px;font-size:12px">${esc(n)}</span>`).join('')}
           </div>
-          <div style="color:#6b6355;font-size:12.5px">${g.modo === 'sabores' ? 'O cliente escolhe assim' : 'O cliente monta assim'}: <strong style="color:#3f3a30">${esc(exemplo)}</strong></div>
+          <div style="color:#6b6355;font-size:12.5px">${g.modo === 'partes' ? 'O cliente monta assim' : g.modo === 'unico' ? 'O cliente escolhe 1 sabor e leva' : 'O cliente escolhe assim'}: <strong style="color:#3f3a30">${esc(exemplo)}</strong></div>
         </div>`;
       })
       .join('');
@@ -901,14 +910,16 @@
     const grupos = (state.gruposEdit || [])
       .map((g, i) => {
         const unidades = Math.max(1, Number(g.unidades) || 0);
-        const modo = g.modo === 'sabores' ? 'sabores' : 'partes';
+        const modo = ['sabores', 'unico'].includes(g.modo) ? g.modo : 'partes';
         return {
           titulo: String(g.titulo || (i === 0 ? 'Escolha os sabores' : `Grupo ${i + 1}`)).trim(),
           unidades,
           modo,
           barras: modo === 'sabores' ? Math.max(1, Number(g.barras) || 1) : 1,
-          // barra: pode escolher de 1 até "unidades" sabores; caixa: fecha o total
-          minimo: modo === 'sabores' ? Math.min(2, unidades) : unidades,
+          // barra: pode escolher de 1 até "unidades" sabores
+          // um sabor só: 1 escolha, vale para todas as unidades
+          // caixa: precisa fechar o total
+          minimo: modo === 'unico' ? 1 : modo === 'sabores' ? Math.min(2, unidades) : unidades,
           sabores: (g.sabores || []).filter((sb) => String(sb.nome || '').trim()),
         };
       })

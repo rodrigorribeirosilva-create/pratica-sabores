@@ -205,6 +205,51 @@ const adminJs = fs.readFileSync(path.join(ROOT, 'public/assets/admin.js'), 'utf8
     ok(op.titulo === 'Rosquinhas' && Number(op.unidades) === 2, 'espelho do grupo 1 nos campos antigos (compat)');
   }
 
+
+  /* ---------------- CAIXA DE 9: um sabor só ---------------- */
+  console.log('\n— CAIXA DE 9 (um sabor só, vale para as 9) —');
+  window.document.getElementById('productModal').hidden = true;
+  await clicar('#newProductBtn');
+  input($('#pName'), 'Caixa de 9 docinhos');
+  input($('#pPrice'), '29,00');
+  const chk4 = $('#pMontagemAtiva');
+  chk4.checked = true;
+  event(chk4, 'change');
+  await new Promise((r) => setTimeout(r, 100));
+
+  const g9 = $('[data-grupo="0"]');
+  input(g9.querySelector('[data-grupo-titulo="0"]'), 'Escolha o sabor');
+  input(g9.querySelector('[data-grupo-unidades="0"]'), '9');
+  const radioUnico = g9.querySelector('input[name="pMontagemModo-0"][value="unico"]');
+  ok(!!radioUnico, 'existe a opção "Um sabor só, para todas as unidades"');
+  radioUnico.checked = true;
+  event(radioUnico, 'change');
+  await new Promise((r) => setTimeout(r, 100));
+  const g9b = $('[data-grupo="0"]');
+  ok(/Quantas unidades vêm com esse sabor/.test(txt($('[data-grupo-unidades-label="0"]'))), 'rótulo: "Quantas unidades vêm com esse sabor?"', txt($('[data-grupo-unidades-label="0"]')));
+  ok(g9b.querySelector('[data-grupo-barras-wrap="0"]').hidden, 'campo de barras continua escondido');
+
+  g9b.querySelector('[data-grupo-cola="0"]').value = 'Brigadeiro, Morango, Ninho, Beijinho';
+  await clicar(g9b.querySelector('[data-grupo-cola-btn="0"]'));
+  ok(window.document.querySelectorAll('[data-grupo-sabores="0"] .sabor-row').length === 4, '4 sabores cadastrados');
+
+  const preview9 = txt($('#pMontagemPreview'));
+  ok(/9 unidades · 1 sabor só/.test(preview9), 'prévia: "9 unidades · 1 sabor só"', preview9.slice(0, 120));
+  ok(/9 Brigadeiro/.test(preview9), 'prévia mostra "9 Brigadeiro" (o cliente não monta 3 de cada)');
+
+  $('#productForm').dispatchEvent(new window.Event('submit', { bubbles: true, cancelable: true }));
+  await new Promise((r) => setTimeout(r, 250));
+  const caixa9 = enviados[enviados.length - 1];
+  ok(!!caixa9 && caixa9.opcoes, 'caixa de 9 enviada');
+  if (caixa9 && caixa9.opcoes) {
+    const op = caixa9.opcoes;
+    ok(op.modo === 'unico', 'modo = unico', op.modo);
+    ok(Number(op.unidades) === 9, 'unidades = 9', String(op.unidades));
+    ok(Number(op.minimo) === 1, 'mínimo = 1 sabor', String(op.minimo));
+    ok((op.sabores || []).length === 4, '4 sabores no payload');
+    ok(op.grupos && op.grupos[0].modo === 'unico', 'grupo salvo com modo unico');
+  }
+
   /* ---------------- validação: 1 sabor só é recusado com aviso ---------------- */
   console.log('\n— VALIDAÇÃO —');
   window.document.getElementById('productModal').hidden = true;

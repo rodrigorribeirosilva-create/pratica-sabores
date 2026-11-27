@@ -112,18 +112,21 @@ function gruposDaMontagem(op) {
   return lista
     .map((g, i) => {
       const unidades = Math.max(1, Math.round(Number(g.unidades) || 1));
-      const modo = g.modo === 'sabores' ? 'sabores' : 'partes';
+      const modo = ['sabores', 'unico'].includes(g.modo) ? g.modo : 'partes';
       return {
         titulo: String(g.titulo || (i === 0 ? 'Escolha os sabores' : `Grupo ${i + 1}`)),
         unidades,
         modo,
-        minimo: Math.max(
-          1,
-          Math.min(
-            unidades,
-            Math.round(Number(g.minimo) || (modo === 'sabores' ? Math.min(2, unidades) : unidades))
-          )
-        ),
+        minimo:
+          modo === 'unico'
+            ? 1
+            : Math.max(
+                1,
+                Math.min(
+                  unidades,
+                  Math.round(Number(g.minimo) || (modo === 'sabores' ? Math.min(2, unidades) : unidades))
+                )
+              ),
         barras: Math.max(1, Math.round(Number(g.barras) || 1)),
         sabores: (g.sabores || []).filter((s) => s && s.nome && s.ativo !== false),
       };
@@ -335,7 +338,9 @@ router.post(
           if (!grupo) continue;
           const sabor = grupo.sabores.find((s) => s.nome === String(e && e.nome));
           const n =
-            grupo.modo === 'sabores' // barra: cada sabor conta 1
+            grupo.modo === 'unico'
+              ? grupo.unidades // um sabor só: ele vale para todas as unidades
+              : grupo.modo === 'sabores' // barra: cada sabor conta 1
               ? 1
               : Math.max(0, Math.min(200, Math.round(Number(e && e.qtd) || 0)));
           if (!sabor || !n) continue;
@@ -358,7 +363,13 @@ router.post(
           const doGrupo = contagem.filter((c) => c.grupo === grupo.titulo);
           const precisa = grupo.unidades;
           const onde = variosGrupos ? ` (${grupo.titulo})` : '';
-          if (grupo.modo === 'sabores') {
+          if (grupo.modo === 'unico') {
+            if (doGrupo.length !== 1) {
+              return res.status(400).json({
+                error: `${p.name}${onde}: escolha 1 sabor — ele vale para ${precisa === 1 ? 'a unidade' : `as ${precisa} unidades`}.`,
+              });
+            }
+          } else if (grupo.modo === 'sabores') {
             const distintos = doGrupo.length;
             if (distintos < grupo.minimo) {
               return res.status(400).json({
@@ -385,14 +396,14 @@ router.post(
               .map((g) => {
                 const doGrupo = contagem.filter((c) => c.grupo === g.titulo);
                 const partes = doGrupo
-                  .map((c) => (g.modo === 'sabores' ? c.nome : `${c.qtd} ${c.nome}`))
+                  .map((c) => (g.modo === 'partes' ? `${c.qtd} ${c.nome}` : c.nome))
                   .join(', ');
                 return `${g.titulo}: ${partes}`;
               })
               .join(' · ')
-          : grupos[0] && grupos[0].modo === 'sabores'
-          ? contagem.map((c) => c.nome).join(', ')
-          : contagem.map((c) => `${c.qtd} ${c.nome}`).join(', ');
+          : grupos[0] && grupos[0].modo === 'partes'
+          ? contagem.map((c) => `${c.qtd} ${c.nome}`).join(', ')
+          : contagem.map((c) => c.nome).join(', ');
         // sem grupo no item quando é 1 grupo só (mantém o formato de sempre)
         const escolhasFinais = contagem.map((c) =>
           variosGrupos
