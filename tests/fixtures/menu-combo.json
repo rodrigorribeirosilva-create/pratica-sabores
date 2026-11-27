@@ -1,0 +1,167 @@
+{
+  "store": {
+    "slug": "agel-doceria",
+    "name": "Agel Doceria",
+    "segment": "food"
+  },
+  "business": {
+    "name": "Agel Doceria",
+    "tagline": "Doces artesanais",
+    "about": "Bolos, barras e combos",
+    "theme_color": "#5b3a29",
+    "accent_color": "#c9a227",
+    "logo_url": "",
+    "whatsapp": "5548999999999",
+    "instagram": ""
+  },
+  "delivery": {
+    "fee_cents": 0,
+    "free_above_cents": 0,
+    "min_order_cents": 0,
+    "pickup_enabled": true,
+    "periods": [],
+    "periods_note": "",
+    "accepting_orders": true
+  },
+  "payments": [
+    {
+      "id": "dinheiro",
+      "label": "Dinheiro na entrega",
+      "active": true,
+      "instructions": ""
+    }
+  ],
+  "pagamentos_online": {
+    "cartao": {
+      "disponivel": false,
+      "public_key": ""
+    }
+  },
+  "checkout_modo": "todos",
+  "accepting_orders": true,
+  "closed_message": "",
+  "products": [
+    {
+      "id": 201,
+      "name": "Barra recheada",
+      "description": "1 unidade · escolha o recheio",
+      "price_cents": 1500,
+      "image_url": "",
+      "category": "Natal",
+      "sort_order": 1,
+      "in_stock": 1,
+      "opcoes": {
+        "ativo": true,
+        "modo": "sabores",
+        "titulo": "Escolha o recheio",
+        "unidades": 1,
+        "barras": 1,
+        "minimo": 1,
+        "sabores": [
+          {
+            "nome": "Chocolate branco",
+            "extra_cents": 0,
+            "ativo": true
+          },
+          {
+            "nome": "Chocolate ao leite",
+            "extra_cents": 0,
+            "ativo": true
+          }
+        ],
+        "grupos": [
+          {
+            "titulo": "Escolha o recheio",
+            "modo": "sabores",
+            "unidades": 1,
+            "barras": 1,
+            "minimo": 1,
+            "sabores": [
+              {
+                "nome": "Chocolate branco",
+                "extra_cents": 0,
+                "ativo": true
+              },
+              {
+                "nome": "Chocolate ao leite",
+                "extra_cents": 0,
+                "ativo": true
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": 202,
+      "name": "Combo de Natal",
+      "description": "2 rosquinhas + 8 panitos",
+      "price_cents": 3900,
+      "image_url": "",
+      "category": "Natal",
+      "sort_order": 2,
+      "in_stock": 1,
+      "opcoes": {
+        "ativo": true,
+        "modo": "partes",
+        "titulo": "Rosquinhas",
+        "unidades": 2,
+        "barras": 1,
+        "minimo": 2,
+        "sabores": [
+          {
+            "nome": "Rosquinha de coco",
+            "extra_cents": 0,
+            "ativo": true
+          },
+          {
+            "nome": "Rosquinha de chocolate",
+            "extra_cents": 0,
+            "ativo": true
+          }
+        ],
+        "grupos": [
+          {
+            "titulo": "Rosquinhas",
+            "modo": "partes",
+            "unidades": 2,
+            "minimo": 2,
+            "sabores": [
+              {
+                "nome": "Rosquinha de coco",
+                "extra_cents": 0,
+                "ativo": true
+              },
+              {
+                "nome": "Rosquinha de chocolate",
+                "extra_cents": 0,
+                "ativo": true
+              }
+            ]
+          },
+          {
+            "titulo": "Panitos",
+            "modo": "partes",
+            "unidades": 8,
+            "minimo": 8,
+            "sabores": [
+              {
+                "nome": "Panito de queijo",
+                "extra_cents": 0,
+                "ativo": true
+              },
+              {
+                "nome": "Panito de doce de leite",
+                "extra_cents": 100,
+                "ativo": true
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "categories": [
+    "Natal"
+  ]
+}

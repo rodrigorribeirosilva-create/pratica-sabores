@@ -1,5 +1,9 @@
 # Caixas montáveis (escolher sabor e quantidade)
 
+> **Novidade:** agora o mesmo bloco do painel monta **barra de 1 unidade com 1 sabor**
+> e **combo com várias partes** (ex.: 2 rosquinhas + 8 panitos, cada parte com seus sabores).
+> Veja o passo a passo em **[GUIA-SABORES-E-COMBOS.md](GUIA-SABORES-E-COMBOS.md)**.
+
 A dona escolhe no painel → produto → **“Cliente escolhe os sabores”**.
 O cliente, no site, toca em **“Escolher sabores”**, monta a caixa (ex.: 2 pistache + 2 ao leite)
 e o pedido chega no WhatsApp já escrito: `Caixa de bombons (4 un.) (2 Pistache, 2 Ao leite)`.

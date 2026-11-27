@@ -111,11 +111,11 @@ router.get('/products', requireAuth, (req, res) => {
   );
 });
 
-/** Montagem de caixa: { ativo, titulo, unidades, sabores:[{nome, extra_cents}] } */
-function montagemPayload(bruto) {
-  if (!bruto || typeof bruto !== 'object') return '';
-  const ativo = bruto.ativo === true || bruto.ativo === 1 || bruto.ativo === '1';
-  const sabores = (Array.isArray(bruto.sabores) ? bruto.sabores : [])
+/** Montagem de caixa: { ativo, titulo, unidades, sabores:[{nome, extra_cents}] }
+ *  Com grupos (combo): { ativo, grupos:[{titulo, unidades, modo, sabores}] } —
+ *  ex.: 2 rosquinhas + 8 panitos, cada grupo com seus sabores. */
+function sanitizarSaboresMontagem(lista) {
+  return (Array.isArray(lista) ? lista : [])
     .map((s) => ({
       nome: String((s && s.nome) || '').trim().slice(0, 40),
       extra_cents: Math.max(0, Math.round(Number((s && s.extra_cents) || 0))),
@@ -123,22 +123,61 @@ function montagemPayload(bruto) {
     }))
     .filter((s) => s.nome)
     .slice(0, 30);
-  const unidades = Math.max(1, Math.min(200, Math.round(Number(bruto.unidades) || 0)));
-  const modo = String(bruto.modo || 'partes') === 'sabores' ? 'sabores' : 'partes';
-  if (!ativo || !sabores.length) return '';
-  return JSON.stringify({
-    ativo: true,
-    modo,
-    titulo: String(bruto.titulo || 'Escolha os sabores').trim().slice(0, 60),
+}
+
+function sanitizarGrupoMontagem(bruto, i) {
+  const g = bruto && typeof bruto === 'object' ? bruto : {};
+  const sabores = sanitizarSaboresMontagem(g.sabores);
+  const unidades = Math.max(1, Math.min(200, Math.round(Number(g.unidades) || 0)));
+  const modo = String(g.modo || 'partes') === 'sabores' ? 'sabores' : 'partes';
+  return {
+    titulo:
+      String(g.titulo || '').trim().slice(0, 60) ||
+      (i === 0 ? 'Escolha os sabores' : `Grupo ${i + 1}`),
     unidades,
+    modo,
     // quantas barras vêm no item (1 barra grande, 8 mini barras…)
-    barras: Math.max(1, Math.min(99, Math.round(Number(bruto.barras) || 1))),
+    barras: Math.max(1, Math.min(99, Math.round(Number(g.barras) || 1))),
     // barra: pode escolher de 1 até "unidades" sabores; caixa: precisa fechar o total
     minimo:
       modo === 'sabores'
-        ? Math.max(1, Math.min(unidades, Math.round(Number(bruto.minimo) || Math.min(2, unidades))))
-        : Math.max(1, Math.min(unidades, Math.round(Number(bruto.minimo) || unidades))),
+        ? Math.max(1, Math.min(unidades, Math.round(Number(g.minimo) || Math.min(2, unidades))))
+        : Math.max(1, Math.min(unidades, Math.round(Number(g.minimo) || unidades))),
     sabores,
+  };
+}
+
+function montagemPayload(bruto) {
+  if (!bruto || typeof bruto !== 'object') return '';
+  const ativo = bruto.ativo === true || bruto.ativo === 1 || bruto.ativo === '1';
+  if (!ativo) return '';
+  // vários grupos (combo) ou 1 grupo só (caixa/barra de sempre)
+  const gruposBrutos = Array.isArray(bruto.grupos) && bruto.grupos.length ? bruto.grupos : [bruto];
+  const grupos = gruposBrutos
+    .map((g, i) => sanitizarGrupoMontagem(g, i))
+    .filter((g) => g.sabores.length)
+    .slice(0, 5);
+  if (!grupos.length) return '';
+  // títulos precisam ser únicos: a escolha de cada grupo viaja pelo título
+  const vistos = new Set();
+  grupos.forEach((g, i) => {
+    let titulo = g.titulo;
+    let n = 2;
+    while (vistos.has(titulo.toLowerCase())) titulo = `${g.titulo} (${n++})`;
+    vistos.add(titulo.toLowerCase());
+    g.titulo = titulo;
+  });
+  const primeiro = grupos[0];
+  return JSON.stringify({
+    ativo: true,
+    // espelho do 1º grupo (compat: código antigo lê estes campos)
+    modo: primeiro.modo,
+    titulo: primeiro.titulo,
+    unidades: primeiro.unidades,
+    barras: primeiro.barras,
+    minimo: primeiro.minimo,
+    sabores: primeiro.sabores,
+    grupos,
   });
 }
 

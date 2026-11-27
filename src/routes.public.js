@@ -102,6 +102,35 @@ async function cobrarPedido({ req, store, orderId, code, valorCents, cartao, ite
   return gravarPagamento(store.id, orderId, resultado, payLabel);
 }
 
+/**
+ * Normaliza a montagem em grupos: combo com vários grupos (2 rosquinhas +
+ * 8 panitos) ou 1 grupo só (caixa/barra de sempre, sem o campo `grupos`).
+ */
+function gruposDaMontagem(op) {
+  if (!op || !op.ativo) return [];
+  const lista = Array.isArray(op.grupos) && op.grupos.length ? op.grupos : [op];
+  return lista
+    .map((g, i) => {
+      const unidades = Math.max(1, Math.round(Number(g.unidades) || 1));
+      const modo = g.modo === 'sabores' ? 'sabores' : 'partes';
+      return {
+        titulo: String(g.titulo || (i === 0 ? 'Escolha os sabores' : `Grupo ${i + 1}`)),
+        unidades,
+        modo,
+        minimo: Math.max(
+          1,
+          Math.min(
+            unidades,
+            Math.round(Number(g.minimo) || (modo === 'sabores' ? Math.min(2, unidades) : unidades))
+          )
+        ),
+        barras: Math.max(1, Math.round(Number(g.barras) || 1)),
+        sabores: (g.sabores || []).filter((s) => s && s.nome && s.ativo !== false),
+      };
+    })
+    .filter((g) => g.sabores.length);
+}
+
 /** Recalcula o total do pedido a partir do banco (nunca confia no navegador). */
 function totalDoPedido(storeId, code) {
   const row = db
@@ -295,59 +324,88 @@ router.post(
 
         // ---- produto com montagem (caixa de doces, sabores etc.) ----
         const escolhidos = Array.isArray(raw.escolhas) ? raw.escolhas : [];
-        const modoSabores = montagem.modo === 'sabores'; // barra: cada sabor conta 1
-        const sabores = (montagem.sabores || []).filter((s) => s.ativo !== false);
-        const porNome = Object.fromEntries(sabores.map((s) => [s.nome, s]));
+        const grupos = gruposDaMontagem(montagem);
+        const variosGrupos = grupos.length > 1;
         const contagem = [];
-        let totalUnidades = 0;
         let extraCents = 0;
 
         for (const e of escolhidos) {
-          const sabor = porNome[String(e && e.nome)];
-          const n = modoSabores
-            ? 1
-            : Math.max(0, Math.min(montagem.unidades, Math.round(Number(e && e.qtd) || 0)));
+          const gTitulo = String((e && e.grupo) || '').trim();
+          const grupo = grupos.find((g) => g.titulo === gTitulo) || grupos[0];
+          if (!grupo) continue;
+          const sabor = grupo.sabores.find((s) => s.nome === String(e && e.nome));
+          const n =
+            grupo.modo === 'sabores' // barra: cada sabor conta 1
+              ? 1
+              : Math.max(0, Math.min(200, Math.round(Number(e && e.qtd) || 0)));
           if (!sabor || !n) continue;
-          contagem.push({ nome: sabor.nome, qtd: n, extra_cents: Number(sabor.extra_cents || 0) });
-          totalUnidades += n;
+          const chave = `${grupo.titulo}|${sabor.nome}`;
+          const existente = contagem.find((c) => c.chave === chave);
+          if (existente) existente.qtd += n;
+          else
+            contagem.push({
+              chave,
+              grupo: grupo.titulo,
+              nome: sabor.nome,
+              qtd: n,
+              extra_cents: Number(sabor.extra_cents || 0),
+            });
           extraCents += Number(sabor.extra_cents || 0) * n;
         }
 
-        const precisa = Number(montagem.unidades) || 0;
-        const minimo = Number(montagem.minimo) || precisa;
-        const porSabores = modoSabores; // barra: conta sabores, não unidades
-
-        if (porSabores) {
-          const distintos = contagem.length;
-          if (distintos < Math.min(2, precisa)) {
-            return res.status(400).json({
-              error: `${p.name}: escolha pelo menos ${Math.min(2, precisa)} sabores (você escolheu ${distintos}).`,
-            });
-          }
-          if (distintos > precisa) {
-            return res.status(400).json({ error: `${p.name}: essa barra leva no máximo ${precisa} sabores.` });
-          }
-        } else {
-          if (totalUnidades < minimo) {
-            return res.status(400).json({
-              error: `${p.name}: escolha ${precisa} unidades (você escolheu ${totalUnidades}).`,
-            });
-          }
-          if (totalUnidades > precisa) {
-            return res.status(400).json({ error: `${p.name}: o máximo é ${precisa} unidades.` });
+        // valida cada grupo (combo: 2 rosquinhas + 8 panitos, cada um fecha o seu)
+        for (const grupo of grupos) {
+          const doGrupo = contagem.filter((c) => c.grupo === grupo.titulo);
+          const precisa = grupo.unidades;
+          const onde = variosGrupos ? ` (${grupo.titulo})` : '';
+          if (grupo.modo === 'sabores') {
+            const distintos = doGrupo.length;
+            if (distintos < grupo.minimo) {
+              return res.status(400).json({
+                error: `${p.name}${onde}: escolha pelo menos ${grupo.minimo} ${grupo.minimo === 1 ? 'sabor' : 'sabores'} (você escolheu ${distintos}).`,
+              });
+            }
+            if (distintos > precisa) {
+              return res.status(400).json({
+                error: `${p.name}${onde}: escolha no máximo ${precisa} ${precisa === 1 ? 'sabor' : 'sabores'}.`,
+              });
+            }
+          } else {
+            const total = doGrupo.reduce((s, c) => s + c.qtd, 0);
+            if (total !== precisa) {
+              return res.status(400).json({
+                error: `${p.name}${onde}: escolha ${precisa} ${precisa === 1 ? 'unidade' : 'unidades'} (você escolheu ${total}).`,
+              });
+            }
           }
         }
 
-        const resumo = porSabores
+        const resumo = variosGrupos
+          ? grupos
+              .map((g) => {
+                const doGrupo = contagem.filter((c) => c.grupo === g.titulo);
+                const partes = doGrupo
+                  .map((c) => (g.modo === 'sabores' ? c.nome : `${c.qtd} ${c.nome}`))
+                  .join(', ');
+                return `${g.titulo}: ${partes}`;
+              })
+              .join(' · ')
+          : grupos[0] && grupos[0].modo === 'sabores'
           ? contagem.map((c) => c.nome).join(', ')
           : contagem.map((c) => `${c.qtd} ${c.nome}`).join(', ');
+        // sem grupo no item quando é 1 grupo só (mantém o formato de sempre)
+        const escolhasFinais = contagem.map((c) =>
+          variosGrupos
+            ? { grupo: c.grupo, nome: c.nome, qtd: c.qtd, extra_cents: c.extra_cents }
+            : { nome: c.nome, qtd: c.qtd, extra_cents: c.extra_cents }
+        );
         resolved.push({
           id: p.id,
           name: `${p.name} (${resumo})`,
           price_cents: p.price_cents + extraCents,
           unit_base_cents: p.price_cents,
           extra_cents: extraCents,
-          escolhas: contagem,
+          escolhas: escolhasFinais,
           qty,
         });
       }
