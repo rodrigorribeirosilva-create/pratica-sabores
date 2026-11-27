@@ -1041,7 +1041,23 @@ async function main() {
         if (!e) return '';
         if (typeof e === 'string') return e;
         const lista = Array.isArray(e) ? e : Object.entries(e).map(([nome, qtd]) => ({ nome, qtd }));
-        return lista.filter((x) => x && x.nome).map((x) => `${Number(x.qtd) || 1}x ${x.nome}`).join(', ');
+        const validas = lista.filter((x) => x && x.nome);
+        if (!validas.some((x) => x.grupo)) {
+          return validas.map((x) => `${Number(x.qtd) || 1}x ${x.nome}`).join(', ');
+        }
+        // combo com grupos: "Rosquinhas: 1x Chocolate · Panitos: 4x Queijo"
+        const porGrupo = new Map();
+        for (const x of validas) {
+          const g = String(x.grupo || '');
+          if (!porGrupo.has(g)) porGrupo.set(g, []);
+          porGrupo.get(g).push(x);
+        }
+        return [...porGrupo.entries()]
+          .map(([g, itens]) => {
+            const txt = itens.map((x) => `${Number(x.qtd) || 1}x ${x.nome}`).join(', ');
+            return g ? `${g}: ${txt}` : txt;
+          })
+          .join(' · ');
       };
       const linhas = itens.map((i) => {
         const qtd = Number(i.qty || 1);
@@ -1214,14 +1230,27 @@ async function main() {
       const pago = order.payment_status === 'pago';
       const cor = /^#[0-9a-f]{6}$/i.test(business.theme_color || '') ? business.theme_color : '#12352a';
       const nome = business.name || req.store.name;
-      // escolhas vêm como lista de {nome, qtd}: monta um texto legível
+      // escolhas vêm como lista de {nome, qtd, grupo?}: monta um texto legível
       const detalheEscolhas = (e) => {
         if (!e) return '';
         if (typeof e === 'string') return e;
         const lista = Array.isArray(e) ? e : Object.entries(e).map(([nome, qtd]) => ({ nome, qtd }));
-        return lista
-          .filter((x) => x && x.nome)
-          .map((x) => `${Number(x.qtd) || 1}× ${x.nome}`)
+        const validas = lista.filter((x) => x && x.nome);
+        if (!validas.some((x) => x.grupo)) {
+          return validas.map((x) => `${Number(x.qtd) || 1}× ${x.nome}`).join(' · ');
+        }
+        // combo: "Rosquinhas: 1× Chocolate · Panitos: 5× Queijo"
+        const porGrupo = new Map();
+        for (const x of validas) {
+          const g = String(x.grupo || '');
+          if (!porGrupo.has(g)) porGrupo.set(g, []);
+          porGrupo.get(g).push(x);
+        }
+        return [...porGrupo.entries()]
+          .map(([g, itens]) => {
+            const txt = itens.map((x) => `${Number(x.qtd) || 1}× ${x.nome}`).join(', ');
+            return g ? `${g}: ${txt}` : txt;
+          })
           .join(' · ');
       };
       const linhas = itens

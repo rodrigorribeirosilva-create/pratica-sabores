@@ -25,6 +25,7 @@
     periods: [],
     payments: [],
     saboresEdit: [],
+    gruposEdit: [],
     segment: 'food',
     editingId: null,
     pendingImage: '',
@@ -455,7 +456,14 @@
             <span class="tag ${emEstoque ? 'on' : 'stock-out'}">${emEstoque ? 'em estoque' : 'esgotado'}</span>
             ${
               p.opcoes && p.opcoes.ativo
-                ? `<span class="tag" style="background:#eef4ff;border-color:#cfe0ff;color:#1d4ed8">cliente escolhe · ${p.opcoes.unidades || 0} un.</span>`
+                ? (() => {
+                    const gs = Array.isArray(p.opcoes.grupos) && p.opcoes.grupos.length ? p.opcoes.grupos : [p.opcoes];
+                    const rotulo =
+                      gs.length > 1
+                        ? `combo · ${gs.length} grupos`
+                        : `cliente escolhe · ${p.opcoes.unidades || 0} un.`;
+                    return `<span class="tag" style="background:#eef4ff;border-color:#cfe0ff;color:#1d4ed8">${rotulo}</span>`;
+                  })()
                 : ''
             }
           </div>
@@ -578,20 +586,14 @@
     el('pImageUrl').value = product && product.image_url && !product.image_url.startsWith('/uploads') ? product.image_url : '';
     setPreview(product ? product.image_url : '');
 
-    // montagem de caixa (sabores)
+    // montagem de caixa (sabores) — 1 ou mais grupos (combo)
     aplicarVisibilidadeSabores(product);
     if (el('pMontagemAtiva')) {
       const op = (product && product.opcoes) || null;
       el('pMontagemAtiva').checked = !!(op && op.ativo);
       el('pMontagemBox').hidden = !(op && op.ativo);
-      el('pMontagemTitulo').value = (op && op.titulo) || 'Escolha os sabores';
-      el('pMontagemUnidades').value = (op && op.unidades) || 12;
-      if (el('pMontagemBarras')) el('pMontagemBarras').value = (op && op.barras) || 1;
-      const modoSalvo = (op && op.modo) === 'sabores' ? 'sabores' : 'partes';
-      qsa('input[name="pMontagemModo"]').forEach((r) => (r.checked = r.value === modoSalvo));
-      aplicarRotulosModo();
-      state.saboresEdit = (op && op.sabores ? op.sabores : []).map((sb) => ({ ...sb }));
-      renderSabores(state.saboresEdit);
+      state.gruposEdit = gruposDoProduto(op);
+      renderGrupos();
     }
     openModal('productModal');
     setTimeout(() => el('pName').focus(), 100);
@@ -607,14 +609,10 @@
       el('pName').value = 'Caixa de bombons';
       el('pMontagemAtiva').checked = true;
       el('pMontagemBox').hidden = false;
-      el('pMontagemTitulo').value = 'Escolha os sabores';
-      el('pMontagemUnidades').value = 12;
-      qsa('input[name="pMontagemModo"]').forEach((r) => (r.checked = r.value === 'partes'));
-      aplicarRotulosModo();
-      state.saboresEdit = state.saboresEdit.length ? state.saboresEdit : [];
-      renderSabores(state.saboresEdit);
+      state.gruposEdit = [grupoNovo()];
+      renderGrupos();
       setTimeout(() => {
-        el('pSaboresCola')?.focus();
+        document.querySelector('[data-grupo-cola="0"]')?.focus();
         atualizarPreviewMontagem();
       }, 120);
     });
@@ -652,16 +650,154 @@
   }
 
 
-  /* ---------------- montagem de caixa (sabores) ---------------- */
-  function renderSabores(sabores) {
-    const box = el('pSaboresLista');
+  /* ---------------- montagem de caixa (sabores) ----------------
+     1 ou mais grupos: combo com 2 rosquinhas + 8 panitos, cada grupo com
+     seus sabores e suas quantidades. Sem grupos = 1 grupo só (de sempre). */
+
+  function grupoNovo() {
+    return { titulo: '', unidades: 12, modo: 'partes', barras: 1, sabores: [{ nome: '', extra_cents: 0 }] };
+  }
+
+  /** Grupos editáveis a partir do produto salvo (ou 1 grupo novo). */
+  function gruposDoProduto(op) {
+    if (!op || !op.ativo) return [grupoNovo()];
+    const lista = Array.isArray(op.grupos) && op.grupos.length ? op.grupos : [op];
+    return lista.map((g, i) => ({
+      titulo: String(g.titulo || (i === 0 ? 'Escolha os sabores' : '')),
+      unidades: Number(g.unidades) || 12,
+      modo: g.modo === 'sabores' ? 'sabores' : 'partes',
+      barras: Number(g.barras) || 1,
+      sabores: (g.sabores || []).map((sb) => ({ ...sb })),
+    }));
+  }
+
+  function renderGrupos() {
+    const box = el('pGruposLista');
     if (!box) return;
-    box.innerHTML = (sabores || [])
+    const grupos = state.gruposEdit || [];
+    box.innerHTML = grupos
+      .map(
+        (g, gi) => `<div class="grupo-card" data-grupo="${gi}" style="border:1px solid var(--line);border-radius:12px;padding:12px;background:#fff">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px">
+            <strong>Grupo ${gi + 1}${grupos.length > 1 ? ` · ${esc(g.titulo || 'sem título')}` : ''}</strong>
+            ${grupos.length > 1 ? `<button type="button" class="btn btn-sm btn-ghost" data-grupo-del="${gi}">Remover grupo</button>` : ''}
+          </div>
+          <div class="row two">
+            <div class="field">
+              <label>Título do grupo</label>
+              <input class="input" data-grupo-titulo="${gi}" value="${esc(g.titulo || '')}" placeholder="${gi === 0 ? 'Ex.: Escolha os sabores' : 'Ex.: Rosquinhas'}">
+            </div>
+            <div class="field">
+              <label data-grupo-unidades-label="${gi}">${g.modo === 'sabores' ? 'Quantos sabores o cliente pode escolher?' : 'Quantas unidades vêm neste grupo?'}</label>
+              <input class="input" data-grupo-unidades="${gi}" type="number" min="1" max="200" value="${g.unidades}">
+            </div>
+          </div>
+          <div class="field" style="margin-bottom:8px">
+            <label>Como o cliente escolhe?</label>
+            <label style="display:flex;gap:9px;align-items:flex-start;cursor:pointer;font-weight:600;margin-top:6px">
+              <input type="radio" name="pMontagemModo-${gi}" value="partes" ${g.modo !== 'sabores' ? 'checked' : ''} style="margin-top:3px">
+              <span>Quantidade de cada sabor <span class="hint" style="display:block;margin:0">
+                Ele distribui as unidades entre os sabores (ex.: <strong>1 de cada</strong>).</span></span>
+            </label>
+            <label style="display:flex;gap:9px;align-items:flex-start;cursor:pointer;font-weight:600;margin-top:8px">
+              <input type="radio" name="pMontagemModo-${gi}" value="sabores" ${g.modo === 'sabores' ? 'checked' : ''} style="margin-top:3px">
+              <span>Sabores da barra / do tablete <span class="hint" style="display:block;margin:0">
+                Ele escolhe <strong>até N sabores diferentes</strong> (ex.: barra de <strong>1</strong> sabor: branco <strong>ou</strong> ao leite).</span></span>
+            </label>
+          </div>
+          <div class="field" data-grupo-barras-wrap="${gi}" ${g.modo === 'sabores' ? '' : 'hidden'}>
+            <label>Quantas barras vêm?</label>
+            <input class="input" data-grupo-barras="${gi}" type="number" min="1" max="99" value="${g.barras}">
+            <div class="hint" style="margin:4px 0 0">
+              Ex.: <strong>1</strong> barra grande, ou <strong>8</strong> se for o pacote de mini barras.
+            </div>
+          </div>
+          <label style="font-weight:700;font-size:13px">Sabores deste grupo</label>
+          <div class="field" style="margin:6px 0 8px">
+            <div style="display:flex;gap:6px">
+              <input class="input" data-grupo-cola="${gi}" placeholder="Colar lista: Ex.: Chocolate, Morango, Doce de leite">
+              <button type="button" class="btn btn-sm" data-grupo-cola-btn="${gi}">Preencher</button>
+            </div>
+          </div>
+          <div data-grupo-sabores="${gi}" style="display:flex;flex-direction:column;gap:6px"></div>
+          <button type="button" class="btn btn-sm btn-ghost" data-grupo-sabor-add="${gi}" style="margin-top:8px">+ Adicionar sabor</button>
+        </div>`
+      )
+      .join('');
+
+    grupos.forEach((g, gi) => {
+      renderSaboresGrupo(gi);
+      const card = box.querySelector(`[data-grupo="${gi}"]`);
+      if (!card) return;
+      card.querySelector(`[data-grupo-titulo="${gi}"]`).addEventListener('input', (e) => {
+        g.titulo = e.target.value;
+        atualizarPreviewMontagem();
+      });
+      card.querySelector(`[data-grupo-unidades="${gi}"]`).addEventListener('input', (e) => {
+        g.unidades = Number(e.target.value) || 0;
+        atualizarPreviewMontagem();
+      });
+      card.querySelectorAll(`input[name="pMontagemModo-${gi}"]`).forEach((r) =>
+        r.addEventListener('change', () => {
+          g.modo = r.value;
+          renderGrupos();
+        })
+      );
+      const barras = card.querySelector(`[data-grupo-barras="${gi}"]`);
+      if (barras)
+        barras.addEventListener('input', (e) => {
+          g.barras = Number(e.target.value) || 1;
+          atualizarPreviewMontagem();
+        });
+      const del = card.querySelector(`[data-grupo-del="${gi}"]`);
+      if (del)
+        del.addEventListener('click', () => {
+          state.gruposEdit.splice(gi, 1);
+          renderGrupos();
+        });
+      card.querySelector(`[data-grupo-sabor-add="${gi}"]`).addEventListener('click', () => {
+        g.sabores.push({ nome: '', extra_cents: 0 });
+        renderSaboresGrupo(gi);
+      });
+      const preencher = () => {
+        const bruto = String(card.querySelector(`[data-grupo-cola="${gi}"]`).value || '').trim();
+        if (!bruto) return;
+        const nomes = bruto
+          .split(/[,;\n]+/)
+          .map((n) => n.trim())
+          .filter(Boolean);
+        const jaTem = new Set(g.sabores.map((sb) => String(sb.nome || '').trim().toLowerCase()));
+        for (const nome of nomes) {
+          if (jaTem.has(nome.toLowerCase())) continue;
+          g.sabores.push({ nome, extra_cents: 0 });
+          jaTem.add(nome.toLowerCase());
+        }
+        g.sabores = g.sabores.filter((sb) => String(sb.nome || '').trim());
+        card.querySelector(`[data-grupo-cola="${gi}"]`).value = '';
+        renderSaboresGrupo(gi);
+        toast(`${nomes.length} sabor(es) adicionado(s).`, 'ok');
+      };
+      card.querySelector(`[data-grupo-cola-btn="${gi}"]`).addEventListener('click', preencher);
+      card.querySelector(`[data-grupo-cola="${gi}"]`).addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          preencher();
+        }
+      });
+    });
+    atualizarPreviewMontagem();
+  }
+
+  function renderSaboresGrupo(gi) {
+    const g = (state.gruposEdit || [])[gi];
+    const box = document.querySelector(`[data-grupo-sabores="${gi}"]`);
+    if (!g || !box) return;
+    box.innerHTML = (g.sabores || [])
       .map(
         (sb, i) => `<div class="sabor-row" data-sabor="${i}" style="display:grid;grid-template-columns:1fr 120px auto;gap:6px;align-items:center">
-          <input class="input" data-sabor-nome="${i}" value="${esc(sb.nome || '')}" placeholder="Ex.: Beijinho">
-          <input class="input" data-sabor-extra="${i}" inputmode="decimal" value="${sb.extra_cents ? (sb.extra_cents / 100).toFixed(2).replace('.', ',') : ''}" placeholder="+ R$ (0,00)">
-          <button type="button" class="icon-btn danger" data-sabor-del="${i}" title="Remover">
+          <input class="input" data-sabor-nome="${i}" data-grupo="${gi}" value="${esc(sb.nome || '')}" placeholder="Ex.: Beijinho">
+          <input class="input" data-sabor-extra="${i}" data-grupo="${gi}" inputmode="decimal" value="${sb.extra_cents ? (sb.extra_cents / 100).toFixed(2).replace('.', ',') : ''}" placeholder="+ R$ (0,00)">
+          <button type="button" class="icon-btn danger" data-sabor-del="${i}" data-grupo="${gi}" title="Remover">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
           </button>
         </div>`
@@ -670,14 +806,14 @@
 
     box.querySelectorAll('[data-sabor-nome]').forEach((inp) =>
       inp.addEventListener('input', () => {
-        state.saboresEdit[Number(inp.dataset.saborNome)].nome = inp.value;
+        g.sabores[Number(inp.dataset.saborNome)].nome = inp.value;
         atualizarPreviewMontagem();
       })
     );
     box.querySelectorAll('[data-sabor-extra]').forEach((inp) =>
       inp.addEventListener('input', () => {
         const bruto = String(inp.value || '').replace(/\./g, '').replace(',', '.');
-        state.saboresEdit[Number(inp.dataset.saborExtra)].extra_cents = Math.max(
+        g.sabores[Number(inp.dataset.saborExtra)].extra_cents = Math.max(
           0,
           Math.round(Number(bruto || 0) * 100)
         );
@@ -685,8 +821,8 @@
     );
     box.querySelectorAll('[data-sabor-del]').forEach((b) =>
       b.addEventListener('click', () => {
-        state.saboresEdit.splice(Number(b.dataset.saborDel), 1);
-        renderSabores(state.saboresEdit);
+        g.sabores.splice(Number(b.dataset.saborDel), 1);
+        renderSaboresGrupo(gi);
       })
     );
     atualizarPreviewMontagem();
@@ -715,149 +851,122 @@
     return usa;
   }
 
-  /** Modo da escolha: "partes" (quantidade por sabor) ou "sabores" (barra: até N sabores). */
-  function montagemModoAtual() {
-    const marcado = qsa('input[name="pMontagemModo"]').find((r) => r.checked);
-    return marcado ? marcado.value : 'partes';
-  }
-
-  function aplicarRotulosModo() {
-    const modo = montagemModoAtual();
-    const label = el('pMontagemUnidadesLabel');
-    const hint = el('pMontagemHint');
-    const wrapBarras = el('pMontagemBarrasWrap');
-    if (wrapBarras) wrapBarras.hidden = modo !== 'sabores';
-    if (label) label.textContent = modo === 'sabores' ? 'Quantos sabores o cliente pode escolher?' : 'Quantas unidades vêm na caixa?';
-    if (hint) {
-      hint.innerHTML =
-        modo === 'sabores'
-          ? 'Ex.: barra grande dividida em 4 pedaços → <strong>4</strong> sabores. O cliente escolhe de 1 até esse número.'
-          : 'A quantidade é o que o cliente vê no cardápio. Ex.: caixa de 12 → ele pode escolher 10 de um sabor + 2 de outro; o total precisa fechar em <strong id="pMontagemQtdHint">' +
-            (Number(el('pMontagemUnidades')?.value) || 0) +
-            '</strong>.';
-    }
-  }
-
   /** Mostra, em tempo real, o que o cliente vai ver no cardápio. */
   function atualizarPreviewMontagem() {
     const box = el('pMontagemPreview');
-    const hintQtd = el('pMontagemQtdHint');
     if (!box) return;
-    const unidades = Math.max(0, Number(el('pMontagemUnidades')?.value) || 0);
-    if (hintQtd) hintQtd.textContent = String(unidades || 0);
     if (!el('pMontagemAtiva')?.checked) {
       box.textContent = 'Desligado — este produto não pede escolha de sabores.';
       return;
     }
-    const titulo = (el('pMontagemTitulo').value || 'Escolha os sabores').trim();
-    const sabores = (state.saboresEdit || []).map((sb) => String(sb.nome || '').trim()).filter(Boolean);
-    if (!unidades || !sabores.length) {
-      box.innerHTML = '<span style="color:#b3261e">Preencha a quantidade e pelo menos 1 sabor para o cliente poder montar a caixa.</span>';
+    const grupos = (state.gruposEdit || []).map((g, i) => ({
+      titulo: String(g.titulo || (i === 0 ? 'Escolha os sabores' : `Grupo ${i + 1}`)).trim(),
+      unidades: Math.max(0, Number(g.unidades) || 0),
+      modo: g.modo === 'sabores' ? 'sabores' : 'partes',
+      barras: Math.max(1, Number(g.barras) || 1),
+      sabores: (g.sabores || []).map((sb) => String(sb.nome || '').trim()).filter(Boolean),
+    }));
+    if (!grupos.length || grupos.some((g) => !g.unidades || !g.sabores.length)) {
+      box.innerHTML = '<span style="color:#b3261e">Preencha a quantidade e pelo menos 1 sabor em cada grupo para o cliente poder montar.</span>';
       return;
     }
-    const modo = montagemModoAtual();
-    const exemplo = (() => {
-      if (modo === 'sabores') {
-        const quantos = Math.min(unidades, sabores.length);
-        return sabores.slice(0, quantos).join(' + ') || sabores[0];
-      }
-      if (sabores.length === 1) return `${unidades} ${sabores[0]}`;
-      const primeiro = Math.max(1, unidades - 2);
-      return `${primeiro} ${sabores[0]} + ${unidades - primeiro} ${sabores[1]}`;
-    })();
-    const barras = Math.max(1, Number(el('pMontagemBarras')?.value) || 1);
-    const legenda =
-      modo === 'sabores'
-        ? `${barras} ${barras === 1 ? 'barra' : 'barras'} · até ${unidades} sabores`
-        : `${unidades} unidade${unidades > 1 ? 's' : ''}`;
-    box.innerHTML = `
-      <div><strong>${esc(titulo)}</strong> · ${legenda}</div>
-      <div style="display:flex;flex-wrap:wrap;gap:5px;margin:6px 0">
-        ${sabores.map((n) => `<span style="background:#f3eee2;border:1px solid #e2dac6;border-radius:999px;padding:2px 9px;font-size:12px">${esc(n)}</span>`).join('')}
-      </div>
-      <div style="color:#6b6355;font-size:12.5px">${modo === 'sabores' ? 'O cliente escolhe assim' : 'O cliente monta assim'}: <strong style="color:#3f3a30">${esc(exemplo)}</strong></div>`;
+    box.innerHTML = grupos
+      .map((g) => {
+        const exemplo = (() => {
+          if (g.modo === 'sabores') {
+            const quantos = Math.min(g.unidades, g.sabores.length);
+            return g.sabores.slice(0, quantos).join(' + ') || g.sabores[0];
+          }
+          if (g.sabores.length === 1) return `${g.unidades} ${g.sabores[0]}`;
+          const primeiro = Math.max(1, g.unidades - 2);
+          return `${primeiro} ${g.sabores[0]} + ${g.unidades - primeiro} ${g.sabores[1]}`;
+        })();
+        const legenda =
+          g.modo === 'sabores'
+            ? `${g.barras} ${g.barras === 1 ? 'barra' : 'barras'} · até ${g.unidades} sabores`
+            : `${g.unidades} unidade${g.unidades > 1 ? 's' : ''}`;
+        return `<div style="margin-bottom:8px">
+          <div><strong>${esc(g.titulo)}</strong> · ${legenda}</div>
+          <div style="display:flex;flex-wrap:wrap;gap:5px;margin:6px 0">
+            ${g.sabores.map((n) => `<span style="background:#f3eee2;border:1px solid #e2dac6;border-radius:999px;padding:2px 9px;font-size:12px">${esc(n)}</span>`).join('')}
+          </div>
+          <div style="color:#6b6355;font-size:12.5px">${g.modo === 'sabores' ? 'O cliente escolhe assim' : 'O cliente monta assim'}: <strong style="color:#3f3a30">${esc(exemplo)}</strong></div>
+        </div>`;
+      })
+      .join('');
   }
 
   function montagemDoFormulario() {
     if (!el('pMontagemAtiva').checked) return null;
-    const modo = montagemModoAtual();
-    const unidades = Number(el('pMontagemUnidades').value) || 0;
+    const grupos = (state.gruposEdit || [])
+      .map((g, i) => {
+        const unidades = Math.max(1, Number(g.unidades) || 0);
+        const modo = g.modo === 'sabores' ? 'sabores' : 'partes';
+        return {
+          titulo: String(g.titulo || (i === 0 ? 'Escolha os sabores' : `Grupo ${i + 1}`)).trim(),
+          unidades,
+          modo,
+          barras: modo === 'sabores' ? Math.max(1, Number(g.barras) || 1) : 1,
+          // barra: pode escolher de 1 até "unidades" sabores; caixa: fecha o total
+          minimo: modo === 'sabores' ? Math.min(2, unidades) : unidades,
+          sabores: (g.sabores || []).filter((sb) => String(sb.nome || '').trim()),
+        };
+      })
+      .filter((g) => g.sabores.length);
+    if (!grupos.length) return null;
+    const primeiro = grupos[0];
     return {
       ativo: true,
-      modo,
-      titulo: el('pMontagemTitulo').value.trim(),
-      unidades,
-      barras: modo === 'sabores' ? Math.max(1, Number(el('pMontagemBarras').value) || 1) : 1,
-      // barra: pode escolher de 1 até "unidades" sabores; caixa: fecha o total
-      minimo: modo === 'sabores' ? Math.min(2, unidades) : unidades,
-      sabores: state.saboresEdit.filter((sb) => String(sb.nome || '').trim()),
+      // espelho do 1º grupo (compat: código antigo lê estes campos)
+      modo: primeiro.modo,
+      titulo: primeiro.titulo,
+      unidades: primeiro.unidades,
+      barras: primeiro.barras,
+      minimo: primeiro.minimo,
+      sabores: primeiro.sabores,
+      grupos,
     };
   }
 
   if (el('pMontagemAtiva')) {
     el('pMontagemAtiva').addEventListener('change', () => {
       el('pMontagemBox').hidden = !el('pMontagemAtiva').checked;
-      if (el('pMontagemAtiva').checked && !state.saboresEdit.length) {
-        state.saboresEdit = [{ nome: '', extra_cents: 0 }];
-        renderSabores(state.saboresEdit);
+      if (el('pMontagemAtiva').checked && !(state.gruposEdit || []).length) {
+        state.gruposEdit = [grupoNovo()];
+        renderGrupos();
       }
       atualizarPreviewMontagem();
     });
-    qsa('input[name="pMontagemModo"]').forEach((r) =>
-      r.addEventListener('change', () => {
-        aplicarRotulosModo();
-        atualizarPreviewMontagem();
-      })
-    );
-    el('pMontagemTitulo').addEventListener('input', atualizarPreviewMontagem);
-    el('pMontagemUnidades').addEventListener('input', atualizarPreviewMontagem);
-    if (el('pMontagemBarras')) el('pMontagemBarras').addEventListener('input', atualizarPreviewMontagem);
-    el('pSaborAdd').addEventListener('click', () => {
-      state.saboresEdit.push({ nome: '', extra_cents: 0 });
-      renderSabores(state.saboresEdit);
-    });
-
-    // colar vários sabores de uma vez: "Prestígio, Brigadeiro, Beijinho"
-    const preencherLista = () => {
-      const bruto = String(el('pSaboresCola').value || '').trim();
-      if (!bruto) return;
-      const nomes = bruto
-        .split(/[,;\n]+/)
-        .map((n) => n.trim())
-        .filter(Boolean);
-      const jaTem = new Set(state.saboresEdit.map((sb) => String(sb.nome || '').trim().toLowerCase()));
-      for (const nome of nomes) {
-        if (jaTem.has(nome.toLowerCase())) continue;
-        state.saboresEdit.push({ nome, extra_cents: 0 });
-        jaTem.add(nome.toLowerCase());
-      }
-      // remove linhas vazias que sobraram
-      state.saboresEdit = state.saboresEdit.filter((sb) => String(sb.nome || '').trim());
-      el('pSaboresCola').value = '';
-      renderSabores(state.saboresEdit);
-      toast(`${nomes.length} sabor(es) adicionado(s).`, 'ok');
-    };
-    el('pSaboresColaBtn').addEventListener('click', preencherLista);
-    el('pSaboresCola').addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        preencherLista();
-      }
+    el('pGrupoAdd').addEventListener('click', () => {
+      if ((state.gruposEdit || []).length >= 5) return toast('No máximo 5 grupos por produto.', 'err');
+      state.gruposEdit.push(grupoNovo());
+      renderGrupos();
     });
   }
 
   el('productForm').addEventListener('submit', async (e) => {
     e.preventDefault();
-    // confere a caixa antes de salvar
+    // confere a montagem antes de salvar
     if (el('pMontagemAtiva') && el('pMontagemAtiva').checked) {
-      const unidades = Number(el('pMontagemUnidades').value) || 0;
-      const sabores = (state.saboresEdit || []).map((sb) => String(sb.nome || '').trim()).filter(Boolean);
-      const iguais = new Set(sabores.map((n) => n.toLowerCase()));
-      if (iguais.size !== sabores.length) return toast('Tem sabor repetido na lista. Tire o repetido para continuar.', 'err');
-      if (montagemModoAtual() === 'sabores' && sabores.length < 2)
-        return toast('Cadastre pelo menos 2 sabores para a barra — o cliente escolhe entre eles.', 'err');
-      if (unidades < 2) return toast('Coloque quantas unidades vêm na caixa (2 ou mais).', 'err');
-      if (sabores.length < 2) return toast('Cadastre pelo menos 2 sabores para o cliente poder montar.', 'err');
+      const grupos = state.gruposEdit || [];
+      if (!grupos.length) return toast('Cadastre pelo menos 1 grupo de sabores.', 'err');
+      for (let i = 0; i < grupos.length; i++) {
+        const g = grupos[i];
+        const unidades = Number(g.unidades) || 0;
+        const sabores = (g.sabores || []).map((sb) => String(sb.nome || '').trim()).filter(Boolean);
+        const iguais = new Set(sabores.map((n) => n.toLowerCase()));
+        if (iguais.size !== sabores.length)
+          return toast(`Tem sabor repetido no grupo ${i + 1}. Tire o repetido para continuar.`, 'err');
+        if (unidades < 1)
+          return toast(`Coloque quantas unidades vêm no grupo ${i + 1} (1 ou mais).`, 'err');
+        if (sabores.length < 2)
+          return toast(
+            g.modo === 'sabores'
+              ? `Cadastre pelo menos 2 sabores no grupo ${i + 1} — o cliente escolhe entre eles.`
+              : `Cadastre pelo menos 2 sabores no grupo ${i + 1} para o cliente poder montar.`,
+            'err'
+          );
+      }
     }
     const btn = el('pSaveBtn');
     btn.disabled = true;

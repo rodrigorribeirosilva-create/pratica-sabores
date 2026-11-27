@@ -98,31 +98,86 @@
   const productById = (id) => state.products.find((p) => String(p.id) === String(id));
   const isInStock = (product) => !product || product.in_stock == null || Number(product.in_stock) !== 0;
 
+  /**
+   * Normaliza a montagem em grupos: combo com vários grupos (2 rosquinhas +
+   * 8 panitos) ou 1 grupo só (caixa/barra de sempre, sem o campo `grupos`).
+   */
+  function gruposDaMontagem(op) {
+    if (!op || !op.ativo) return [];
+    const lista = Array.isArray(op.grupos) && op.grupos.length ? op.grupos : [op];
+    return lista
+      .map((g, i) => {
+        const unidades = Math.max(1, Math.round(Number(g.unidades) || 1));
+        const modo = g.modo === 'sabores' ? 'sabores' : 'partes';
+        return {
+          titulo: String(g.titulo || (i === 0 ? 'Escolha os sabores' : `Grupo ${i + 1}`)),
+          unidades,
+          modo,
+          minimo: Math.max(
+            1,
+            Math.min(
+              unidades,
+              Math.round(Number(g.minimo) || (modo === 'sabores' ? Math.min(2, unidades) : unidades))
+            )
+          ),
+          barras: Math.max(1, Math.round(Number(g.barras) || 1)),
+          sabores: (g.sabores || []).filter((s) => s && s.nome && s.ativo !== false),
+        };
+      })
+      .filter((g) => g.sabores.length);
+  }
+
   /** Chave do carrinho: id do produto + a montagem escolhida (sabores). */
   function chaveItem(produtoId, escolhas) {
     if (!escolhas || !escolhas.length) return String(produtoId);
     const assinatura = escolhas
       .slice()
-      .sort((a, b) => String(a.nome).localeCompare(String(b.nome)))
-      .map((e) => `${e.nome}:${e.qtd}`)
+      .sort(
+        (a, b) =>
+          String(a.grupo || '').localeCompare(String(b.grupo || '')) ||
+          String(a.nome).localeCompare(String(b.nome))
+      )
+      .map((e) => `${e.grupo ? `${e.grupo}:` : ''}${e.nome}:${e.qtd}`)
       .join('|');
     return `${produtoId}#${assinatura}`;
   }
 
-  /** "4 Beijinho, 8 Brigadeiro" */
+  /** "4 Beijinho, 8 Brigadeiro" · combo: "Rosquinhas: 1 Chocolate · Panitos: 4 Queijo" */
   const resumoEscolhas = (escolhas) => {
     const validas = (escolhas || []).filter((e) => Number(e.qtd) > 0);
     if (!validas.length) return '';
-    // barra (1 de cada sabor) fica mais limpo só com os nomes
-    const umaDeCada = validas.every((e) => Number(e.qtd) === 1);
-    return validas.map((e) => (umaDeCada ? e.nome : `${e.qtd} ${e.nome}`)).join(', ');
+    const porGrupo = new Map();
+    for (const e of validas) {
+      const g = String(e.grupo || '');
+      if (!porGrupo.has(g)) porGrupo.set(g, []);
+      porGrupo.get(g).push(e);
+    }
+    return [...porGrupo.entries()]
+      .map(([g, lista]) => {
+        // barra (1 de cada sabor) fica mais limpo só com os nomes
+        const umaDeCada = lista.every((e) => Number(e.qtd) === 1);
+        const txt = lista.map((e) => (umaDeCada ? e.nome : `${e.qtd} ${e.nome}`)).join(', ');
+        return g ? `${g}: ${txt}` : txt;
+      })
+      .join(' · ');
   };
 
   /** Preço de uma unidade já com os acréscimos dos sabores. */
   function precoUnitario(produto, escolhas) {
     let extra = 0;
+    const grupos = gruposDaMontagem(produto.opcoes);
     for (const e of escolhas || []) {
-      const sabor = ((produto.opcoes && produto.opcoes.sabores) || []).find((s) => s.nome === e.nome);
+      let sabor = null;
+      if (e.grupo) {
+        const g = grupos.find((x) => x.titulo === e.grupo);
+        sabor = g && g.sabores.find((s) => s.nome === e.nome);
+      }
+      if (!sabor) {
+        for (const g of grupos) {
+          sabor = g.sabores.find((s) => s.nome === e.nome);
+          if (sabor) break;
+        }
+      }
       if (sabor) extra += Number(sabor.extra_cents || 0) * Number(e.qtd || 0);
     }
     return Number(produto.price_cents || 0) + extra;
@@ -425,7 +480,8 @@
       .map((p, idx) => {
         const qty = qtdNoCarrinho(p.id);
         const emEstoque = isInStock(p);
-        const temMontagem = !!(p.opcoes && p.opcoes.ativo && (p.opcoes.sabores || []).length);
+        const gruposMontagem = gruposDaMontagem(p.opcoes);
+        const temMontagem = gruposMontagem.length > 0;
         const action = !emEstoque
           ? `<button class="add-btn stock-disabled" type="button" disabled>Estoque esgotado</button>`
           : temMontagem
@@ -435,11 +491,13 @@
                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
                  ${qty
                    ? 'Montar outro'
-                   : p.opcoes.modo === 'sabores'
-                     ? Number(p.opcoes.unidades) === 1
-                       ? 'Escolher 1 sabor'
-                       : `Escolher sabores${p.opcoes.unidades ? ` (até ${p.opcoes.unidades})` : ''}`
-                     : 'Escolher sabores'}
+                   : gruposMontagem.length > 1
+                     ? 'Montar combo'
+                     : gruposMontagem[0].modo === 'sabores'
+                       ? gruposMontagem[0].unidades === 1
+                         ? 'Escolher 1 sabor'
+                         : `Escolher sabores (até ${gruposMontagem[0].unidades})`
+                       : 'Escolher sabores'}
                </button>
              </div>`
           : qty
@@ -554,112 +612,150 @@
       state.view = 'cart';
       return renderDrawer();
     }
-    const op = p.opcoes || {};
-    const sabores = (op.sabores || []).filter((s) => s.ativo !== false);
-    const precisa = Number(op.unidades) || 1;
-    // barra: conta sabores diferentes; caixa: soma as unidades
-    const porSabores = op.modo === 'sabores';
-    const escolhidas = porSabores
-      ? sabores.filter((sb) => Number(state.montando.qtd[sb.nome]) > 0).length
-      : sabores.reduce((s, sb) => s + (Number(state.montando.qtd[sb.nome]) || 0), 0);
-    const extras = sabores.reduce(
-      (s, sb) => s + (Number(state.montando.qtd[sb.nome]) || 0) * Number(sb.extra_cents || 0),
+    const grupos = gruposDaMontagem(p.opcoes);
+    if (!grupos.length) {
+      state.view = 'cart';
+      return renderDrawer();
+    }
+    const variosGrupos = grupos.length > 1;
+    // qtd por sabor: chave "índice do grupo::nome do sabor"
+    const qtdDe = (gi, nome) => Number(state.montando.qtd[`${gi}::${nome}`]) || 0;
+
+    // estado de cada grupo (barra: conta sabores diferentes; caixa: soma as unidades)
+    const estado = grupos.map((g, gi) => {
+      const porSabores = g.modo === 'sabores';
+      const escolhidas = porSabores
+        ? g.sabores.filter((sb) => qtdDe(gi, sb.nome) > 0).length
+        : g.sabores.reduce((s, sb) => s + qtdDe(gi, sb.nome), 0);
+      const minimo = porSabores ? Math.min(Math.max(1, g.minimo || 2), g.unidades) : g.unidades;
+      const falta = porSabores
+        ? Math.max(0, minimo - escolhidas)
+        : Math.max(0, g.unidades - escolhidas);
+      const sobrando = porSabores ? Math.max(0, g.unidades - escolhidas) : 0;
+      return { g, gi, porSabores, escolhidas, falta, sobrando };
+    });
+    const extras = grupos.reduce(
+      (s, g, gi) =>
+        s + g.sabores.reduce((acc, sb) => acc + qtdDe(gi, sb.nome) * Number(sb.extra_cents || 0), 0),
       0
     );
     const preco = Number(p.price_cents || 0) + extras;
-    const minimo = porSabores ? Math.min(Math.max(1, Number(op.minimo) || 2), precisa) : precisa;
-    const falta = porSabores ? Math.max(0, minimo - escolhidas) : Math.max(0, precisa - escolhidas);
-    const sobrando = porSabores ? Math.max(0, precisa - escolhidas) : 0;
+    const tudoCerto = estado.every((e) => e.falta === 0);
+
+    const subGrupo = (e) =>
+      e.porSabores
+        ? `${e.g.barras > 1 ? `${e.g.barras} barras · ` : ''}${
+            e.g.unidades === 1 ? 'escolha 1 sabor' : `escolha até ${e.g.unidades} sabores`
+          }`
+        : `${e.g.unidades} ${e.g.unidades === 1 ? 'unidade' : 'unidades'}`;
+
+    const contadorGrupo = (e) =>
+      `<div class="montar-contador ${e.falta ? '' : 'ok'}">${
+        e.porSabores
+          ? e.falta
+            ? `Escolha mais <strong>${e.falta}</strong> ${e.falta === 1 ? 'sabor' : 'sabores'} · ${e.escolhidas} de até ${e.g.unidades}`
+            : `Tudo certo: <strong>${e.escolhidas} ${e.escolhidas === 1 ? 'sabor escolhido' : 'sabores escolhidos'}</strong>${e.sobrando ? ` · pode escolher mais ${e.sobrando}` : ''}`
+          : e.falta
+          ? `Escolha mais <strong>${e.falta}</strong> ${e.falta === 1 ? 'unidade' : 'unidades'} · ${e.escolhidas} de ${e.g.unidades}`
+          : `Tudo certo: <strong>${e.g.unidades} ${e.g.unidades === 1 ? 'unidade escolhida' : 'unidades escolhidas'}</strong>`
+      }</div>`;
 
     body.innerHTML = `
       ${p.image_url ? `<img class="montar-img" src="${esc(p.image_url)}" alt="">` : ''}
       <div class="montar-head">
         <div class="montar-titulo">${esc(p.name)}</div>
-        <div class="montar-sub">${esc(op.titulo || 'Escolha os sabores')} · ${
-          porSabores
-            ? `${Number(op.barras) > 1 ? `${Number(op.barras)} barras · ` : ''}${
-                precisa === 1 ? 'escolha 1 sabor' : `escolha até ${precisa} sabores`
-              }`
-            : `${precisa} ${precisa === 1 ? 'unidade' : 'unidades'}`
+        <div class="montar-sub">${
+          variosGrupos
+            ? 'Monte seu combo'
+            : `${esc(grupos[0].titulo)} · ${subGrupo(estado[0])}`
         }</div>
       </div>
-      <div class="montar-lista">
-        ${sabores
-          .map((sb) => {
-            const n = Number(state.montando.qtd[sb.nome]) || 0;
-            const extra = Number(sb.extra_cents || 0);
-            if (porSabores) {
+      ${estado
+        .map(
+          (e) => `
+      <div class="montar-grupo">
+        ${
+          variosGrupos
+            ? `<div class="montar-grupo-titulo">${esc(e.g.titulo)} <span>· ${subGrupo(e)}</span></div>`
+            : ''
+        }
+        <div class="montar-lista">
+          ${e.g.sabores
+            .map((sb) => {
+              const n = qtdDe(e.gi, sb.nome);
+              const extra = Number(sb.extra_cents || 0);
+              const chave = `${e.gi}::${sb.nome}`;
+              if (e.porSabores) {
+                return `<div class="montar-item ${n ? 'on' : ''}">
+                  <div class="mi-txt">
+                    <span class="mi-nome">${esc(sb.nome)}</span>
+                    ${extra ? `<span class="mi-extra">+ ${brl.format(extra / 100)}</span>` : ''}
+                  </div>
+                  <div class="mi-acao">
+                    ${
+                      n
+                        ? `<button class="mi-chip on" data-montar-dec="${esc(chave)}" aria-label="Tirar este sabor">✓ escolhido</button>`
+                        : `<button class="mi-chip" data-montar-inc="${esc(chave)}" aria-label="Escolher este sabor" ${e.escolhidas >= e.g.unidades ? 'disabled' : ''}>escolher</button>`
+                    }
+                  </div>
+                </div>`;
+              }
               return `<div class="montar-item ${n ? 'on' : ''}">
                 <div class="mi-txt">
                   <span class="mi-nome">${esc(sb.nome)}</span>
-                  ${extra ? `<span class="mi-extra">+ ${brl.format(extra / 100)}</span>` : ''}
+                  ${extra ? `<span class="mi-extra">+ ${brl.format(extra / 100)} por unidade</span>` : ''}
                 </div>
-                <div class="mi-acao">
-                  ${
-                    n
-                      ? `<button class="mi-chip on" data-montar-dec="${esc(sb.nome)}" aria-label="Tirar este sabor">✓ escolhido</button>`
-                      : `<button class="mi-chip" data-montar-inc="${esc(sb.nome)}" aria-label="Escolher este sabor" ${escolhidas >= precisa ? 'disabled' : ''}>escolher</button>`
-                  }
+                <div class="stepper">
+                  <button data-montar-dec="${esc(chave)}" aria-label="Menos um" ${n ? '' : 'disabled'}>−</button>
+                  <span class="qty">${n}</span>
+                  <button data-montar-inc="${esc(chave)}" aria-label="Mais um" ${e.escolhidas >= e.g.unidades ? 'disabled' : ''}>+</button>
                 </div>
               </div>`;
-            }
-            return `<div class="montar-item ${n ? 'on' : ''}">
-              <div class="mi-txt">
-                <span class="mi-nome">${esc(sb.nome)}</span>
-                ${extra ? `<span class="mi-extra">+ ${brl.format(extra / 100)} por unidade</span>` : ''}
-              </div>
-              <div class="stepper">
-                <button data-montar-dec="${esc(sb.nome)}" aria-label="Menos um" ${n ? '' : 'disabled'}>−</button>
-                <span class="qty">${n}</span>
-                <button data-montar-inc="${esc(sb.nome)}" aria-label="Mais um" ${escolhidas >= precisa ? 'disabled' : ''}>+</button>
-              </div>
-            </div>`;
-          })
-          .join('')}
-      </div>
-      <div class="montar-contador ${falta ? '' : 'ok'}">
-        ${
-          porSabores
-            ? falta
-              ? `Escolha mais <strong>${falta}</strong> ${falta === 1 ? 'sabor' : 'sabores'} · ${escolhidas} de até ${precisa}`
-              : `Tudo certo: <strong>${escolhidas} ${escolhidas === 1 ? 'sabor escolhido' : 'sabores escolhidos'}</strong>${sobrando ? ` · pode escolher mais ${sobrando}` : ''}`
-            : falta
-            ? `Escolha mais <strong>${falta}</strong> ${falta === 1 ? 'unidade' : 'unidades'} · ${escolhidas} de ${precisa}`
-            : `Tudo certo: <strong>${precisa} ${precisa === 1 ? 'unidade escolhida' : 'unidades escolhidas'}</strong>`
-        }
-      </div>`;
+            })
+            .join('')}
+        </div>
+        ${contadorGrupo(e)}
+      </div>`
+        )
+        .join('')}`;
 
     foot.innerHTML = `
-      <button class="btn btn-primary btn-block" id="montarAdd" ${falta ? 'disabled' : ''}>
+      <button class="btn btn-primary btn-block" id="montarAdd" ${tudoCerto ? '' : 'disabled'}>
         Adicionar ao carrinho · ${brl.format(preco / 100)}
       </button>
       <button class="btn btn-ghost btn-block" id="montarVoltar" style="margin-top:8px">Voltar aos produtos</button>`;
 
     body.querySelectorAll('[data-montar-inc]').forEach((b) =>
       b.addEventListener('click', () => {
-        const nome = b.dataset.montarInc;
-        const atual = Number(state.montando.qtd[nome]) || 0;
-        if (porSabores) {
-          if (escolhidas >= precisa) {
+        const [giStr, nome] = String(b.dataset.montarInc).split('::');
+        const gi = Number(giStr);
+        const e = estado[gi];
+        if (!e) return;
+        const atual = qtdDe(gi, nome);
+        if (e.porSabores) {
+          if (e.escolhidas >= e.g.unidades) {
             return toast(
-              precisa === 1 ? 'Essa barra leva 1 sabor só. Toque no sabor escolhido para trocar.' : `Essa barra leva no máximo ${precisa} sabores.`,
+              e.g.unidades === 1
+                ? 'Essa barra leva 1 sabor só. Toque no sabor escolhido para trocar.'
+                : `Essa barra leva no máximo ${e.g.unidades} sabores.`,
               'err'
             );
           }
-          state.montando.qtd[nome] = 1;
+          state.montando.qtd[`${gi}::${nome}`] = 1;
         } else {
-          if (escolhidas >= precisa) return toast(`Essa caixa tem ${precisa} unidades.`, 'err');
-          state.montando.qtd[nome] = atual + 1;
+          if (e.escolhidas >= e.g.unidades) return toast(`Essa caixa tem ${e.g.unidades} unidades.`, 'err');
+          state.montando.qtd[`${gi}::${nome}`] = atual + 1;
         }
         renderDrawer();
       })
     );
     body.querySelectorAll('[data-montar-dec]').forEach((b) =>
       b.addEventListener('click', () => {
-        const nome = b.dataset.montarDec;
-        const atual = Number(state.montando.qtd[nome]) || 0;
+        const [giStr, nome] = String(b.dataset.montarDec).split('::');
+        const gi = Number(giStr);
+        const atual = qtdDe(gi, nome);
         if (atual <= 0) return;
-        state.montando.qtd[nome] = atual - 1;
+        state.montando.qtd[`${gi}::${nome}`] = atual - 1;
         renderDrawer();
       })
     );
@@ -678,9 +774,18 @@
         toast(`${p.name} está esgotado no momento.`, 'err');
         return;
       }
-      const escolhas = sabores
-        .map((sb) => ({ nome: sb.nome, qtd: Number(state.montando.qtd[sb.nome]) || 0 }))
-        .filter((e) => e.qtd > 0);
+      const escolhas = [];
+      grupos.forEach((g, gi) => {
+        g.sabores.forEach((sb) => {
+          const qtd = qtdDe(gi, sb.nome);
+          if (qtd > 0)
+            escolhas.push(
+              variosGrupos
+                ? { grupo: g.titulo, nome: sb.nome, qtd }
+                : { nome: sb.nome, qtd }
+            );
+        });
+      });
       const chave = chaveItem(p.id, escolhas);
       const valor = state.cart[chave];
       const atual = typeof valor === 'number' ? valor : Number(valor && valor.qty) || 0;
@@ -748,9 +853,12 @@
         : state.view === 'success'
         ? 'Pedido enviado'
         : state.view === 'montar'
-        ? ((state.montando && (productById(state.montando.produto_id) || {}).opcoes || {}).modo === 'sabores'
-            ? 'Escolha os sabores'
-            : 'Monte sua caixa')
+        ? (() => {
+            const op = (state.montando && (productById(state.montando.produto_id) || {}).opcoes) || {};
+            const gs = gruposDaMontagem(op);
+            if (gs.length > 1) return 'Monte seu combo';
+            return gs[0] && gs[0].modo === 'sabores' ? 'Escolha os sabores' : 'Monte sua caixa';
+          })()
         : 'Seu carrinho';
 
     if (state.view === 'success') return renderSuccess(body, foot);
